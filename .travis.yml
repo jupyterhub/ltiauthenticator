@@ -1,0 +1,18 @@
+language: python
+sudo: false
+python:
+  - 3.6
+  - 3.5
+  - 3.4
+
+# install dependencies
+install:
+  - pip install --no-cache-dir -e .
+  - pip install --no-cache-dir -r dev-requirements.txt
+
+# command to run tests
+script:
+  - py.test tests/
+
+matrix:
+  fast_finish: true
