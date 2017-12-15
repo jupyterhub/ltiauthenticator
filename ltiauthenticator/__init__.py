@@ -11,6 +11,8 @@ from oauthlib.oauth1.rfc5849 import signature
 from collections import OrderedDict
 
 
+PROCESS_START_TIME = time.time()
+
 nonces = OrderedDict()
 
 
@@ -57,8 +59,6 @@ class LTIAuthenticator(Authenticator):
 
     @gen.coroutine
     def authenticate(self, handler, data=None):
-        # FIXME: Reject requests with a ts before the time our process
-        # started, since that could be a replay attack
         # FIXME: Run a process that cleans up old nonces every other minute
         # Validate that we have a consumer key for this request
         consumer_key = handler.get_body_argument('oauth_consumer_key')
@@ -93,7 +93,11 @@ class LTIAuthenticator(Authenticator):
 
         ts = int(handler.get_body_argument('oauth_timestamp'))
         nonce = handler.get_body_argument('oauth_nonce')
-        if time.time() - ts > 30:
+        # Allow 30s clock skew between LTI Consumer and Provider
+        # Also don't accept timestamps from before our process started, since that could be
+        # a replay attack - we won't have nonce lists from back then. This would allow users
+        # who can control / know when our process restarts to trivially do replay attacks.
+        if time.time() - ts > 30 or ts < PROCESS_START_TIME:
             raise web.HTTPError(401, "oauth_timestamp too old")
 
         if ts in nonces and nonce in nonces[ts]:
