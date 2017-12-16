@@ -1,5 +1,7 @@
 # LTI Launch JupyterHub Authenticator
 
+[![Build Status](https://travis-ci.org/yuvipanda/jupyterhub-ltiauthenticator.svg?branch=master)](https://travis-ci.org/yuvipanda/jupyterhub-ltiauthenticator)
+
 Implements [LTI v1][http://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide] authenticator for use with JupyterHub.
 
 This converts JupyterHub into a LTI **Tool Provider**, which can be
