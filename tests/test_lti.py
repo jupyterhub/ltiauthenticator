@@ -1,7 +1,7 @@
 import time
 import pytest
 from tornado import web
-from ltiauthenticator import LTILaunchValidator
+from ltiauthenticator import LTILaunchValidator, LTILaunchValidationError
 from oauthlib.oauth1.rfc5849 import signature
 
 def make_args(
@@ -66,7 +66,7 @@ def test_wrong_key():
 
     validator = LTILaunchValidator({'wrongkey': consumer_secret})
 
-    with pytest.raises(web.HTTPError):
+    with pytest.raises(LTILaunchValidationError):
         assert validator.validate_launch_request(launch_url, headers, args)
 
 def test_wrong_secret():
@@ -87,7 +87,7 @@ def test_wrong_secret():
 
     validator = LTILaunchValidator({consumer_key: 'wrongsecret'})
 
-    with pytest.raises(web.HTTPError):
+    with pytest.raises(LTILaunchValidationError):
         validator.validate_launch_request(launch_url, headers, args)
 
 def test_full_replay():
@@ -110,7 +110,7 @@ def test_full_replay():
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
-    with pytest.raises(web.HTTPError):
+    with pytest.raises(LTILaunchValidationError):
         validator.validate_launch_request(launch_url, headers, args)
 
 def test_partial_replay_timestamp():
@@ -134,7 +134,7 @@ def test_partial_replay_timestamp():
     assert validator.validate_launch_request(launch_url, headers, args)
 
     args['oauth_timestamp'] = str(int(float(args['oauth_timestamp'])) - 1)
-    with pytest.raises(web.HTTPError):
+    with pytest.raises(LTILaunchValidationError):
         validator.validate_launch_request(launch_url, headers, args)
 
 def test_partial_replay_nonce():
@@ -158,7 +158,7 @@ def test_partial_replay_nonce():
     assert validator.validate_launch_request(launch_url, headers, args)
 
     args['oauth_nonce'] = args['oauth_nonce'] + "1"
-    with pytest.raises(web.HTTPError):
+    with pytest.raises(LTILaunchValidationError):
         validator.validate_launch_request(launch_url, headers, args)
 
 def test_dubious_extra_args():
@@ -182,5 +182,5 @@ def test_dubious_extra_args():
     assert validator.validate_launch_request(launch_url, headers, args)
 
     args['extra_credential'] = 'i have admin powers'
-    with pytest.raises(web.HTTPError):
+    with pytest.raises(LTILaunchValidationError):
         validator.validate_launch_request(launch_url, headers, args)

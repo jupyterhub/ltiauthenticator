@@ -1,14 +1,13 @@
 import time
 
-from traitlets import Bool, Dict
-from tornado import gen, web
-
-from jupyterhub.auth import Authenticator
-from jupyterhub.handlers import BaseHandler
-from jupyterhub.utils import url_path_join
-
 from oauthlib.oauth1.rfc5849 import signature
 from collections import OrderedDict
+
+
+class LTILaunchValidationError(Exception):
+    def __init__(self, message):
+        self.message = message
+
 
 class LTILaunchValidator:
     # Record time when process starts, so we can reject requests made
@@ -41,14 +40,14 @@ class LTILaunchValidator:
 
         # Validate args!
         if 'oauth_consumer_key' not in args:
-            raise web.HTTPError(401, "oauth_consumer_key missing")
+            raise LTILaunchValidationError("oauth_consumer_key missing")
         if args['oauth_consumer_key'] not in self.consumers:
-            raise web.HTTPError(401, "oauth_consumer_key not known")
+            raise LTILaunchValidationError("oauth_consumer_key not known")
 
         if 'oauth_signature' not in args:
-            raise web.HTTPError(401, "oauth_signature missing")
+            raise LTILaunchValidationError("oauth_signature missing")
         if 'oauth_timestamp' not in args:
-            raise web.HTTPError(401, 'oauth_timestamp missing')
+            raise LTILaunchValidationError('oauth_timestamp missing')
 
         # Allow 30s clock skew between LTI Consumer and Provider
         # Also don't accept timestamps from before our process started, since that could be
@@ -59,15 +58,15 @@ class LTILaunchValidator:
                 int(time.time()) - oauth_timestamp > 30
                 or oauth_timestamp < LTILaunchValidator.PROCESS_START_TIME
         ):
-            raise web.HTTPError(401, "oauth_timestamp too old")
+            raise LTILaunchValidationError("oauth_timestamp too old")
 
         if 'oauth_nonce' not in args:
-            raise web.HTTPError(401, 'oauth_nonce missing')
+            raise LTILaunchValidationError('oauth_nonce missing')
         if (
                 oauth_timestamp in LTILaunchValidator.nonces
                 and args['oauth_nonce'] in LTILaunchValidator.nonces[oauth_timestamp]
         ):
-            raise web.HTTPError(401, "oauth_nonce + oauth_timestamp already used")
+            raise LTILaunchValidationError("oauth_nonce + oauth_timestamp already used")
         LTILaunchValidator.nonces.setdefault(oauth_timestamp, set()).add(args['oauth_nonce'])
 
 
@@ -92,73 +91,6 @@ class LTILaunchValidator:
         is_valid = signature.safe_string_equals(sign, args['oauth_signature'])
 
         if not is_valid:
-            raise web.HTTPError(401, "Invalid oauth_signature")
+            raise LTILaunchValidationError("Invalid oauth_signature")
 
         return True
-
-
-class LTIAuthenticator(Authenticator):
-    """
-    JupyterHub Authenticator for use with LTI based services (EdX, Canvas, etc)
-    """
-
-    auto_login = True
-    login_service = 'LTI'
-
-    consumers = Dict(
-        {},
-        config=True,
-        help="""
-        A dict of consumer keys mapped to consumer secrets for those keys.
-
-        Allows multiple consumers to securely send users to this JupyterHub
-        instance.
-        """
-    )
-
-    def get_handlers(self, app):
-        return [
-            ('/lti/launch', LTIAuthenticateHandler)
-        ]
-
-
-    @gen.coroutine
-    def authenticate(self, handler, data=None):
-        # FIXME: Run a process that cleans up old nonces every other minute
-        validator = LTILaunchValidator(self.consumers)
-
-        args = {}
-        for k, values in handler.request.body_arguments.items():
-            args[k] = values[0].decode() if len(values) == 1 else [v.decode() for v in values]
-
-
-        if validator.validate_launch_request(
-                handler.request.full_url(),
-                handler.request.headers,
-                args
-        ):
-            return {
-                'name': handler.get_body_argument('user_id'),
-                'auth_state': {k: v for k, v in args.items() if not k.startswith('oauth_')}
-            }
-
-
-    def login_url(self, base_url):
-        return url_path_join(base_url, '/lti/launch')
-
-
-class LTIAuthenticateHandler(BaseHandler):
-    """
-    Handler for /lti/launch
-
-    Implements v1 of the LTI protocol for passing authentication information
-    through.
-
-    If there's a custom parameter called 'next', will redirect user to
-    that URL after authentication. Else, will send them to /home.
-    """
-
-    @gen.coroutine
-    def post(self):
-        user = yield self.login_user()
-        self.redirect(self.get_body_argument('custom_next', self.get_next_url()))
