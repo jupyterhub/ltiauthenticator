@@ -131,10 +131,8 @@ class LTIAuthenticator(Authenticator):
         for k, values in handler.request.body_arguments.items():
             args[k] = values[0].decode() if len(values) == 1 else [v.decode() for v in values]
 
-        if 'x-forwarded-proto' in handler.request.headers and "https" in handler.request.headers['x-forwarded-proto']:
-            protocol = 'https'
-        else:
-            protocol = handler.request.protocol
+        # handle multiple layers of proxied protocol (comma separated) and take the outermost
+        protocol = handler.request.headers['x-forwarded-proto'].split(',')[0]
 
         launch_url = protocol + "://" + handler.request.host + handler.request.uri
 
