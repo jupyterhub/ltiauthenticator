@@ -131,9 +131,19 @@ class LTIAuthenticator(Authenticator):
         for k, values in handler.request.body_arguments.items():
             args[k] = values[0].decode() if len(values) == 1 else [v.decode() for v in values]
 
+        # handle multiple layers of proxied protocol (comma separated) and take the outermost
+        if 'x-forwarded-proto' in handler.request.headers:
+            # x-forwarded-proto might contain comma delimited values
+            # left-most value is the one sent by original client
+            hops = [h.strip() for h in handler.request.headers['x-forwarded-proto'].split(',')]
+            protocol = hops[0]
+        else:
+            protocol = self.request.protocol
+
+        launch_url = protocol + "://" + handler.request.host + handler.request.uri
 
         if validator.validate_launch_request(
-                handler.request.full_url(),
+                launch_url,
                 handler.request.headers,
                 args
         ):
