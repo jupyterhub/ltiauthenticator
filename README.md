@@ -127,10 +127,10 @@ The setup for Canvas is very similar to the process for edX.
 
 6.  Create a new assignment.
 
-    i. Make the submission type an external tool  
-    ii. **IMPORTANT:** Click "Find" and search for the tool you added in step 4. Click that, and it will prepopulate the URL you supplied. Using the "find" button to search for your tool is necessary to ensure the LTI key and secret are sent with the launch request.
-    iii. Check the "Launch in a new window" checkbox.  
-    iv. Append any custom parameters you wish (see next step)
+    1. Make the submission type an external tool  
+    2. **IMPORTANT:** Click "Find" and search for the tool you added in step 4. Click that, and it will prepopulate the URL you supplied. Using the "find" button to search for your tool is necessary to ensure the LTI key and secret are sent with the launch request.
+    3. Check the "Launch in a new window" checkbox.  
+    4. Append any custom parameters you wish (see next step)
 
 7.  **Custom Parameters**. Unfortunately, Canvas does not currently support sending custom parameters as form data in launch requests (as edX does). However, you can still attach custom parameters to launch requests with query strings. Unfortunately, these parameters must be escaped with [URL escape codes](https://developer.mozilla.org/en-US/docs/Glossary/percent-encoding). You can perform this encoding manually, or you can use an online tool [such as this one](https://meyerweb.com/eric/tools/dencoder/).
 
