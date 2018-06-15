@@ -8,9 +8,7 @@ This converts JupyterHub into a LTI **Tool Provider**, which can be
 then easily used with various **Tool Consumers**, such as Canvas, EdX,
 Moodle, Blackboard, etc.
 
-It's only been tested with [EdX](http://edx.readthedocs.io/projects/edx-partner-course-staff/en/latest/exercises_tools/lti_component.html) so far,
-but compatibility with other Tool Consumers is expected to already work.
-Documentation contributions are highly welcome!
+So far, `ltiauthenticator` has been tested with [EdX](http://edx.readthedocs.io/projects/edx-partner-course-staff/en/latest/exercises_tools/lti_component.html) and [Canvas](https://canvas.instructure.com/doc/api/file.tools_intro.html). Documentation contributions are highly welcome!
 
 Note that with this authenticator, going directly to the hub url will no longer
 allow you to log in. You *must* visit the hub through an appropriate Tool
