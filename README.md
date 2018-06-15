@@ -164,7 +164,13 @@ JupyterHub preferentially uses any user_id cookie stored over an authentication 
 
 ## Common Gotchas
 
-1. If you have a base_url (`c.JupyterHub.base_url`) set in your `jupyterhub_config.py`, this needs to be included in your launch URL and custom parameters. For example, if `c.JupyterHub.base_url = '/jupyter'`,then your Launch URL would be: 
+1. If you have a base_url set in your jupyterhub configruation, this needs to be reflected in your launch URL and custom parameters. For example, if your `jupyterhub_config.py` file contains:
+
+    ```python
+    `c.JupyterHub.base_url = '/jupyter'`
+    ```
+    
+    then your Launch URL would be: 
 
     ```
     https://www.example.com/jupyter/hub/lti/launch
