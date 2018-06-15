@@ -140,19 +140,19 @@ The setup for Canvas is very similar to the process for edX.
 
 7.  **Custom Parameters**. Unfortunately, Canvas does not currently support sending custom parameters as form data in launch requests (as edX does). However, you can still attach custom parameters to launch requests with query strings. Unfortunately, these parameters must be escaped with [URL escape codes](https://developer.mozilla.org/en-US/docs/Glossary/percent-encoding). You can perform this encoding manually, or you can use an online tool [such as this one](https://meyerweb.com/eric/tools/dencoder/).
 
-    - Before:
+    Before:
 
     ```
     https://example.com/hub/lti/launch?custom_next=/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb
     ```
 
-    - After:
+    After:
 
     ```
     https://example.com/hub/lti/launch?custom_next=/hub/user-redirect/git-pull%3Frepo%3Dhttps%3A%2F%2Fgithub.com%2Fbinder-examples%2Frequirements%26subPath%3Dindex.ipynb
     ```
 
-    - Note that the _entire_ query string should not need to be escaped, just the portion that will be invoked after the `user-redirect`.
+    Note that the _entire_ query string should not need to be escaped, just the portion that will be invoked after the `user-redirect`.
 
 8. [_Same as edX_] You are done! You can click the Link to see what the user workflow would look
    like. You can repeat step 7 in all the units that should have a link to the
@@ -169,7 +169,7 @@ JupyterHub preferentially uses any user_id cookie stored over an authentication 
     ```python
     `c.JupyterHub.base_url = '/jupyter'`
     ```
-    
+
     then your Launch URL would be: 
 
     ```
