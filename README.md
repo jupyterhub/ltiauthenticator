@@ -26,6 +26,8 @@ pip install jupyterhub-ltiauthenticator
 
 ## Using LTIAuthenticator
 
+_A note about LTI Passports: These can essentially be any 3 strings put together, but it is recommended to use the OpenSSL PRNG to create a pseudorandom 32 byte number._
+
 ### EdX
 
 1. You need access to [EdX Studio](https://studio.edx.org/) to set up LTI. You
@@ -94,3 +96,65 @@ pip install jupyterhub-ltiauthenticator
 8. You are done! You can click the Link to see what the user workflow would look
    like. You can repeat step 7 in all the units that should have a link to the
    Hub for the user.
+
+## Canvas
+
+The setup for Canvas is very similar to the process for edX.
+
+1.  To start, you must have administrative access to Canvas. Note that this is a higher permission setting than an instructor. You may need to contact someone at your institution for assistance.
+
+2.  [_Same as edX_] Create an _client key_ for use by EdX against your hub. You can do so by
+    running `openssl rand -hex 32` and saving the output.
+
+3.  [_Same as edX_] Create an _client secret_ for use by EdX against your hub. You can do so by
+    running `openssl rand -hex 32` and saving the output.
+
+4.  Add an external tool at the application or course level. Your can use your entire launch URL as the link, or simply use the domain name of your JupyterHub installation. The only difference is what will be prepopulated when you add the link to an assignment. Input your key and secret here as well--these will be sent in the body of every launch request.
+
+5.  [Same as edX] Configure JupyterHub to accept LTI Launch requests from EdX. You do this by
+    giving JupyterHub access to the client key & secret generated in steps 3 and 4.
+
+    _Note: While you could paste these keys directly into your configuration file, they are secure credentials and should not be committed to any version control repositories. It is therefore best practice to store them securely. Here, we have stored them in environment variables._
+
+    ```python
+    c.JupyterHub.authenticator_class = 'ltiauthenticator.LTIAuthenticator'
+    c.LTIAuthenticator.consumers = {
+        os.environ['LTI_CLIENT_KEY']: os.environ['LTI_CLIENT_SECRET']
+    }
+    ```
+
+    A Hub can be configured to accept Launch requests from multiple Tool
+    Consumers. You can do so by just adding all the client keys & secrets to the
+    `c.LTIAuthenticator.consumers` traitlet like above.
+
+6.  Create a new assignment.
+    i. Make the submission type an external tool  
+    ii. **IMPORTANT:** Click "Find" and search for the tool you added in step 4. Click that, and it will prepopulate the URL you supplied. Using the "find" button to search for your tool is necessary to ensure the LTI key and secret are sent with the launch request.
+    iii. Check the "Launch in a new window" checkbox.  
+    iv. Append any custom parameters you wish (see next step)
+
+7.  **Custom Parameters**. Unfortunately, Canvas does not currently support sending custom parameters as form data in launch requests (as edX does). However, you can still attach custom parameters to launch requests with query strings. Unfortunately, these parameters must be escaped with [URL escape codes](https://developer.mozilla.org/en-US/docs/Glossary/percent-encoding). You can perform this encoding manually, or you can use an online tool [such as this one](https://meyerweb.com/eric/tools/dencoder/).
+
+    - Example:
+
+      - Before:
+
+        ```
+        https://example.com/hub/lti/launch?custom_next=/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb
+        ```
+
+      - After:
+
+        ```
+        https://example.com/hub/lti/launch?custom_next=/hub/user-redirect/git-pull%3Frepo%3Dhttps%3A%2F%2Fgithub.com%2Fbinder-examples%2Frequirements%26subPath%3Dindex.ipynb
+        ```
+
+    - Note that the _entire_ query string should not need to be escaped, just the portion that will be invoked after the `user-redirect`.
+
+8. [_Same as edX_] You are done! You can click the Link to see what the user workflow would look
+   like. You can repeat step 7 in all the units that should have a link to the
+   Hub for the user.
+
+## Debugging Note
+
+JupyterHub preferentially uses any user_id cookie stored over an authentication request. Therefore, do not open multiple tabs at once and expect to be able to log in as separate users without logging out first! [Discussion](https://github.com/jupyterhub/jupyterhub/pull/1840)
