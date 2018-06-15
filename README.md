@@ -88,8 +88,10 @@ _A note about LTI Passports: These can essentially be any 3 strings put together
    string:
    
    ```js
-   ["next=/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb"]
+   ["next=/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb"]
    ```
+
+   Note here again that if you have a `base_url` set in your jupyterhub configuration, that should be prefixed to your next parameter. 
 
 8. You are done! You can click the Link to see what the user workflow would look
    like. You can repeat step 7 in all the units that should have a link to the
@@ -107,7 +109,11 @@ The setup for Canvas is very similar to the process for edX.
 3.  [_Same as edX_] Create an _client secret_ for use by EdX against your hub. You can do so by
     running `openssl rand -hex 32` and saving the output.
 
-4.  Add an external tool at the application or course level. Your can use your entire launch URL as the link, or simply use the domain name of your JupyterHub installation. The only difference is what will be prepopulated when you add the link to an assignment. Input your key and secret here as well--these will be sent in the body of every launch request.
+4.  Add an external tool at the application or course level. This requires 3 inputs:
+
+    1. **LTI Launch URL**: `https://www.example.com/hub/lti/launch`. 
+    2. **LTI Client Key** from step 2. 
+    3. **LTI Client Secret** from step 3. 
 
 5.  [Same as edX] Configure JupyterHub to accept LTI Launch requests from EdX. You do this by
     giving JupyterHub access to the client key & secret generated in steps 3 and 4.
@@ -155,3 +161,17 @@ The setup for Canvas is very similar to the process for edX.
 ## Debugging Note
 
 JupyterHub preferentially uses any user_id cookie stored over an authentication request. Therefore, do not open multiple tabs at once and expect to be able to log in as separate users without logging out first! [Discussion](https://github.com/jupyterhub/jupyterhub/pull/1840)
+
+## Common Gotchas
+
+1. If you have a base_url (`c.JupyterHub.base_url`) set in your `jupyterhub_config.py`, this needs to be included in your launch URL and custom parameters. For example, if `c.JupyterHub.base_url = '/jupyter'`,then your Launch URL would be: 
+
+    ```
+    https://www.example.com/hub/lti/launch
+    ```
+
+    A custom next parameter might look like:
+
+    ```js
+    ["next=/jupyter/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb"]
+    ```
