@@ -126,6 +126,7 @@ The setup for Canvas is very similar to the process for edX.
     `c.LTIAuthenticator.consumers` traitlet like above.
 
 6.  Create a new assignment.
+
     i. Make the submission type an external tool  
     ii. **IMPORTANT:** Click "Find" and search for the tool you added in step 4. Click that, and it will prepopulate the URL you supplied. Using the "find" button to search for your tool is necessary to ensure the LTI key and secret are sent with the launch request.
     iii. Check the "Launch in a new window" checkbox.  
