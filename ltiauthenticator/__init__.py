@@ -147,8 +147,22 @@ class LTIAuthenticator(Authenticator):
                 handler.request.headers,
                 args
         ):
+            # Before we return lti_user_id, check to see if a canvas_custom_user_id was sent. 
+            # If so, this indicates two things:
+            # 1. The request was sent from Canvas, not edX
+            # 2. The request was sent from a Canvas course not running in anonymous mode
+            # If this is the case we want to use the canvas ID to allow grade returns through the Canvas API
+            # If Canvas is running in anonymous mode, we'll still want the 'user_id' (which is the `lti_user_id``)
+
+            canvas_id = handler.get_body_argument('custom_canvas_user_id', default=None)
+
+            if canvas_id is not None:
+                user_id = handler.get_body_argument('custom_canvas_user_id')
+            else:
+                user_id = handler.get_body_argument('user_id')
+
             return {
-                'name': handler.get_body_argument('user_id'),
+                'name': user_id,
                 'auth_state': {k: v for k, v in args.items() if not k.startswith('oauth_')}
             }
 
