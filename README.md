@@ -145,6 +145,13 @@ _Note_: You will see **Client Secret** and **Secret Key** used interchangably.
 
     The application can be created at the account level or the course level. If the application is created at the account level, it means that the application is available to all courses under the same account.
 
+    **Privacy Setting**:
+
+    - If you run the course in public mode, ltiauthenticator will parse the student's canvas ID as the JupyterHub username.
+    - If you run the course in anonymous mode, ltiauthenticator will fall back to the LTI user ID, an anonymized version.
+      - Currently, the only method for de-anonymizing the LTI user ID in Canvas is with [the "masquerade" permission](https://canvas.instructure.com/doc/api/file.masquerading.html), which grants the user full access to act as any user account.
+      - Unless you are able to obtain masquerade permissions, it is recommended to run the course in public mode.
+
 3.  Configure JupyterHub to accept LTI Launch requests from Canvas. You do this by
     supplying JupyterHub with the client key & secret generated in step 1.
 
@@ -167,6 +174,8 @@ _Note_: You will see **Client Secret** and **Secret Key** used interchangably.
     2.  **IMPORTANT:** Click "Find" and search for the tool you added in step 2. Click that and it will prepopulate the URL field with the one you supplied when creating the application. Using the "find" button to search for your tool is necessary to ensure the LTI key and secret are sent with the launch request.
     3.  Check the "Launch in a new window" checkbox.
     4.  Append any custom parameters you wish (see next step)
+
+    Note: If you are creating assignments via the Canvas API, you need to use [these undocumented external tool fields](https://github.com/instructure/canvas-lms/issues/1315) when creating the assignment.
 
 5.  **Custom Parameters**. Apart from any custom fields you have defined in step 2, you can add custom parameters to any assignment. Unlike EdX, there is no method to include these custom parameters in the lti launch request's form data. However, you can append custom parameters to the launch URL as query strings using proper [character encoding](https://developer.mozilla.org/en-US/docs/Glossary/percent-encoding) to preserve the query strings as they are passed through JupyterHub. You can perform this encoding manually, [programmatically](https://docs.python.org/3/library/urllib.parse.html#urllib.parse.urlencode), or via an online tool.
 
