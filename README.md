@@ -129,7 +129,8 @@ _Note_: You will see **Client Secret** and **Secret Key** used interchangably.
 
     _Note_: Anyone with these two strings will be able to access your hub, so keep them secure!!
 
-2.  Create an application in Canvas. You can name it anything but you'll be using it throughout Canvas to refer to your hub, so make it
+2.  [Add a new external app configuration in Canvas](https://community.canvaslms.com/docs/DOC-13135-415257103).
+    You can name it anything, but you'll be using it throughout Canvas to refer to your hub, so make it
     something meaningful and unique. Note that the right to create applications might be limited by your
     institution. The basic information required to create an application in Canvas' "Manual entry" mode is:
 
@@ -172,7 +173,7 @@ _Note_: You will see **Client Secret** and **Secret Key** used interchangably.
 
     1.  Make the submission type an external tool
     2.  **IMPORTANT:** Click "Find" and search for the tool you added in step 2. Click that and it will prepopulate the URL field with the one you supplied when creating the application. Using the "find" button to search for your tool is necessary to ensure the LTI key and secret are sent with the launch request.
-    3.  Check the "Launch in a new window" checkbox.
+    3.  Check the "Launch in a new tab" checkbox.
     4.  Append any custom parameters you wish (see next step)
 
     Note: If you are creating assignments via the Canvas API, you need to use [these undocumented external tool fields](https://github.com/instructure/canvas-lms/issues/1315) when creating the assignment.
