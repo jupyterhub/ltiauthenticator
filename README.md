@@ -168,6 +168,19 @@ _Note_: You will see **Client Secret** and **Secret Key** used interchangably.
     Consumers. You can do so by just adding all the client keys & secrets to the
     `c.LTIAuthenticator.consumers` traitlet like above.
 
+4. By default, the user's name will be the `custom_canvas_user_id` passed in by canvas. If you
+   would like to use some other bit of information from the LTI request, you can pick what should
+   be used as the user id.
+
+   ```python
+   # Set the user's email as their user id
+   c.LTIAuthenticator.user_id_key = 'lis_person_contact_email_primary'
+   ```
+
+   A [partial list of keys in an LTI request](https://www.edu-apps.org/code.html#params)
+   is available to help. Your LMS provider might also implement custom keys
+   you can use.
+
 4.  Create a new assignment.
 
     1.  Make the submission type an external tool

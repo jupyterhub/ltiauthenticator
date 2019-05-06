@@ -1,6 +1,6 @@
 import time
 
-from traitlets import Bool, Dict
+from traitlets import Bool, Dict, Unicode
 from tornado import gen, web
 
 from jupyterhub.auth import Authenticator
@@ -116,6 +116,29 @@ class LTIAuthenticator(Authenticator):
         """
     )
 
+    user_id_key = Unicode(
+        None,
+        allow_none=True,
+        config=True,
+        help="""
+        Key present in LTI launch info to be used as username.
+
+
+        Common options are:
+          - User's email address: lis_person_contact_email_primary
+          - Anonymized user id: user_id
+
+        Your LMS (Canvas / EdX / whatever) might provide additional
+        keys in the LTI launch that you can use. Usually these are
+        prefixed with custom_.
+
+        When the default of 'None' is set, the following backwards
+        compatible behavior is provided:
+
+          If `canvas_custom_user_id` is present, that is used. Otherwise,
+          the anonymized `user_id` is.
+        """
+    )
     def get_handlers(self, app):
         return [
             ('/lti/launch', LTIAuthenticateHandler)
@@ -147,19 +170,18 @@ class LTIAuthenticator(Authenticator):
                 handler.request.headers,
                 args
         ):
-            # Before we return lti_user_id, check to see if a canvas_custom_user_id was sent. 
-            # If so, this indicates two things:
-            # 1. The request was sent from Canvas, not edX
-            # 2. The request was sent from a Canvas course not running in anonymous mode
-            # If this is the case we want to use the canvas ID to allow grade returns through the Canvas API
-            # If Canvas is running in anonymous mode, we'll still want the 'user_id' (which is the `lti_user_id``)
-
-            canvas_id = handler.get_body_argument('custom_canvas_user_id', default=None)
-
-            if canvas_id is not None:
-                user_id = handler.get_body_argument('custom_canvas_user_id')
+            if self.user_id_key:
+                user_id = args[self.user_id_key]
             else:
-                user_id = handler.get_body_argument('user_id')
+                # Backwards compatible behavior, since we don't want hubs to have to
+                # migrate usernames.
+                # Before we return lti_user_id, check to see if a canvas_custom_user_id was sent.
+                # If so, this indicates two things:
+                # 1. The request was sent from Canvas, not edX
+                # 2. The request was sent from a Canvas course not running in anonymous mode
+                # If this is the case we want to use the canvas ID to allow grade returns through the Canvas API
+                # If Canvas is running in anonymous mode, we'll still want the 'user_id' (which is the `lti_user_id``)
+                user_id = args.get('custom_canvas_user_id', args['user_id'])
 
             return {
                 'name': user_id,
