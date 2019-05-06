@@ -182,7 +182,17 @@ class LTIAuthenticateHandler(BaseHandler):
     that URL after authentication. Else, will send them to /home.
     """
 
-    @gen.coroutine
-    def post(self):
-        user = yield self.login_user()
+    async def post(self):
+        current_user = await self.get_current_user()
+        # If a user is already logged in, we want to log that user *out*,
+        # and log us back in. This handler is only called when launching
+        # into a user, so this *should* be ok?
+        # If a user is logged in, and the next launch is for the same user,
+        # it shouldn't disrupt their user session
+        if current_user:
+            self.clear_login_cookie()
+            self.redirect(self.request.uri, status=307)
+            return
+        user = await self.login_user()
+        print(user)
         self.redirect(self.get_body_argument('custom_next', self.get_next_url()))

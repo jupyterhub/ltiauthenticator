@@ -199,7 +199,8 @@ _Note_: You will see **Client Secret** and **Secret Key** used interchangably.
 
 ## Notes
 
-1.  JupyterHub preferentially uses any user_id cookie stored over an authentication request. Therefore, do not open multiple tabs at once and expect to be able to log in as separate users without logging out first! [Discussion](https://github.com/jupyterhub/jupyterhub/pull/1840)
+1. JupyterHub will only remember your *latest* login across all tabs / windows, so if you launch from a new course it
+   will forget the login for the old course. Use this with care!
 
 ## Common Gotchas
 
