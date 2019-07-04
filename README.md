@@ -198,6 +198,66 @@ _Note_: You will see **Client Secret** and **Secret Key** used interchangably.
     like. You can repeat step 7 in all the units that should have a link to the
     Hub for the user.
 
+## Moodle
+
+The Moodle setup is very similar to both the examples outlined above.
+
+1. You need to be a Moodle Administrator, or have another Moodle Role that gives you
+   Permissions to manage Activity Modules.
+
+2. You need to have enabled the ['External Tool'](https://docs.moodle.org/37/en/External_tool) Activity Module in your Moodle environment
+
+3. Create an *client-key* for use by Moodle against your hub. You can do so by
+   running `openssl rand -hex 32` and saving the output.
+
+4. Create an *client-secret* for use by Moodle against your hub. You can do so by
+   running `openssl rand -hex 32` and saving the output.
+
+5. If you are running Jupyterhub locally, you need to Configure it to accept LTI Launch requests from Moodle. You do this by
+   enabling the LTI Authenticator class and giving JupyterHub access to the client key & secret generated in steps 3 and 4.
+
+   juptyerhub_config.py:
+```python
+   c.JupyterHub.authenticator_class = 'ltiauthenticator.LTIAuthenticator'
+
+   c.LTIAuthenticator.consumers = {
+       "client-key": "client-secret"
+   }
+```
+
+6. If you are running Jupyterhub within a Kubernetes Cluster, deployed using helm, you need to
+   supply the client key & secret via the chart yaml configuration.
+
+   config.yaml:
+
+```yaml
+    auth:
+      type: "lti"
+      lti:
+          consumers: { 
+              "client-key"": "client-secret"
+              }
+```
+
+7. If your Moodle environment is using https, you should also use https for your Jupyterhub.
+
+8. Once you hub is up and running with the new LTI configuration, you can now configure Moodle.
+
+9. In the Moodle course you wish to add, turn on editing, and add an instance of the External Tool Activity Module (https://docs.moodle.org/37/en/External_tool_settings)
+Activtiy Name: This will be the name that appears in the course for students to click on to initate
+    the connection to your hub.
+Click 'Show more...'
+    * Tool name: 
+    * Tool URL: Should be set to `your-hub-url/hub/lti/launch`. So if your hub
+   is accessible at `https://datahub.berkeley.edu`, **Tool URL** should be
+   `https://datahub.berkeley.edu/hub/lti/launch`
+    * Consumer Key: *client key*
+    * Shared secret: *client secret*
+    * Custom parameters: 
+    * Default launch container: This setting will define how the hub is presented to the student, whether it's embedded within a Moodle, with or without blocks, replaces the current window, or is displayed in a new window.
+
+10. Click 'Save and return to course' or 'Save and display', you will them either be returned to the course page, or have you hub displayed.
+
 ## Notes
 
 1.  JupyterHub preferentially uses any user_id cookie stored over an authentication request. Therefore, do not open multiple tabs at once and expect to be able to log in as separate users without logging out first! [Discussion](https://github.com/jupyterhub/jupyterhub/pull/1840)
