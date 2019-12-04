@@ -147,7 +147,7 @@ class LTIAuthenticator(Authenticator):
                 handler.request.headers,
                 args
         ):
-            # Before we return lti_user_id, check to see if a canvas_custom_user_id was sent. 
+            # Before we return lti_user_id, check to see if a canvas_custom_user_id was sent.
             # If so, this indicates two things:
             # 1. The request was sent from Canvas, not edX
             # 2. The request was sent from a Canvas course not running in anonymous mode
