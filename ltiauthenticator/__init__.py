@@ -184,5 +184,19 @@ class LTIAuthenticateHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
+        # References:
+        # - Class dependencies:
+        #   - jupyterhub.handlers.BaseHandler: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L69
+        #   - tornado.web.RequestHandler: https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler
+        # - Function dependencies:
+        #   - login_user: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L696-L715
+        #   - get_next_url: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L587
+        #   - get_body_argument: https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler.get_body_argument
         user = yield self.login_user()
-        self.redirect(self.get_body_argument('custom_next', self.get_next_url()))
+        next_url = self.get_next_url(user=user)
+        body_argument = self.get_body_argument(
+            name='custom_next',
+            default=next_url,
+        )
+
+        self.redirect(body_argument)
