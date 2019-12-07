@@ -138,7 +138,7 @@ class LTIAuthenticator(Authenticator):
             hops = [h.strip() for h in handler.request.headers['x-forwarded-proto'].split(',')]
             protocol = hops[0]
         else:
-            protocol = self.request.protocol
+            protocol = handler.request.protocol
 
         launch_url = protocol + "://" + handler.request.host + handler.request.uri
 
