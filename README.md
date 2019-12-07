@@ -1,6 +1,7 @@
 # LTI Launch JupyterHub Authenticator
 
-[![Build Status](https://travis-ci.org/jupyterhub/ltiauthenticator.svg?branch=master)](https://travis-ci.org/jupyterhub/ltiauthenticator)
+[![TravisCI build status](https://img.shields.io/travis/jupyterhub/ltiauthenticator/master?logo=travis)](https://travis-ci.org/jupyterhub/ltiauthenticator)
+[![Latest PyPI version](https://img.shields.io/pypi/v/jupyterhub-ltiauthenticator?logo=pypi)](https://pypi.python.org/pypi/jupyterhub-ltiauthenticator)
 
 Implements [LTI v1](http://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide) authenticator for use with JupyterHub.
 
