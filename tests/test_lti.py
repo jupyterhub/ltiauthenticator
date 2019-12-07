@@ -16,9 +16,9 @@ def make_args(
 
     args.update(extra_args)
 
-    base_string = signature.construct_base_string(
+    base_string = signature.signature_base_string(
         'POST',
-        signature.normalize_base_string_uri(launch_url),
+        signature.base_string_uri(launch_url),
         signature.normalize_parameters(
             signature.collect_parameters(body=args, headers={})
         )
