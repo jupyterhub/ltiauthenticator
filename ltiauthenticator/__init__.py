@@ -186,14 +186,21 @@ class LTIAuthenticateHandler(BaseHandler):
 
     @gen.coroutine
     def post(self):
-        # References:
-        # - Class dependencies:
-        #   - jupyterhub.handlers.BaseHandler: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L69
-        #   - tornado.web.RequestHandler: https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler
-        # - Function dependencies:
-        #   - login_user: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L696-L715
-        #   - get_next_url: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L587
-        #   - get_body_argument: https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler.get_body_argument
+        """
+        Technical reference
+        -------------------
+        1. Class dependencies
+           - jupyterhub.handlers.BaseHandler: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L69
+           - tornado.web.RequestHandler: https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler
+        2. Function dependencies
+           - login_user: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L696-L715
+             login_user is defined in the JupyterHub wide BaseHandler class,
+             mainly wraps a call to the authenticate function and follow up.
+             a successful authentication with a call to auth_to_user that
+             persists a JupyterHub user and returns it.
+           - get_next_url: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L587
+           - get_body_argument: https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler.get_body_argument
+        """
         user = yield self.login_user()
         next_url = self.get_next_url(user=user)
         body_argument = self.get_body_argument(
