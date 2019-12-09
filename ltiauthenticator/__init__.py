@@ -187,8 +187,8 @@ class LTIAuthenticateHandler(BaseHandler):
     @gen.coroutine
     def post(self):
         """
-        Technical reference
-        -------------------
+        Technical reference of relevance to understand this function
+        ------------------------------------------------------------
         1. Class dependencies
            - jupyterhub.handlers.BaseHandler: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L69
            - tornado.web.RequestHandler: https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler
@@ -201,8 +201,12 @@ class LTIAuthenticateHandler(BaseHandler):
            - get_next_url: https://github.com/jupyterhub/jupyterhub/blob/abb93ad799865a4b27f677e126ab917241e1af72/jupyterhub/handlers/base.py#L587
            - get_body_argument: https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler.get_body_argument
         """
-        user = yield self.login_user()
-        next_url = self.get_next_url(user=user)
+        # FIXME: Figure out if we want to pass the user returned from
+        #        self.login_user() to self.get_next_url(). It is named
+        #        _ for now as pyflakes is fine about having an unused
+        #        variable named _.
+        _ = yield self.login_user()
+        next_url = self.get_next_url()
         body_argument = self.get_body_argument(
             name='custom_next',
             default=next_url,
