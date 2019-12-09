@@ -1,17 +1,31 @@
+dist: bionic
 language: python
-sudo: false
 python:
+  - 3.8
+  - 3.7
   - 3.6
   - 3.5
 
-# install dependencies
+# initial step - install dependencies
 install:
-  - pip install --no-cache-dir -e .
-  - pip install --no-cache-dir -r dev-requirements.txt
+  - pip install --upgrade pip
+  - pip install -r dev-requirements.txt
+  - pip install .
+  - pip freeze
 
-# command to run tests
+# middle step - run tests
 script:
-  - py.test tests/
+  - pytest --verbose --flakes
 
-matrix:
-  fast_finish: true
+# final step - optionally deploy
+deploy:
+  provider: pypi
+  user: "__token__"
+  # password: set by TravisCI's environment variable PYPI_PASSWORD
+  # ref: https://travis-ci.org/jupyterhub/ltiauthenticator/settings
+  distributions: sdist bdist_wheel
+  on:
+    # Only deploy on tagged commits instead of the default of only doing it to
+    # the master branch. A tag does not belong specifically to a branch, so
+    # without this it would fail to deploy for tags.
+    tags: true
