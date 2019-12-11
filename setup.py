@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='jupyterhub-ltiauthenticator',
-    version='0.4.0.dev',
+    version='0.4.0',
     description='JupyterHub authenticator implementing LTI v1',
     url='https://github.com/yuvipanda/jupyterhub-ltiauthenticator',
     author='Yuvi Panda',

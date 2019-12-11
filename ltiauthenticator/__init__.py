@@ -10,7 +10,7 @@ from jupyterhub.utils import url_path_join
 from oauthlib.oauth1.rfc5849 import signature
 from collections import OrderedDict
 
-__version__ = '0.4.0.dev'
+__version__ = '0.4.0'
 
 class LTILaunchValidator:
     # Record time when process starts, so we can reject requests made
