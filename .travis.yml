@@ -7,8 +7,9 @@ python:
   - 3.5
 
 stages:
-  - test
-  - deploy
+  - name: test
+  - name: deploy
+    if: tag IS present
 
 # initial step - install dependencies
 install:
