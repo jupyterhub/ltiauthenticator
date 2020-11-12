@@ -9,7 +9,7 @@ setup(
     author_email='yuvipanda@gmail.com',
     license='3 Clause BSD',
     packages=find_packages(),
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     install_requires=[
         'jupyterhub>=0.8',
         'oauthlib>=3.0'

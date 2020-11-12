@@ -3,7 +3,7 @@
 `jupyterhub-ltiauthenticator` is a package [available on
 PyPI](https://pypi.org/project/jupyterhub-ltiauthenticator/). These are
 instructions on how to make a release on PyPI. The PyPI release is packaged and
-published automatically by TravisCI when a git tag is pushed.
+published automatically by GitHub Actions when a git tag is pushed.
 
 For you to follow along according to these instructions, you need:
 - To have push rights to the [ltiauthenticator GitHub
@@ -11,14 +11,16 @@ For you to follow along according to these instructions, you need:
 
 ## Steps to make a release
 
-1. Update [CHANGELOG.md](CHANGELOG.md) if it is not up to date, and verify
-   [README.md](README.md) has an updated output of running `--help`. Make a PR
-   to review the CHANGELOG notes.
+1. Update `CHANGELOG.md`
 
-   To get the foundation of the changelog written, you can install
-   [github-activity](https://github.com/choldgraf/github-activity) and run
-   `github-activity --kind pr jupyterhub/ltiauthenticator` after setting up
-   credentials as described in the project's README.md file.
+  - Generate a list of PRs using [executablebooks/github-activity](https://github.com/executablebooks/github-activity)
+    ```bash
+    github-activity --output=github-activity-output.md --heading-level=3 jupyterhub/ltiauthenticator
+    ```
+  - Visit and label all uncategorized PRs appropriately with: `maintenance`,
+    `enhancement`, `breaking`, `bug`, or `documentation`.
+  - Generate a list of PRs again and add it to the changelog.
+  - Manually highlight the breaking changes and summarize the release.
 
 1. Once the changelog is up to date, checkout master and make sure it is up to date and clean.
 
@@ -54,9 +56,9 @@ For you to follow along according to these instructions, you need:
 
 ## Manually uploading to PyPI
 
-We are using CD with Travis to automatically update PyPI, but if you want to do
-it manually when you are on a tagged commit in a otherwise cleaned repository,
-you can do this.
+We are using CD with GitHub Actions to automatically update PyPI, but if you
+want to do it manually when you are on a tagged commit in a otherwise cleaned
+repository, you can do this.
 
 1. Package the release
 
