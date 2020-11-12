@@ -1,3 +1,11 @@
+# [1.0]
+
+## [1.0.0]
+
+### Merged PRs
+
+* **BREAKING CHANGE**:   Log out current user when a new user logs in, reducing confusion about which 'user' is logged in. Multiple 'LTI' users can exist for the same 'human' user - often per-course. This makes sure the 'correct' LTI user is logged in whenever a launch request is clicked, instead of deferring to a previous launch request's LTI user. [#31](https://github.com/jupyterhub/ltiauthenticator/pull/31) ([@U4I-fedir-kryvytskyi](https://github.com/U4I-fedir-kryvytskyi))
+
 # [0.4]
 
 ## [0.4.0]
