@@ -184,6 +184,12 @@ class LTIAuthenticateHandler(BaseHandler):
     that URL after authentication. Else, will send them to /home.
     """
 
+    def set_login_cookie(self, user):
+        super().set_login_cookie(user)
+
+        ## Make sure that hub cookie is always set, even if the user was already logged in
+        self.set_hub_cookie(user)
+
     @gen.coroutine
     def post(self):
         """
