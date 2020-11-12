@@ -259,10 +259,6 @@ Click 'Show more...'
 
 10. Click 'Save and return to course' or 'Save and display', you will them either be returned to the course page, or have you hub displayed.
 
-## Notes
-
-1.  JupyterHub preferentially uses any user_id cookie stored over an authentication request. Therefore, do not open multiple tabs at once and expect to be able to log in as separate users without logging out first! [Discussion](https://github.com/jupyterhub/jupyterhub/pull/1840)
-
 ## Common Gotchas
 
 1.  If you have a base_url set in your jupyterhub configruation, this needs to be reflected in your launch URL and custom parameters. For example, if your `jupyterhub_config.py` file contains:
