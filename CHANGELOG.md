@@ -2,9 +2,25 @@
 
 ## [1.0.0]
 
+**BREAKING CHANGE**:   Log out current user when a new user logs in, reducing confusion about which 'user' is logged in. Multiple 'LTI' users can exist for the same 'human' user - often per-course. This makes sure the 'correct' LTI user is logged in whenever a launch request is clicked, instead of deferring to a previous launch request's LTI user. [#31](https://github.com/jupyterhub/ltiauthenticator/pull/31) ([@U4I-fedir-kryvytskyi](https://github.com/U4I-fedir-kryvytskyi))
+
 ### Merged PRs
 
-* **BREAKING CHANGE**:   Log out current user when a new user logs in, reducing confusion about which 'user' is logged in. Multiple 'LTI' users can exist for the same 'human' user - often per-course. This makes sure the 'correct' LTI user is logged in whenever a launch request is clicked, instead of deferring to a previous launch request's LTI user. [#31](https://github.com/jupyterhub/ltiauthenticator/pull/31) ([@U4I-fedir-kryvytskyi](https://github.com/U4I-fedir-kryvytskyi))
+([full changelog](https://github.com/jupyterhub/ltiauthenticator/compare/0.4.0...e38726f4b34209a44908214cef2ebde16fab6fde))
+
+#### Bugs fixed
+
+* Log out old user when new user logs in [#31](https://github.com/jupyterhub/ltiauthenticator/pull/31) ([@U4I-fedir-kryvytskyi](https://github.com/U4I-fedir-kryvytskyi))
+
+#### Maintenance and upkeep improvements
+
+* GitHub actions + drop py35 [#33](https://github.com/jupyterhub/ltiauthenticator/pull/33) ([@consideRatio](https://github.com/consideRatio))
+
+#### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/ltiauthenticator/graphs/contributors?from=2019-12-11&to=2020-11-12&type=c))
+
+[@consideRatio](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AconsideRatio+updated%3A2019-12-11..2020-11-12&type=Issues) | [@ptcane](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aptcane+updated%3A2019-12-11..2020-11-12&type=Issues) | [@U4I-fedir-kryvytskyi](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AU4I-fedir-kryvytskyi+updated%3A2019-12-11..2020-11-12&type=Issues) | [@welcome](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Awelcome+updated%3A2019-12-11..2020-11-12&type=Issues) | [@yuvipanda](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ayuvipanda+updated%3A2019-12-11..2020-11-12&type=Issues)
 
 # [0.4]
 
