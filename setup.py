@@ -12,6 +12,6 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         'jupyterhub>=0.8',
-        'oauthlib>=3.0'
+        'oauthlib>=3.1'
     ]
 )
