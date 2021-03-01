@@ -4,7 +4,8 @@ import time
 
 from oauthlib.oauth1.rfc5849 import signature
 
-import pytest
+from tornado.web import Application
+from tornado.web import RequestHandler
 
 from typing import Dict
 
@@ -26,7 +27,7 @@ def user_model(username: str, **kwargs) -> dict:
     return user
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope='function')
 def make_lti11_basic_launch_request_args() -> Dict[str, str]:
     def _make_lti11_basic_launch_args(
         roles: str = "Instructor",
@@ -78,29 +79,25 @@ def make_lti11_basic_launch_request_args() -> Dict[str, str]:
             "user_id": "185d6c59731a553009ca9b59ca3a885100000",
             "user_image": "https://lms.example.com/avatar-50.png",
         }
-        extra_args = {"my_key": "this_value"}
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        launch_url = "http://jupyterhub/hub/lti/launch"
+        extra_args = {'my_key': 'this_value'}
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        launch_url = 'http://jupyterhub/hub/lti/launch'
 
         args.update(extra_args)
 
         base_string = signature.signature_base_string(
-            "POST",
+            'POST',
             signature.base_string_uri(launch_url),
-            signature.normalize_parameters(
-                signature.collect_parameters(body=args, headers=headers)
-            ),
+            signature.normalize_parameters(signature.collect_parameters(body=args, headers=headers)),
         )
 
-        args["oauth_signature"] = signature.sign_hmac_sha1(
-            base_string, oauth_consumer_secret, None
-        )
+        args['oauth_signature'] = signature.sign_hmac_sha1(base_string, oauth_consumer_secret, None)
         return args
 
     return _make_lti11_basic_launch_args
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope='function')
 def make_lti11_success_authentication_request_args():
     def _make_lti11_success_authentication_request_args(
         roles: str = "Instructor",
@@ -156,12 +153,23 @@ def make_lti11_success_authentication_request_args():
             "tool_consumer_instance_contact_email": [
                 "notifications@mylms.com".encode()
             ],
-            "tool_consumer_instance_guid": [
-                "srnuz6h1U8kOMmETzoqZTJiPWzbPXIYkAUnnAJ4u:test-lms".encode()
-            ],
-            "tool_consumer_instance_name": ["myorg".encode()],
-            "user_id": ["185d6c59731a553009ca9b59ca3a885100000".encode()],
-            "user_image": ["https://lms.example.com/avatar-50.png".encode()],
+            'lis_person_contact_email_primary': ['student1@example.com'.encode()],
+            'lis_person_name_family': ['Bar'.encode()],
+            'lis_person_name_full': ['Foo Bar'.encode()],
+            'lis_person_name_given': ['Foo'.encode()],
+            'lti_message_type': ['basic-lti-launch-request'.encode()],
+            'lis_result_sourcedid': ['feb-123-456-2929::28883'.encode()],
+            'lti_version': ['LTI-1p0'.encode()],
+            'resource_link_id': ['888efe72d4bbbdf90619353bb8ab5965ccbe9b3f'.encode()],
+            'resource_link_title': ['JupyterHub'.encode()],
+            'roles': [role.encode()],
+            'tool_consumer_info_product_family_code': [lms_vendor.encode()],
+            'tool_consumer_info_version': ['cloud'.encode()],
+            'tool_consumer_instance_contact_email': ['notifications@mylms.com'.encode()],
+            'tool_consumer_instance_guid': ['srnuz6h1U8kOMmETzoqZTJiPWzbPXIYkAUnnAJ4u:test-lms'.encode()],
+            'tool_consumer_instance_name': ['myorg'.encode()],
+            'user_id': ['185d6c59731a553009ca9b59ca3a885100000'.encode()],
+            'user_image': ['https://lms.example.com/avatar-50.png'.encode()],
         }
         return args
 

@@ -3,4 +3,9 @@ bump2version
 flake8
 pre-commit
 pytest
+pytest-asyncio
+pytest-cov
 pytest-flakes
+pytest-html
+pytest-metadata
+pytest-mock
