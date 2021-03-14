@@ -1,8 +1,12 @@
-import time
 import pytest
-from tornado import web
-from ltiauthenticator import LTILaunchValidator
+
+import time
+
+from ltiauthenticator.lti11.validator import LTILaunchValidator
+
 from oauthlib.oauth1.rfc5849 import signature
+
+from tornado import web
 
 
 def make_args(
