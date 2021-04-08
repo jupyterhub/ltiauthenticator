@@ -24,12 +24,7 @@ class LTILaunchValidator:
     def __init__(self, consumers):
         self.consumers = consumers
 
-    def validate_launch_request(
-            self,
-            launch_url,
-            headers,
-            args
-    ):
+    def validate_launch_request(self, launch_url, headers, args):
         """
         Validate a given launch request
 
@@ -42,36 +37,37 @@ class LTILaunchValidator:
         """
 
         # Validate args!
-        if 'oauth_consumer_key' not in args:
+        if "oauth_consumer_key" not in args:
             raise web.HTTPError(401, "oauth_consumer_key missing")
-        if args['oauth_consumer_key'] not in self.consumers:
+        if args["oauth_consumer_key"] not in self.consumers:
             raise web.HTTPError(401, "oauth_consumer_key not known")
 
-        if 'oauth_signature' not in args:
+        if "oauth_signature" not in args:
             raise web.HTTPError(401, "oauth_signature missing")
-        if 'oauth_timestamp' not in args:
-            raise web.HTTPError(401, 'oauth_timestamp missing')
+        if "oauth_timestamp" not in args:
+            raise web.HTTPError(401, "oauth_timestamp missing")
 
         # Allow 30s clock skew between LTI Consumer and Provider
         # Also don't accept timestamps from before our process started, since that could be
         # a replay attack - we won't have nonce lists from back then. This would allow users
         # who can control / know when our process restarts to trivially do replay attacks.
-        oauth_timestamp = int(float(args['oauth_timestamp']))
+        oauth_timestamp = int(float(args["oauth_timestamp"]))
         if (
-                int(time.time()) - oauth_timestamp > 30
-                or oauth_timestamp < LTILaunchValidator.PROCESS_START_TIME
+            int(time.time()) - oauth_timestamp > 30
+            or oauth_timestamp < LTILaunchValidator.PROCESS_START_TIME
         ):
             raise web.HTTPError(401, "oauth_timestamp too old")
 
-        if 'oauth_nonce' not in args:
-            raise web.HTTPError(401, 'oauth_nonce missing')
+        if "oauth_nonce" not in args:
+            raise web.HTTPError(401, "oauth_nonce missing")
         if (
-                oauth_timestamp in LTILaunchValidator.nonces
-                and args['oauth_nonce'] in LTILaunchValidator.nonces[oauth_timestamp]
+            oauth_timestamp in LTILaunchValidator.nonces
+            and args["oauth_nonce"] in LTILaunchValidator.nonces[oauth_timestamp]
         ):
             raise web.HTTPError(401, "oauth_nonce + oauth_timestamp already used")
-        LTILaunchValidator.nonces.setdefault(oauth_timestamp, set()).add(args['oauth_nonce'])
-
+        LTILaunchValidator.nonces.setdefault(oauth_timestamp, set()).add(
+            args["oauth_nonce"]
+        )
 
         args_list = []
         for key, values in args.items():
@@ -81,17 +77,17 @@ class LTILaunchValidator:
                 args_list.append((key, values))
 
         base_string = signature.signature_base_string(
-            'POST',
+            "POST",
             signature.base_string_uri(launch_url),
             signature.normalize_parameters(
                 signature.collect_parameters(body=args_list, headers=headers)
-            )
+            ),
         )
 
-        consumer_secret = self.consumers[args['oauth_consumer_key']]
+        consumer_secret = self.consumers[args["oauth_consumer_key"]]
 
         sign = signature.sign_hmac_sha1(base_string, consumer_secret, None)
-        is_valid = signature.safe_string_equals(sign, args['oauth_signature'])
+        is_valid = signature.safe_string_equals(sign, args["oauth_signature"])
 
         if not is_valid:
             raise web.HTTPError(401, "Invalid oauth_signature")
@@ -105,7 +101,7 @@ class LTIAuthenticator(Authenticator):
     """
 
     auto_login = True
-    login_service = 'LTI'
+    login_service = "LTI"
 
     consumers = Dict(
         {},
@@ -115,14 +111,11 @@ class LTIAuthenticator(Authenticator):
 
         Allows multiple consumers to securely send users to this JupyterHub
         instance.
-        """
+        """,
     )
 
     def get_handlers(self, app):
-        return [
-            ('/lti/launch', LTIAuthenticateHandler)
-        ]
-
+        return [("/lti/launch", LTIAuthenticateHandler)]
 
     @gen.coroutine
     def authenticate(self, handler, data=None):
@@ -131,46 +124,48 @@ class LTIAuthenticator(Authenticator):
 
         args = {}
         for k, values in handler.request.body_arguments.items():
-            args[k] = values[0].decode() if len(values) == 1 else [v.decode() for v in values]
+            args[k] = (
+                values[0].decode() if len(values) == 1 else [v.decode() for v in values]
+            )
 
         # handle multiple layers of proxied protocol (comma separated) and take the outermost
-        if 'x-forwarded-proto' in handler.request.headers:
+        if "x-forwarded-proto" in handler.request.headers:
             # x-forwarded-proto might contain comma delimited values
             # left-most value is the one sent by original client
-            hops = [h.strip() for h in handler.request.headers['x-forwarded-proto'].split(',')]
+            hops = [
+                h.strip()
+                for h in handler.request.headers["x-forwarded-proto"].split(",")
+            ]
             protocol = hops[0]
         else:
             protocol = handler.request.protocol
 
         launch_url = protocol + "://" + handler.request.host + handler.request.uri
 
-        if validator.validate_launch_request(
-                launch_url,
-                handler.request.headers,
-                args
-        ):
-            # Before we return lti_user_id, check to see if a canvas_custom_user_id was sent. 
+        if validator.validate_launch_request(launch_url, handler.request.headers, args):
+            # Before we return lti_user_id, check to see if a canvas_custom_user_id was sent.
             # If so, this indicates two things:
             # 1. The request was sent from Canvas, not edX
             # 2. The request was sent from a Canvas course not running in anonymous mode
             # If this is the case we want to use the canvas ID to allow grade returns through the Canvas API
             # If Canvas is running in anonymous mode, we'll still want the 'user_id' (which is the `lti_user_id``)
 
-            canvas_id = handler.get_body_argument('custom_canvas_user_id', default=None)
+            canvas_id = handler.get_body_argument("custom_canvas_user_id", default=None)
 
             if canvas_id is not None:
-                user_id = handler.get_body_argument('custom_canvas_user_id')
+                user_id = handler.get_body_argument("custom_canvas_user_id")
             else:
-                user_id = handler.get_body_argument('user_id')
+                user_id = handler.get_body_argument("user_id")
 
             return {
-                'name': user_id,
-                'auth_state': {k: v for k, v in args.items() if not k.startswith('oauth_')}
+                "name": user_id,
+                "auth_state": {
+                    k: v for k, v in args.items() if not k.startswith("oauth_")
+                },
             }
 
-
     def login_url(self, base_url):
-        return url_path_join(base_url, '/lti/launch')
+        return url_path_join(base_url, "/lti/launch")
 
 
 class LTIAuthenticateHandler(BaseHandler):
@@ -214,7 +209,7 @@ class LTIAuthenticateHandler(BaseHandler):
         _ = yield self.login_user()
         next_url = self.get_next_url()
         body_argument = self.get_body_argument(
-            name='custom_next',
+            name="custom_next",
             default=next_url,
         )
 

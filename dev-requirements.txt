@@ -1,3 +1,6 @@
+black
 bump2version
+flake8
+pre-commit
 pytest
 pytest-flakes

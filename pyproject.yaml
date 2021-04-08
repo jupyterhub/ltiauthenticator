@@ -1,0 +1,24 @@
+[tool.black]
+skip-string-normalization = true
+line-length = 119
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs
+    | \.git
+    | \.ipynb_checkpoints
+    | \.mypy_cache
+    | \.pytest_cache
+    | \.travis
+    | \.vscode
+    | \.venv
+    | _build
+    | ansible
+    | build
+    | dist
+  )
+)
+'''
