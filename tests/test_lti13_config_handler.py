@@ -9,8 +9,10 @@ from ltiauthenticator.lti13.handlers import LTI13ConfigHandler
 
 
 @pytest.mark.asyncio
-@patch('tornado.web.RequestHandler.write')
-async def test_get_method_calls_write_method(mock_write, lti13_config_environ, make_mock_request_handler):
+@patch("tornado.web.RequestHandler.write")
+async def test_get_method_calls_write_method(
+    mock_write, lti13_config_environ, make_mock_request_handler
+):
     """
     Is the write method used in get method?
     """
@@ -22,8 +24,10 @@ async def test_get_method_calls_write_method(mock_write, lti13_config_environ, m
 
 
 @pytest.mark.asyncio
-@patch('tornado.web.RequestHandler.write')
-async def test_get_calls_write_method_with_a_json(mock_write, lti13_config_environ, make_mock_request_handler):
+@patch("tornado.web.RequestHandler.write")
+async def test_get_calls_write_method_with_a_json(
+    mock_write, lti13_config_environ, make_mock_request_handler
+):
     """
     Does the write base method is invoked with a string?
     """
@@ -40,7 +44,7 @@ async def test_get_calls_write_method_with_a_json(mock_write, lti13_config_envir
 
 
 @pytest.mark.asyncio
-@patch('tornado.web.RequestHandler.write')
+@patch("tornado.web.RequestHandler.write")
 async def test_get_method_writes_a_json_with_required_keys(
     mock_write, lti13_config_environ, make_mock_request_handler
 ):
@@ -52,14 +56,14 @@ async def test_get_method_writes_a_json_with_required_keys(
     # this method writes the output to internal buffer
     await config_handler.get()
     keys_at_0_level_expected = [
-        'title',
-        'target_link_uri',
-        'scopes',
-        'public_jwk_url',
-        'public_jwk',
-        'oidc_initiation_url',
-        'extensions',
-        'custom_fields',
+        "title",
+        "target_link_uri",
+        "scopes",
+        "public_jwk_url",
+        "public_jwk",
+        "oidc_initiation_url",
+        "extensions",
+        "custom_fields",
     ]
     # call_args is a list
     # so we're only extracting the json arg
@@ -69,7 +73,7 @@ async def test_get_method_writes_a_json_with_required_keys(
 
 
 @pytest.mark.asyncio
-@patch('tornado.web.RequestHandler.write')
+@patch("tornado.web.RequestHandler.write")
 async def test_get_method_writes_our_company_name_in_the_title_field(
     mock_write, lti13_config_environ, make_mock_request_handler
 ):
@@ -83,12 +87,12 @@ async def test_get_method_writes_our_company_name_in_the_title_field(
     # call_args is a list
     # so we're only extracting the json arg
     json_arg = mock_write.call_args[0][0]
-    title = json.loads(json_arg)['title']
-    assert title == 'LTIAuthenticator'
+    title = json.loads(json_arg)["title"]
+    assert title == "LTIAuthenticator"
 
 
 @pytest.mark.asyncio
-@patch('tornado.web.RequestHandler.write')
+@patch("tornado.web.RequestHandler.write")
 async def test_get_method_writes_email_field_within_custom_fields(
     mock_write, lti13_config_environ, make_mock_request_handler
 ):
@@ -102,13 +106,13 @@ async def test_get_method_writes_email_field_within_custom_fields(
     # call_args is a list
     # so we're only extracting the json arg
     json_arg = mock_write.call_args[0][0]
-    custom_fields = json.loads(json_arg)['custom_fields']
-    assert 'email' in custom_fields
-    assert '$Person.email.primary' == custom_fields['email']
+    custom_fields = json.loads(json_arg)["custom_fields"]
+    assert "email" in custom_fields
+    assert "$Person.email.primary" == custom_fields["email"]
 
 
 @pytest.mark.asyncio
-@patch('tornado.web.RequestHandler.write')
+@patch("tornado.web.RequestHandler.write")
 async def test_get_method_writes_email_custom_field_within_each_course_navigation_placement(
     mock_write, lti13_config_environ, make_mock_request_handler
 ):
@@ -122,26 +126,26 @@ async def test_get_method_writes_email_custom_field_within_each_course_navigatio
     # call_args is a list
     # so we're only extracting the json arg
     json_arg = mock_write.call_args[0][0]
-    extensions = json.loads(json_arg)['extensions']
+    extensions = json.loads(json_arg)["extensions"]
     course_navigation_placement = None
     for ext in extensions:
         # find the settings field in each extension to ensure a course_navigation placement was used
-        if 'settings' in ext and 'placements' in ext['settings']:
+        if "settings" in ext and "placements" in ext["settings"]:
             course_navigation_placement = [
                 placement
-                for placement in ext['settings']['placements']
-                if placement['placement'] == 'course_navigation'
+                for placement in ext["settings"]["placements"]
+                if placement["placement"] == "course_navigation"
             ]
 
             assert course_navigation_placement
-            placement_custom_fields = course_navigation_placement[0]['custom_fields']
+            placement_custom_fields = course_navigation_placement[0]["custom_fields"]
             assert placement_custom_fields
-            assert placement_custom_fields['email']
-            assert placement_custom_fields['email'] == '$Person.email.primary'
+            assert placement_custom_fields["email"]
+            assert placement_custom_fields["email"] == "$Person.email.primary"
 
 
 @pytest.mark.asyncio
-@patch('tornado.web.RequestHandler.write')
+@patch("tornado.web.RequestHandler.write")
 async def test_get_method_writes_lms_user_id_field_within_custom_fields(
     mock_write, lti13_config_environ, make_mock_request_handler
 ):
@@ -155,13 +159,13 @@ async def test_get_method_writes_lms_user_id_field_within_custom_fields(
     # call_args is a list
     # so we're only extracting the json arg
     json_arg = mock_write.call_args[0][0]
-    custom_fields = json.loads(json_arg)['custom_fields']
-    assert 'lms_user_id' in custom_fields
-    assert '$User.id' == custom_fields['lms_user_id']
+    custom_fields = json.loads(json_arg)["custom_fields"]
+    assert "lms_user_id" in custom_fields
+    assert "$User.id" == custom_fields["lms_user_id"]
 
 
 @pytest.mark.asyncio
-@patch('tornado.web.RequestHandler.write')
+@patch("tornado.web.RequestHandler.write")
 async def test_get_method_writes_lms_user_id_custom_field_within_each_course_navigation_placement(
     mock_write, lti13_config_environ, make_mock_request_handler
 ):
@@ -175,19 +179,19 @@ async def test_get_method_writes_lms_user_id_custom_field_within_each_course_nav
     # call_args is a list
     # so we're only extracting the json arg
     json_arg = mock_write.call_args[0][0]
-    extensions = json.loads(json_arg)['extensions']
+    extensions = json.loads(json_arg)["extensions"]
     course_navigation_placement = None
     for ext in extensions:
         # find the settings field in each extension to ensure a course_navigation placement was used
-        if 'settings' in ext and 'placements' in ext['settings']:
+        if "settings" in ext and "placements" in ext["settings"]:
             course_navigation_placement = [
                 placement
-                for placement in ext['settings']['placements']
-                if placement['placement'] == 'course_navigation'
+                for placement in ext["settings"]["placements"]
+                if placement["placement"] == "course_navigation"
             ]
 
             assert course_navigation_placement
-            placement_custom_fields = course_navigation_placement[0]['custom_fields']
+            placement_custom_fields = course_navigation_placement[0]["custom_fields"]
             assert placement_custom_fields
-            assert placement_custom_fields['lms_user_id']
-            assert placement_custom_fields['lms_user_id'] == '$User.id'
+            assert placement_custom_fields["lms_user_id"]
+            assert placement_custom_fields["lms_user_id"] == "$User.id"
