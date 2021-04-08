@@ -43,6 +43,7 @@ class LTIAuthenticator(Authenticator):
             )
 
         # handle multiple layers of proxied protocol (comma separated) and take the outermost
+        # value (first from the list)
         if "x-forwarded-proto" in handler.request.headers:
             # x-forwarded-proto might contain comma delimited values
             # left-most value is the one sent by original client
