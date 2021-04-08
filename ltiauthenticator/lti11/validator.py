@@ -6,7 +6,7 @@ from oauthlib.oauth1.rfc5849 import signature
 from collections import OrderedDict
 
 
-class LTILaunchValidator:
+class LTI11LaunchValidator:
     # Record time when process starts, so we can reject requests made
     # before this
     PROCESS_START_TIME = int(time.time())
@@ -48,18 +48,18 @@ class LTILaunchValidator:
         oauth_timestamp = int(float(args["oauth_timestamp"]))
         if (
             int(time.time()) - oauth_timestamp > 30
-            or oauth_timestamp < LTILaunchValidator.PROCESS_START_TIME
+            or oauth_timestamp < LTI11LaunchValidator.PROCESS_START_TIME
         ):
             raise web.HTTPError(401, "oauth_timestamp too old")
 
         if "oauth_nonce" not in args:
             raise web.HTTPError(401, "oauth_nonce missing")
         if (
-            oauth_timestamp in LTILaunchValidator.nonces
-            and args["oauth_nonce"] in LTILaunchValidator.nonces[oauth_timestamp]
+            oauth_timestamp in LTI11LaunchValidator.nonces
+            and args["oauth_nonce"] in LTI11LaunchValidator.nonces[oauth_timestamp]
         ):
             raise web.HTTPError(401, "oauth_nonce + oauth_timestamp already used")
-        LTILaunchValidator.nonces.setdefault(oauth_timestamp, set()).add(
+        LTI11LaunchValidator.nonces.setdefault(oauth_timestamp, set()).add(
             args["oauth_nonce"]
         )
 

@@ -5,11 +5,11 @@ from traitlets import Dict
 from jupyterhub.auth import Authenticator
 from jupyterhub.utils import url_path_join
 
-from ltiauthenticator.lti11.handlers import LTIAuthenticateHandler
-from ltiauthenticator.lti11.validator import LTILaunchValidator
+from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
+from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 
 
-class LTIAuthenticator(Authenticator):
+class LTI11Authenticator(Authenticator):
     """
     JupyterHub Authenticator for use with LTI based services (EdX, Canvas, etc)
     """
@@ -29,12 +29,12 @@ class LTIAuthenticator(Authenticator):
     )
 
     def get_handlers(self, app):
-        return [("/lti/launch", LTIAuthenticateHandler)]
+        return [("/lti/launch", LTI11AuthenticateHandler)]
 
     @gen.coroutine
     def authenticate(self, handler, data) -> dict:
         # FIXME: Run a process that cleans up old nonces every other minute
-        validator = LTILaunchValidator(self.consumers)
+        validator = LTI11LaunchValidator(self.consumers)
 
         args = {}
         for k, values in handler.request.body_arguments.items():

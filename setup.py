@@ -5,7 +5,6 @@ from setuptools import setup, find_packages
 
 
 # setup logic from github.com/jupyterhub/jupyterhub
-# TODO: consolidate release mechanism with the root package.json
 v = sys.version_info
 if v[:2] < (3, 6):
     error = "ERROR: LTIAuthenticator requires Python version 3.6 or above."

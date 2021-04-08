@@ -11,7 +11,7 @@ LTIAuthenticator requires Python >= 3.6.
 1. Clone the repo:
 
    ```bash
-   git clone https://github.com/jupyterhub/jupyterhub
+   git clone https://github.com/jupyterhub/ltiauthenticator
    ```
 
 2. Do a development install with `pip`:

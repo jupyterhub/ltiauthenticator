@@ -3,7 +3,7 @@ from tornado import gen
 from jupyterhub.handlers import BaseHandler
 
 
-class LTIAuthenticateHandler(BaseHandler):
+class LTI11AuthenticateHandler(BaseHandler):
     """
     Handler for /lti/launch
 

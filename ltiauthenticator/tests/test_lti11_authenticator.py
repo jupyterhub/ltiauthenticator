@@ -2,7 +2,7 @@ import pytest
 
 import time
 
-from ltiauthenticator.lti11.validator import LTILaunchValidator
+from ..lti11.validator import LTI11LaunchValidator
 
 from oauthlib.oauth1.rfc5849 import signature
 
@@ -53,7 +53,7 @@ def test_launch():
         extra_args,
     )
 
-    validator = LTILaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
@@ -76,7 +76,7 @@ def test_wrong_key():
         extra_args,
     )
 
-    validator = LTILaunchValidator({"wrongkey": consumer_secret})
+    validator = LTI11LaunchValidator({"wrongkey": consumer_secret})
 
     with pytest.raises(web.HTTPError):
         assert validator.validate_launch_request(launch_url, headers, args)
@@ -100,7 +100,7 @@ def test_wrong_secret():
         extra_args,
     )
 
-    validator = LTILaunchValidator({consumer_key: "wrongsecret"})
+    validator = LTI11LaunchValidator({consumer_key: "wrongsecret"})
 
     with pytest.raises(web.HTTPError):
         validator.validate_launch_request(launch_url, headers, args)
@@ -124,7 +124,7 @@ def test_full_replay():
         extra_args,
     )
 
-    validator = LTILaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
@@ -150,7 +150,7 @@ def test_partial_replay_timestamp():
         extra_args,
     )
 
-    validator = LTILaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
@@ -177,7 +177,7 @@ def test_partial_replay_nonce():
         extra_args,
     )
 
-    validator = LTILaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
@@ -204,7 +204,7 @@ def test_dubious_extra_args():
         extra_args,
     )
 
-    validator = LTILaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
