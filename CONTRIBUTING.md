@@ -75,8 +75,6 @@ This project includes `pre-commit` hooks configured to run `black`, `flake8`, an
 
 ### For Contributors
 
-This project uses Semantic Versioning with Conventional Commits to track major, minor, and patch releases. The `npm run release` command automates [CHANGLOG.md](./CHANGELOG.md) updates and release version metadata.
-
 Once a new version is released, assets should be published with the new tag, such as docker images, pip/npm packages, and GitHub repo release tags.
 
 For the most part, contributors do not need to worry about commit message formats, since all commits from a Pull Request are squashed and merged before merging to `main`. Commit messages are updated to the standard format during this step.
