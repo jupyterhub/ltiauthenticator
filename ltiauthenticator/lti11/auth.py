@@ -1,5 +1,4 @@
 from tornado import gen
-from tornado.web import RequestHandler
 
 from traitlets import Dict
 
@@ -33,9 +32,7 @@ class LTIAuthenticator(Authenticator):
         return [("/lti/launch", LTIAuthenticateHandler)]
 
     @gen.coroutine
-    def authenticate(
-        self, handler: RequestHandler, data: RequestHandler.request.files = None
-    ) -> dict:
+    def authenticate(self, handler, data) -> dict:
         # FIXME: Run a process that cleans up old nonces every other minute
         validator = LTILaunchValidator(self.consumers)
 
