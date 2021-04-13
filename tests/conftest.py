@@ -385,3 +385,40 @@ def make_lti11_success_authentication_request_args():
         return args
 
     return _make_lti11_success_authentication_request_args
+
+
+@pytest.fixture(scope="function")
+def make_mock_request_handler() -> RequestHandler:
+    """
+    Sourced from https://github.com/jupyterhub/oauthenticator/blob/master/oauthenticator/tests/mocks.py
+    """
+
+    def _make_mock_request_handler(
+        handler: RequestHandler,
+        uri: str = "https://hub.example.com",
+        method: str = "GET",
+        **settings: dict,
+    ) -> RequestHandler:
+        """Instantiate a Handler in a mock application"""
+        application = Application(
+            hub=Mock(
+                base_url="/hub/",
+                server=Mock(base_url="/hub/"),
+            ),
+            cookie_secret=os.urandom(32),
+            db=Mock(rollback=Mock(return_value=None)),
+            **settings,
+        )
+        request = HTTPServerRequest(
+            method=method,
+            uri=uri,
+            connection=Mock(),
+        )
+        handler = RequestHandler(
+            application=application,
+            request=request,
+        )
+        handler._transforms = []
+        return handler
+
+    return _make_mock_request_handler

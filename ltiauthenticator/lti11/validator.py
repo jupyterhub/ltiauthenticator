@@ -1,15 +1,35 @@
+from collections import OrderedDict
 import time
 
-from tornado import web
-
 from oauthlib.oauth1.rfc5849 import signature
-from collections import OrderedDict
+
+from tornado.web import HTTPError
+
+from traitlets.config import LoggingConfigurable
+
+from typing import Any
+from typing import Dict
+
+from .constants import LTI11_OAUTH_ARGS
+from .constants import LTI11_LAUNCH_PARAMS_REQUIRED
 
 
-class LTI11LaunchValidator:
-    # Record time when process starts, so we can reject requests made
-    # before this
-    PROCESS_START_TIME = int(time.time())
+class LTI11LaunchValidator(LoggingConfigurable):
+    """
+    This class closely mimics the jupyterhub/ltiauthenticator LTILaunchValidator
+    base class. Inherits from the LoggingConfigurable traitlet to support logging.
+
+    Allows JupyterHub to verify LTI 1.1 compatible requests as a tool
+    provider (TP).
+
+    For an instance of this class to work, you need to set the consumer key and
+    shared secret key(s)/value(s) in `LTI11Authenticator` settings, which inherits
+    from the ``ltiauthenticator.LTIAuthenticator`` class. The key/value pairs are
+    set as are defined as a dict using the ``consumers`` attribute.
+
+    Attributes:
+      consumers: consumer key and shared secret key/value pair(s)
+    """
 
     # Keep a class-wide, global list of nonces so we can detect & reject
     # replay attacks. This possibly makes this non-threadsafe, however.
@@ -18,57 +38,81 @@ class LTI11LaunchValidator:
     def __init__(self, consumers):
         self.consumers = consumers
 
-    def validate_launch_request(self, launch_url, headers, args):
+    def validate_launch_request(
+        self,
+        launch_url: str,
+        headers: Dict[str, Any],
+        args: Dict[str, Any],
+    ) -> bool:
         """
-        Validate a given launch request
+        Validate a given LTI 1.1 launch request. The arguments' k/v's are either
+        required, recommended, or optional. The required/recommended/optional
+        keys are defined as constants.
 
-        launch_url: Full URL that the launch request was POSTed to
-        headers: k/v pair of HTTP headers coming in with the POST
-        args: dictionary of body arguments passed to the launch_url
-            Must have the following keys to be valid:
-                oauth_consumer_key, oauth_timestamp, oauth_nonce,
-                oauth_signature
+        Args:
+          launch_url: URL (base_url + path) that receives the launch request,
+            usually from a tool consumer.
+          headers: HTTP headers included with the POST request
+          args: the body sent to the launch url.
+
+        Returns:
+          True if the validation passes, False otherwise.
+
+        Raises:
+          HTTPError if a required argument is not inclued in the POST request.
         """
+        # Ensure that required oauth_* body arguments are included in the request
+        for param in LTI11_OAUTH_ARGS:
+            if param not in args.keys():
+                raise HTTPError(
+                    400, "Required oauth arg %s not included in request" % param
+                )
+            if not args.get(param):
+                raise HTTPError(
+                    400, "Required oauth arg %s does not have a value" % param
+                )
 
-        # Validate args!
-        if "oauth_consumer_key" not in args:
-            raise web.HTTPError(401, "oauth_consumer_key missing")
+        # Ensure that consumer key is registered in in jupyterhub_config.py
+        # LTI11Authenticator.consumers defined in parent class
         if args["oauth_consumer_key"] not in self.consumers:
-            raise web.HTTPError(401, "oauth_consumer_key not known")
+            raise HTTPError(401, "unknown oauth_consumer_key")
 
-        if "oauth_signature" not in args:
-            raise web.HTTPError(401, "oauth_signature missing")
-        if "oauth_timestamp" not in args:
-            raise web.HTTPError(401, "oauth_timestamp missing")
+        # Ensure that required LTI 1.1 body arguments are included in the request
+        for param in LTI11_LAUNCH_PARAMS_REQUIRED:
+            if param not in args.keys():
+                raise HTTPError(
+                    400, "Required LTI 1.1 arg arg %s not included in request" % param
+                )
+            if not args.get(param):
+                raise HTTPError(
+                    400, "Required LTI 1.1 arg %s does not have a value" % param
+                )
 
-        # Allow 30s clock skew between LTI Consumer and Provider
-        # Also don't accept timestamps from before our process started, since that could be
-        # a replay attack - we won't have nonce lists from back then. This would allow users
-        # who can control / know when our process restarts to trivially do replay attacks.
-        oauth_timestamp = int(float(args["oauth_timestamp"]))
-        if (
-            int(time.time()) - oauth_timestamp > 30
-            or oauth_timestamp < LTI11LaunchValidator.PROCESS_START_TIME
-        ):
-            raise web.HTTPError(401, "oauth_timestamp too old")
+        # Inspiration to validate nonces/timestamps from OAuthlib
+        # https://github.com/oauthlib/oauthlib/blob/master/oauthlib/oauth1/rfc5849/endpoints/base.py#L147
+        if len(str(int(args["oauth_timestamp"]))) != 10:
+            raise HTTPError(401, "Invalid timestamp format.")
+        try:
+            ts = int(args["oauth_timestamp"])
+        except ValueError:
+            raise HTTPError(401, "Timestamp must be an integer.")
+        else:
+            # Reject timestamps that are older than 30 seconds
+            if abs(time.time() - ts) > 30:
+                raise HTTPError(
+                    401,
+                    "Timestamp given is invalid, differ from "
+                    "allowed by over %s seconds." % str(int(time.time() - ts)),
+                )
+            if (
+                ts in LTI11LaunchValidator.nonces
+                and args["oauth_nonce"] in LTI11LaunchValidator.nonces[ts]
+            ):
+                raise HTTPError(401, "oauth_nonce + oauth_timestamp already used")
+            LTI11LaunchValidator.nonces.setdefault(ts, set()).add(args["oauth_nonce"])
 
-        if "oauth_nonce" not in args:
-            raise web.HTTPError(401, "oauth_nonce missing")
-        if (
-            oauth_timestamp in LTI11LaunchValidator.nonces
-            and args["oauth_nonce"] in LTI11LaunchValidator.nonces[oauth_timestamp]
-        ):
-            raise web.HTTPError(401, "oauth_nonce + oauth_timestamp already used")
-        LTI11LaunchValidator.nonces.setdefault(oauth_timestamp, set()).add(
-            args["oauth_nonce"]
-        )
-
-        args_list = []
-        for key, values in args.items():
-            if type(values) is list:
-                args_list += [(key, value) for value in values]
-            else:
-                args_list.append((key, values))
+        # convert arguments dict back to a list of tuples for signature
+        args_list = [(k, v) for k, v in args.items()]
 
         base_string = signature.signature_base_string(
             "POST",
@@ -77,13 +121,12 @@ class LTI11LaunchValidator:
                 signature.collect_parameters(body=args_list, headers=headers)
             ),
         )
-
         consumer_secret = self.consumers[args["oauth_consumer_key"]]
-
         sign = signature.sign_hmac_sha1(base_string, consumer_secret, None)
         is_valid = signature.safe_string_equals(sign, args["oauth_signature"])
-
+        self.log.debug("signature in request: %s" % args["oauth_signature"])
+        self.log.debug("calculated signature: %s" % sign)
         if not is_valid:
-            raise web.HTTPError(401, "Invalid oauth_signature")
+            raise HTTPError(401, "Invalid oauth_signature")
 
         return True
