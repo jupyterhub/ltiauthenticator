@@ -1,7 +1,7 @@
 import pytest
 from tornado.web import HTTPError
 
-from ..lti11.validator import LTI11LaunchValidator
+from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 
 
 def test_basic_lti11_launch_request(make_lti11_basic_launch_request_args):

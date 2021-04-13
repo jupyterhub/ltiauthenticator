@@ -2,11 +2,11 @@ import pytest
 
 import time
 
-from ..lti11.validator import LTI11LaunchValidator
-
 from oauthlib.oauth1.rfc5849 import signature
 
 from tornado import web
+
+from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 
 
 def make_args(
