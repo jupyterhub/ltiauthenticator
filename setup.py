@@ -30,7 +30,7 @@ setup(
     license="3 Clause BSD",
     packages=find_packages(exclude="./tests"),
     python_requires=">=3.6",
-    install_requires=["jupyterhub>=0.8", "oauthlib>=3.1"],
+    install_requires=["jupyterhub>=0.8", "oauthlib>=3.1", "escapism>=1.0"],
     package_data={
         "": ["*.html"],
     },  # noqa: E231
