@@ -1,130 +1,77 @@
 import pytest
 
-import time
-
-from oauthlib.oauth1.rfc5849 import signature
-
 from tornado import web
 
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 
 
-def make_args(
-    consumer_key, consumer_secret, launch_url, oauth_timestamp, oauth_nonce, extra_args
-):
-    args = {
-        "oauth_consumer_key": consumer_key,
-        "oauth_timestamp": str(oauth_timestamp),
-        "oauth_nonce": oauth_nonce,
-    }
+def test_launch(make_lti11_basic_launch_request_args):
+    """Test a basic launch request"""
+    oauth_consumer_key = "my_consumer_key"
+    oauth_consumer_secret = "my_shared_secret"
+    launch_url = "http://jupyterhub/hub/lti/launch"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args.update(extra_args)
-
-    base_string = signature.signature_base_string(
-        "POST",
-        signature.base_string_uri(launch_url),
-        signature.normalize_parameters(
-            signature.collect_parameters(body=args, headers={})
-        ),
+    args = make_lti11_basic_launch_request_args(
+        oauth_consumer_key,
+        oauth_consumer_secret,
     )
 
-    args["oauth_signature"] = signature.sign_hmac_sha1(
-        base_string, consumer_secret, None
-    )
-
-    return args
-
-
-def test_launch():
-    consumer_key = "key1"
-    consumer_secret = "secret1"
-    launch_url = "http://localhost:8000/hub/lti/launch"
-    headers = {}
-    oauth_timestamp = time.time()
-    oauth_nonce = str(time.time())
-    extra_args = {"arg1": "value1"}
-
-    args = make_args(
-        consumer_key,
-        consumer_secret,
-        launch_url,
-        oauth_timestamp,
-        oauth_nonce,
-        extra_args,
-    )
-
-    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_wrong_key():
-    consumer_key = "key1"
-    consumer_secret = "secret1"
-    launch_url = "http://localhost:8000/hub/lti/launch"
-    headers = {}
-    oauth_timestamp = time.time()
-    oauth_nonce = str(time.time())
-    extra_args = {"arg1": "value1"}
+def test_wrong_key(make_lti11_basic_launch_request_args):
+    """Test that the request is rejected when receiving the wrong consumer key."""
+    oauth_consumer_key = "my_consumer_key"
+    oauth_consumer_secret = "my_shared_secret"
+    launch_url = "http://jupyterhub/hub/lti/launch"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_args(
-        consumer_key,
-        consumer_secret,
-        launch_url,
-        oauth_timestamp,
-        oauth_nonce,
-        extra_args,
+    args = make_lti11_basic_launch_request_args(
+        oauth_consumer_key,
+        oauth_consumer_secret,
     )
 
-    validator = LTI11LaunchValidator({"wrongkey": consumer_secret})
+    validator = LTI11LaunchValidator({"wrongkey": oauth_consumer_secret})
 
     with pytest.raises(web.HTTPError):
         assert validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_wrong_secret():
-    consumer_key = "key1"
-    consumer_secret = "secret1"
-    launch_url = "http://localhost:8000/hub/lti/launch"
-    headers = {}
-    oauth_timestamp = time.time()
-    oauth_nonce = str(time.time())
-    extra_args = {"arg1": "value1"}
+def test_wrong_secret(make_lti11_basic_launch_request_args):
+    """Test that a request is rejected when the signature is created with the wrong secret."""
+    oauth_consumer_key = "my_consumer_key"
+    oauth_consumer_secret = "my_shared_secret"
+    launch_url = "http://jupyterhub/hub/lti/launch"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_args(
-        consumer_key,
-        consumer_secret,
-        launch_url,
-        oauth_timestamp,
-        oauth_nonce,
-        extra_args,
+    args = make_lti11_basic_launch_request_args(
+        oauth_consumer_key,
+        oauth_consumer_secret,
     )
 
-    validator = LTI11LaunchValidator({consumer_key: "wrongsecret"})
+    validator = LTI11LaunchValidator({oauth_consumer_key: "wrongsecret"})
 
     with pytest.raises(web.HTTPError):
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_full_replay():
-    consumer_key = "key1"
-    consumer_secret = "secret1"
-    launch_url = "http://localhost:8000/hub/lti/launch"
-    headers = {}
-    oauth_timestamp = time.time()
-    oauth_nonce = str(time.time())
-    extra_args = {"arg1": "value1"}
+def test_full_replay(make_lti11_basic_launch_request_args):
+    """Ensure that an oauth timestamp/nonce replay raises an HTTPError"""
 
-    args = make_args(
-        consumer_key,
-        consumer_secret,
-        launch_url,
-        oauth_timestamp,
-        oauth_nonce,
-        extra_args,
+    oauth_consumer_key = "my_consumer_key"
+    oauth_consumer_secret = "my_shared_secret"
+    launch_url = "http://jupyterhub/hub/lti/launch"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    args = make_lti11_basic_launch_request_args(
+        oauth_consumer_key,
+        oauth_consumer_secret,
     )
 
-    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
@@ -132,25 +79,20 @@ def test_full_replay():
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_partial_replay_timestamp():
-    consumer_key = "key1"
-    consumer_secret = "secret1"
-    launch_url = "http://localhost:8000/hub/lti/launch"
-    headers = {}
-    oauth_timestamp = time.time()
-    oauth_nonce = str(time.time())
-    extra_args = {"arg1": "value1"}
+def test_partial_replay_timestamp(make_lti11_basic_launch_request_args):
+    """Test that a partial timestamp replay raises an HTTPError."""
 
-    args = make_args(
-        consumer_key,
-        consumer_secret,
-        launch_url,
-        oauth_timestamp,
-        oauth_nonce,
-        extra_args,
+    oauth_consumer_key = "my_consumer_key"
+    oauth_consumer_secret = "my_shared_secret"
+    launch_url = "http://jupyterhub/hub/lti/launch"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    args = make_lti11_basic_launch_request_args(
+        oauth_consumer_key,
+        oauth_consumer_secret,
     )
 
-    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
@@ -159,25 +101,19 @@ def test_partial_replay_timestamp():
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_partial_replay_nonce():
-    consumer_key = "key1"
-    consumer_secret = "secret1"
-    launch_url = "http://localhost:8000/hub/lti/launch"
-    headers = {}
-    oauth_timestamp = time.time()
-    oauth_nonce = str(time.time())
-    extra_args = {"arg1": "value1"}
+def test_partial_replay_nonce(make_lti11_basic_launch_request_args):
+    """Test that a partial nonce replay raises an HTTPError"""
+    oauth_consumer_key = "my_consumer_key"
+    oauth_consumer_secret = "my_shared_secret"
+    launch_url = "http://jupyterhub/hub/lti/launch"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_args(
-        consumer_key,
-        consumer_secret,
-        launch_url,
-        oauth_timestamp,
-        oauth_nonce,
-        extra_args,
+    args = make_lti11_basic_launch_request_args(
+        oauth_consumer_key,
+        oauth_consumer_secret,
     )
 
-    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
@@ -186,25 +122,19 @@ def test_partial_replay_nonce():
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_dubious_extra_args():
-    consumer_key = "key1"
-    consumer_secret = "secret1"
-    launch_url = "http://localhost:8000/hub/lti/launch"
-    headers = {}
-    oauth_timestamp = time.time()
-    oauth_nonce = str(time.time())
-    extra_args = {"arg1": "value1"}
+def test_dubious_extra_args(make_lti11_basic_launch_request_args):
+    """Ensure that dubious extra args are rejected"""
+    oauth_consumer_key = "my_consumer_key"
+    oauth_consumer_secret = "my_shared_secret"
+    launch_url = "http://jupyterhub/hub/lti/launch"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_args(
-        consumer_key,
-        consumer_secret,
-        launch_url,
-        oauth_timestamp,
-        oauth_nonce,
-        extra_args,
+    args = make_lti11_basic_launch_request_args(
+        oauth_consumer_key,
+        oauth_consumer_secret,
     )
 
-    validator = LTI11LaunchValidator({consumer_key: consumer_secret})
+    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
 
     assert validator.validate_launch_request(launch_url, headers, args)
 
