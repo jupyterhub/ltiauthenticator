@@ -43,7 +43,20 @@ pip install jupyterhub-ltiauthenticator
 
     _Note_: Anyone with these two strings will be able to access your hub, so keep them secure!!
 
-4.  Pick a name for edX to call your JupyterHub server. Then, along with the two random strings you generated in step 3, paste them together to create an _LTI Passport String_ in the following format:
+4. By default, the user's name will be the `custom_canvas_user_id` passed in by canvas. If you
+   would like to use some other bit of information from the LTI request, you can pick what should
+   be used as the user id.
+
+   ```python
+   # Set the user's email as their user id
+   c.LTIAuthenticator.user_id_key = 'lis_person_contact_email_primary'
+   ```
+
+   A [partial list of keys in an LTI request](https://www.edu-apps.org/code.html#params)
+   is available to help. Your LMS provider might also implement custom keys
+   you can use.
+
+5.  Pick a name for edX to call your JupyterHub server. Then, along with the two random strings you generated in step 4, paste them together to create an _LTI Passport String_ in the following format:
 
     ```
     your-hub-name:client-key:client-secret

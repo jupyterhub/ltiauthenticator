@@ -4,6 +4,7 @@ from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 
 from traitlets.config import Dict
+from traitlets.config import Unicode
 
 from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
@@ -32,6 +33,24 @@ class LTI11Authenticator(Authenticator):
         A dict of consumer keys mapped to consumer secrets for those keys.
         Allows multiple consumers to securely send users to this JupyterHub
         instance.
+        """,
+    )
+
+    username_key = Unicode(
+        None,
+        allow_none=True,
+        config=True,
+        help="""
+        Key present in LTI 1.1 launch request used to set the user's JupyterHub's username.
+        Common standard (vendor agnostic) options are:
+          - User's email address: lis_person_contact_email_primary
+          - Opaque user id: user_id
+        Your LMS (Canvas / Open EdX / Moodle / others) may provide additional
+        keys in the LTI 1.1 launch request that you can use to set the username. In most cases these
+        are prefixed with `custom_`.
+        When the default of 'None' is set, the following backwards compatible behavior is provided:
+          If `canvas_custom_user_id` is present, that is used. Otherwise,
+          the anonymized `user_id` is used.
         """,
     )
 
@@ -78,16 +97,16 @@ class LTI11Authenticator(Authenticator):
         self.log.debug("Launch url is: %s" % launch_url)
 
         if validator.validate_launch_request(launch_url, handler.request.headers, args):
-            # get the lms vendor to implement optional logic for said vendor
-            canvas_id = handler.get_body_argument("custom_canvas_user_id", default=None)
-
-            if canvas_id is not None:
-                user_id = handler.get_body_argument("custom_canvas_user_id")
+            username = ""
+            if self.username_key in args and args[self.username_key]:
+                username = args[self.username_key]
+            elif "custom_canvas_user_id" in args and args["custom_canvas_user_id"]:
+                username = args["custom_canvas_user_id"]
             else:
-                user_id = handler.get_body_argument("user_id")
+                username = args["user_id"]
 
             return {
-                "name": user_id,
+                "name": username,
                 "auth_state": {
                     k: v for k, v in args.items() if not k.startswith("oauth_")
                 },
