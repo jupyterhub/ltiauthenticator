@@ -9,7 +9,7 @@ import pytest
 from typing import Dict
 
 from tornado.web import Application
-from tornadoweb.web import RequestHandler
+from tornado.web import RequestHandler
 from tornado.httputil import HTTPServerRequest
 
 from unittest.mock import Mock
