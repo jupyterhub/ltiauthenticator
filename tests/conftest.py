@@ -90,16 +90,6 @@ def make_lti11_basic_launch_request_args() -> Dict[str, str]:
 
 
 @pytest.fixture(scope="function")
-def make_lti11_encoded_args(make_lti11_basic_launch_request_args):
-    """Create LTI 1.1 launch request with encoded args."""
-    local_args = make_lti11_basic_launch_request_args()
-    args = {}
-    for k, values in local_args.items():
-        args[k] = values[0].decode()
-    return args
-
-
-@pytest.fixture(scope="function")
 def make_lti11_success_authentication_request_args():
     def _make_lti11_success_authentication_request_args(
         roles: str = "Instructor",
