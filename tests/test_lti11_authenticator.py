@@ -46,11 +46,11 @@ async def test_authenticator_uses_lti11validator(
 
 
 @pytest.mark.asyncio
-async def test_authenticator_returns_auth_state_with_other_lms_vendor(
+async def test_authenticator_returns_auth_dict_when_custom_canvas_user_id_is_empty(
     make_lti11_success_authentication_request_args,
 ):
     """
-    Do we get a valid username with lms vendors other than canvas?
+    Do we get a valid username when the custom_canvas_user_id is empty?
     """
     local_args = make_lti11_success_authentication_request_args()
     local_args["custom_canvas_user_id"] = ["".encode()]
@@ -84,7 +84,6 @@ async def test_authenticator_returns_correct_username_when_using_lis_person_cont
     local_args = make_lti11_success_authentication_request_args()
     local_authenticator = LTI11Authenticator()
     local_authenticator.username_key = "lis_person_contact_email_primary"
-
     with patch.object(
         LTI11LaunchValidator, "validate_launch_request", return_value=True
     ):
@@ -105,161 +104,28 @@ async def test_authenticator_returns_correct_username_when_using_lis_person_cont
         assert result["name"] == expected["name"]
 
 
-def test_launch(make_lti11_basic_launch_request_args):
-    """Test a basic launch request"""
-    oauth_consumer_key = "my_consumer_key"
-    oauth_consumer_secret = "my_shared_secret"
-    launch_url = "http://jupyterhub/hub/lti/launch"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key,
-        oauth_consumer_secret,
-    )
-
-    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
-
-    assert validator.validate_launch_request(launch_url, headers, args)
-
-
-def test_wrong_oauth_consumer_key(make_lti11_basic_launch_request_args):
-    """Test that the request is rejected when receiving the wrong consumer key."""
-    oauth_consumer_key = "my_consumer_key"
-    oauth_consumer_secret = "my_shared_secret"
-    launch_url = "http://jupyterhub/hub/lti/launch"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key,
-        oauth_consumer_secret,
-    )
-
-    validator = LTI11LaunchValidator({"wrongkey": oauth_consumer_secret})
-
-    with pytest.raises(HTTPError):
-        assert validator.validate_launch_request(launch_url, headers, args)
-
-
-def test_wrong_oauth_consumer_secret(make_lti11_basic_launch_request_args):
-    """Test that a request is rejected when the signature is created with the wrong secret."""
-    oauth_consumer_key = "my_consumer_key"
-    oauth_consumer_secret = "my_shared_secret"
-    launch_url = "http://jupyterhub/hub/lti/launch"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key,
-        oauth_consumer_secret,
-    )
-
-    validator = LTI11LaunchValidator({oauth_consumer_key: "wrongsecret"})
-
-    with pytest.raises(HTTPError):
-        validator.validate_launch_request(launch_url, headers, args)
-
-
 @pytest.mark.asyncio
-async def test_authenticator_returns_auth_state_with_other_lms_vendor_test(
-    make_lti11_basic_launch_request_args, make_mock_request_handler
+async def test_empty_username_raises_http_error(
+    make_lti11_success_authentication_request_args,
 ):
-    """
-    Do we get a valid username with lms vendors other than canvas?
-    """
-    oauth_consumer_key = "my_consumer_key"
-    oauth_consumer_secret = "my_shared_secret"
-    launch_url = "http://jupyterhub/hub/lti/launch"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    """Does an empty username value raise the correct 400 HTTPError?"""
+    local_args = make_lti11_success_authentication_request_args()
+    local_authenticator = LTI11Authenticator()
+    local_args["custom_canvas_user_id"] = ["".encode()]
+    local_args["user_id"] = ["".encode()]
 
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key,
-        oauth_consumer_secret,
-    )
-
-    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
-
-    assert validator.validate_launch_request(launch_url, headers, args)
-
-
-def test_full_replay(make_lti11_basic_launch_request_args):
-    """Ensure that an oauth timestamp/nonce replay raises an HTTPError"""
-
-    oauth_consumer_key = "my_consumer_key"
-    oauth_consumer_secret = "my_shared_secret"
-    launch_url = "http://jupyterhub/hub/lti/launch"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key,
-        oauth_consumer_secret,
-    )
-
-    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
-
-    assert validator.validate_launch_request(launch_url, headers, args)
-
-    with pytest.raises(HTTPError):
-        validator.validate_launch_request(launch_url, headers, args)
-
-
-def test_partial_replay_timestamp(make_lti11_basic_launch_request_args):
-    """Test that a partial timestamp replay raises an HTTPError."""
-
-    oauth_consumer_key = "my_consumer_key"
-    oauth_consumer_secret = "my_shared_secret"
-    launch_url = "http://jupyterhub/hub/lti/launch"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key,
-        oauth_consumer_secret,
-    )
-
-    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
-
-    assert validator.validate_launch_request(launch_url, headers, args)
-
-    args["oauth_timestamp"] = str(int(float(args["oauth_timestamp"])) - 1)
-    with pytest.raises(HTTPError):
-        validator.validate_launch_request(launch_url, headers, args)
-
-
-def test_partial_replay_nonce(make_lti11_basic_launch_request_args):
-    """Test that a partial nonce replay raises an HTTPError"""
-    oauth_consumer_key = "my_consumer_key"
-    oauth_consumer_secret = "my_shared_secret"
-    launch_url = "http://jupyterhub/hub/lti/launch"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key,
-        oauth_consumer_secret,
-    )
-
-    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
-
-    assert validator.validate_launch_request(launch_url, headers, args)
-
-    args["oauth_nonce"] = args["oauth_nonce"] + "1"
-    with pytest.raises(HTTPError):
-        validator.validate_launch_request(launch_url, headers, args)
-
-
-def test_dubious_extra_args(make_lti11_basic_launch_request_args):
-    """Ensure that dubious extra args are rejected"""
-    oauth_consumer_key = "my_consumer_key"
-    oauth_consumer_secret = "my_shared_secret"
-    launch_url = "http://jupyterhub/hub/lti/launch"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key,
-        oauth_consumer_secret,
-    )
-
-    validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
-
-    assert validator.validate_launch_request(launch_url, headers, args)
-
-    args["extra_credential"] = "i have admin powers"
-    with pytest.raises(HTTPError):
-        validator.validate_launch_request(launch_url, headers, args)
+    with patch.object(
+        LTI11LaunchValidator, "validate_launch_request", return_value=True
+    ):
+        authenticator = local_authenticator
+        handler = Mock(
+            spec=RequestHandler,
+            get_secure_cookie=Mock(return_value=json.dumps(["key", "secret"])),
+            request=Mock(
+                arguments=local_args,
+                headers={},
+                items=[],
+            ),
+        )
+        with pytest.raises(HTTPError):
+            _ = await authenticator.authenticate(handler, None)

@@ -7,12 +7,12 @@ from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
 
 @pytest.mark.asyncio
 async def test_lti_11_authenticate_handler_invokes_redirect_method(
-    make_mock_request_handler,
+    make_lti11_mock_request_handler,
 ):
     """
     Does the LTI11AuthenticateHandler call the redirect function?
     """
-    local_handler = make_mock_request_handler(LTI11AuthenticateHandler)
+    local_handler = make_lti11_mock_request_handler(LTI11AuthenticateHandler)
     with patch.object(
         LTI11AuthenticateHandler, "redirect", return_value=None
     ) as mock_redirect:
@@ -25,12 +25,12 @@ async def test_lti_11_authenticate_handler_invokes_redirect_method(
 
 @pytest.mark.asyncio
 async def test_lti_11_authenticate_handler_invokes_login_user_method(
-    make_mock_request_handler,
+    make_lti11_mock_request_handler,
 ):
     """
     Does the LTI11AuthenticateHandler call the login_user function?
     """
-    local_handler = make_mock_request_handler(LTI11AuthenticateHandler)
+    local_handler = make_lti11_mock_request_handler(LTI11AuthenticateHandler)
     with patch.object(LTI11AuthenticateHandler, "redirect", return_value=None):
         with patch.object(
             LTI11AuthenticateHandler, "login_user", return_value=None

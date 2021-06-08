@@ -16,6 +16,17 @@ from unittest.mock import Mock
 
 
 @pytest.fixture(scope="function")
+def user_model(username: str, **kwargs) -> dict:
+    """Return a user model"""
+    user = {
+        "username": username,
+        "auth_state": {k: v for k, v in kwargs.items() if not k.startswith("oauth_")},
+    }
+    user.update(kwargs)
+    return user
+
+
+@pytest.fixture(scope="function")
 def make_lti11_basic_launch_request_args() -> Dict[str, str]:
     def _make_lti11_basic_launch_args(
         roles: str = "Instructor",
@@ -158,15 +169,15 @@ def make_lti11_success_authentication_request_args():
 
 
 @pytest.fixture(scope="function")
-def make_mock_request_handler() -> RequestHandler:
+def make_lti11_mock_request_handler() -> RequestHandler:
     """
     Sourced from https://github.com/jupyterhub/oauthenticator/blob/master/oauthenticator/tests/mocks.py
     """
 
-    def _make_mock_request_handler(
+    def _make_lti11_mock_request_handler(
         handler: RequestHandler,
         uri: str = "https://hub.example.com",
-        method: str = "GET",
+        method: str = "POST",
         **settings: dict,
     ) -> RequestHandler:
         """Instantiate a Handler in a mock application"""
@@ -191,4 +202,4 @@ def make_mock_request_handler() -> RequestHandler:
         handler._transforms = []
         return handler
 
-    return _make_mock_request_handler
+    return _make_lti11_mock_request_handler

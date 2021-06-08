@@ -49,7 +49,7 @@ pip install jupyterhub-ltiauthenticator
 
    ```python
    # Set the user's email as their user id
-   c.LTIAuthenticator.user_id_key = 'lis_person_contact_email_primary'
+   c.LTIAuthenticator.username_key = 'lis_person_contact_email_primary'
    ```
 
    A [partial list of keys in an LTI request](https://www.edu-apps.org/code.html#params)

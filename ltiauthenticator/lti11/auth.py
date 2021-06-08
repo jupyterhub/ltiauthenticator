@@ -3,6 +3,8 @@ from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 
+from tornado.web import HTTPError
+
 from traitlets.config import Dict
 from traitlets.config import Unicode
 
@@ -10,6 +12,25 @@ from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 from ltiauthenticator.utils import convert_request_to_dict
 from ltiauthenticator.utils import get_client_protocol
+
+
+class LTI11UsernameException(Exception):
+    """Exception raised for errors in the input salary.
+
+    Attributes:
+        username (str): the username set by one of the username_key configurable from the LTI launch
+          request arguments.
+        message (str): the message returned when encountering this exception.
+    """
+
+    def __init__(
+        self,
+        username: str,
+        message: str = "None of the arguments in the launch request match the username_key configurable.",
+    ) -> None:
+        self.username = username
+        self.message = message
+        super().__init__(self.message)
 
 
 class LTI11Authenticator(Authenticator):
@@ -37,20 +58,19 @@ class LTI11Authenticator(Authenticator):
     )
 
     username_key = Unicode(
-        None,
+        "custom_canvas_user_id",
         allow_none=True,
         config=True,
         help="""
         Key present in LTI 1.1 launch request used to set the user's JupyterHub's username.
-        Common standard (vendor agnostic) options are:
+        Some common examples include:
           - User's email address: lis_person_contact_email_primary
-          - Opaque user id: user_id
-        Your LMS (Canvas / Open EdX / Moodle / others) may provide additional
-        keys in the LTI 1.1 launch request that you can use to set the username. In most cases these
-        are prefixed with `custom_`.
-        When the default of 'None' is set, the following backwards compatible behavior is provided:
-          If `canvas_custom_user_id` is present, that is used. Otherwise,
-          the anonymized `user_id` is used.
+          - Canvas LMS custom user id: custom_canvas_user_id
+        Your LMS (Canvas / Open EdX / Moodle / others) may provide additional keys in the LTI 1.1 launch request that you can use to set the username. In most cases these
+        are prefixed with `custom_`. You may also have the option of using variable substitutions to fetch values that aren't provided with your vendor's standard LTI 1.1 launch request.
+        Reference the IMS LTI specification on variable substitutions: https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide#toc-9.
+        
+        Defaults to custom_canvas_user_id.
         """,
     )
 
@@ -78,6 +98,12 @@ class LTI11Authenticator(Authenticator):
         Raises:
             HTTPError if the required values are not in the request
         """
+        # log deprecation warning when using the default custom_canvas_user_id setting
+        if self.username_key == "custom_canvas_user_id":
+            self.log.warning(
+                "The default username_key 'custom_canvas_user_id' will be replaced by 'user_id' in a future release."
+            )
+
         validator = LTI11LaunchValidator(self.consumers)
 
         self.log.debug(
@@ -97,14 +123,30 @@ class LTI11Authenticator(Authenticator):
         self.log.debug("Launch url is: %s" % launch_url)
 
         if validator.validate_launch_request(launch_url, handler.request.headers, args):
-            username = ""
-            if self.username_key in args and args[self.username_key]:
-                username = args[self.username_key]
-            elif "custom_canvas_user_id" in args and args["custom_canvas_user_id"]:
-                username = args["custom_canvas_user_id"]
-            else:
-                username = args["user_id"]
 
+            # raise an http error if the username_key is not in the request's arguments.
+            if self.username_key not in args.keys():
+                raise HTTPError(
+                    400,
+                    "%s did not match any of the launch request arguments."
+                    % self.username_key,
+                )
+
+            # get the username_key. if empty, fetch the username from the request's user_id value.
+            username = args.get(self.username_key)
+            if not username:
+                username = args.get("user_id")
+
+            # if username is still empty or none, raise an http error.
+            if not username:
+                raise HTTPError(
+                    400,
+                    "The %s value in the launch request is empty or None."
+                    % self.username_key,
+                )
+
+            # return standard authentication where all launch request arguments are added to the auth_state key
+            # except for the oauth_* arguments.
             return {
                 "name": username,
                 "auth_state": {
