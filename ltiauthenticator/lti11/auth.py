@@ -14,25 +14,6 @@ from ltiauthenticator.utils import convert_request_to_dict
 from ltiauthenticator.utils import get_client_protocol
 
 
-class LTI11UsernameException(Exception):
-    """Exception raised for errors in the input salary.
-
-    Attributes:
-        username (str): the username set by one of the username_key configurable from the LTI launch
-          request arguments.
-        message (str): the message returned when encountering this exception.
-    """
-
-    def __init__(
-        self,
-        username: str,
-        message: str = "None of the arguments in the launch request match the username_key configurable.",
-    ) -> None:
-        self.username = username
-        self.message = message
-        super().__init__(self.message)
-
-
 class LTI11Authenticator(Authenticator):
     """
     JupyterHub LTI 1.1 Authenticator which extends the ltiauthenticator.LTIAuthenticator class.
