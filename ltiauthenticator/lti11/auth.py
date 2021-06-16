@@ -3,6 +3,8 @@ from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 
+from textwrap import dedent
+
 from tornado.web import HTTPError
 
 from traitlets.config import Dict
@@ -47,11 +49,19 @@ class LTI11Authenticator(Authenticator):
         Some common examples include:
           - User's email address: lis_person_contact_email_primary
           - Canvas LMS custom user id: custom_canvas_user_id
-        Your LMS (Canvas / Open EdX / Moodle / others) may provide additional keys in the LTI 1.1 launch request that you can use to set the username. In most cases these
-        are prefixed with `custom_`. You may also have the option of using variable substitutions to fetch values that aren't provided with your vendor's standard LTI 1.1 launch request.
-        Reference the IMS LTI specification on variable substitutions: https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide#toc-9.
+        Your LMS (Canvas / Open EdX / Moodle / others) may provide additional keys in the
+        LTI 1.1 launch request that you can use to set the username. In most cases these
+        are prefixed with `custom_`. You may also have the option of using variable substitutions
+        to fetch values that aren't provided with your vendor's standard LTI 1.1 launch request.
+        Reference the IMS LTI specification on variable substitutions:
+        https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide#toc-9.
         
-        Defaults to custom_canvas_user_id.
+        Current default behavior:
+        
+        To preserve legacy behavior, if custom_canvas_user_id is present in the LTI
+        request, it is used as the username. If not, user_id is used. In the future,
+        the default will be just user_id - if you want to use custom_canvas_user_id,
+        you must explicitly set username_key to custom_canvas_user_id.
         """,
     )
 
@@ -82,9 +92,12 @@ class LTI11Authenticator(Authenticator):
         # log deprecation warning when using the default custom_canvas_user_id setting
         if self.username_key == "custom_canvas_user_id":
             self.log.warning(
-                "The default username_key 'custom_canvas_user_id' will be replaced by 'user_id' in a future release."
+                dedent(
+                    """The default username_key 'custom_canvas_user_id' will be replaced by 'user_id' in a future release.
+                Set c.LTIAuthenticator.username_key to `custom_canvas_user_id` to preserve current behavior.
+                """
+                )
             )
-
         validator = LTI11LaunchValidator(self.consumers)
 
         self.log.debug(
