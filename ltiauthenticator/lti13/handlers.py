@@ -1,37 +1,121 @@
-import logging
 import hashlib
 import json
 import os
-import pem
 import re
-
-from Crypto.PublicKey import RSA
-
-from jupyterhub.handlers import BaseHandler
-
-from oauthenticator.oauth2 import STATE_COOKIE_NAME
-from oauthenticator.oauth2 import _serialize_state
-from oauthenticator.oauth2 import guess_callback_uri
-from oauthenticator.oauth2 import OAuthLoginHandler
-from oauthenticator.oauth2 import OAuthCallbackHandler
-
-from tornado.httputil import url_concat
-from tornado.web import HTTPError
-from tornado.web import RequestHandler
-
+from pathlib import Path
 from typing import cast
-from urllib.parse import quote
-from urllib.parse import unquote
-from urllib.parse import urlparse
 import uuid
 
-from ltiauthenticator.lti13.validator import LTI13LaunchValidator
-from ltiauthenticator.lti13.utils import get_jwk
-from ltiauthenticator.lti13.utils import convert_request_to_dict
-from ltiauthenticator.lti13.utils import get_client_protocol
+from urllib.parse import quote
+from urllib.parse import urlencode
+from urllib.parse import urlparse
+from urllib.parse import unquote
+
+from oauthenticator.oauth2 import STATE_COOKIE_NAME
+from oauthenticator.oauth2 import OAuthCallbackHandler
+from oauthenticator.oauth2 import OAuthLoginHandler
+from oauthenticator.oauth2 import _serialize_state
+from oauthenticator.oauth2 import guess_callback_uri
+from tornado.httputil import url_concat
+
+from tornado.httputil import url_concat
+
+import pem
+from Crypto.PublicKey import RSA
+from jupyterhub.handlers import BaseHandler
+from oauthenticator.oauth2 import OAuthLoginHandler
+from tornado import web
+from tornado.web import RequestHandler
+from tornado.web import HTTPError
+
+from .validator import LTI13LaunchValidator
+
+from ..utils import convert_request_to_dict
+from ..utils import get_client_protocol
+from ..utils import get_jwk
 
 
-logger = logging.getLogger(__name__)
+class LTI13ConfigHandler(BaseHandler):
+    """
+    Handles JSON configuration file for LTI 1.3.
+    """
+
+    async def get(self) -> None:
+        """
+        Gets the JSON config which is used by LTI platforms
+        to install the external tool.
+
+        - The extensions key contains settings for specific vendors, such as canvas,
+        moodle, edx, among others.
+        - The tool uses public settings by default. Users that wish to install the tool with
+        private settings should either copy/paste the json or toggle the application to private
+        after it is installed with the platform.
+        - Usernames are obtained by first attempting to get and normalize values sent when
+        tools are installed with public settings. If private, the username is set using the
+        anonumized user data when requests are sent with private installation settings.
+        """
+        self.set_header("Content-Type", "application/json")
+
+        # get the origin protocol
+        protocol = get_client_protocol(self)
+        self.log.debug("Origin protocol is: %s" % protocol)
+        # build the full target link url value required for the jwks endpoint
+        target_link_url = f"{protocol}://{self.request.host}/"
+        self.log.debug("Target link url is: %s" % target_link_url)
+        keys = {
+            "title": "IllumiDesk",
+            "scopes": [
+                "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
+                "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly",
+                "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
+                "https://purl.imsglobal.org/spec/lti-ags/scope/score",
+                "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly",
+                "https://canvas.instructure.com/lti/public_jwk/scope/update",
+                "https://canvas.instructure.com/lti/data_services/scope/create",
+                "https://canvas.instructure.com/lti/data_services/scope/show",
+                "https://canvas.instructure.com/lti/data_services/scope/update",
+                "https://canvas.instructure.com/lti/data_services/scope/list",
+                "https://canvas.instructure.com/lti/data_services/scope/destroy",
+                "https://canvas.instructure.com/lti/data_services/scope/list_event_types",
+                "https://canvas.instructure.com/lti/feature_flags/scope/show",
+                "https://canvas.instructure.com/lti/account_lookup/scope/show",
+            ],
+            "extensions": [
+                {
+                    "platform": "canvas.instructure.com",
+                    "settings": {
+                        "platform": "canvas.instructure.com",
+                        "placements": [
+                            {
+                                "placement": "course_navigation",
+                                "message_type": "LtiResourceLinkRequest",
+                                "windowTarget": "_blank",
+                                "target_link_uri": target_link_url,
+                                "custom_fields": {
+                                    "email": "$Person.email.primary",
+                                    "lms_user_id": "$User.id",
+                                },  # noqa: E231
+                            },
+                            {
+                                "placement": "assignment_selection",
+                                "message_type": "LtiResourceLinkRequest",
+                                "target_link_uri": target_link_url,
+                            },
+                        ],
+                    },
+                    "privacy_level": "public",
+                }
+            ],
+            "description": "IllumiDesk Learning Tools Interoperability (LTI) v1.3 tool.",
+            "custom_fields": {
+                "email": "$Person.email.primary",
+                "lms_user_id": "$User.id",
+            },  # noqa: E231
+            "public_jwk_url": f"{target_link_url}hub/lti13/jwks",
+            "target_link_uri": target_link_url,
+            "oidc_initiation_url": f"{target_link_url}hub/oauth_login",
+        }
+        self.write(json.dumps(keys))
 
 
 class LTI13LoginHandler(OAuthLoginHandler):
@@ -51,7 +135,9 @@ class LTI13LoginHandler(OAuthLoginHandler):
     ) -> None:
         """
         Overrides the OAuth2Mixin.authorize_redirect method to to initiate the LTI 1.3 / OIDC
-        login flow. Arguments are redirected to the platform's authorization url for further
+        login flow with the required `login_hint` and optional `lti_message_hint` arguments.
+
+        Arguments are redirected to the platform's authorization url for further
         processing.
 
         References:
@@ -98,7 +184,7 @@ class LTI13LoginHandler(OAuthLoginHandler):
             # try with the target_link_uri arg
             target_link = self.get_argument("target_link_uri", "")
             if "next" in target_link:
-                logger.debug(
+                self.log.debug(
                     f"Trying to get the next-url from target_link_uri: {target_link}"
                 )
                 next_search = re.search("next=(.*)", target_link, re.IGNORECASE)
@@ -118,7 +204,7 @@ class LTI13LoginHandler(OAuthLoginHandler):
                 scheme="", netloc="", path="/" + urlinfo.path.lstrip("/")
             ).geturl()
             if next_url != original_next_url:
-                logger.warning(
+                self.log.warning(
                     "Ignoring next_url %r, using %r", original_next_url, next_url
                 )
         if self._state is None:
@@ -148,20 +234,22 @@ class LTI13LoginHandler(OAuthLoginHandler):
         """
         validator = LTI13LaunchValidator()
         args = convert_request_to_dict(self.request.arguments)
-        logger.debug("Initial login request args are %s" % args)
+        self.log.debug("Initial login request args are %s" % args)
         if validator.validate_login_request(args):
             login_hint = args["login_hint"]
-            logger.debug("login_hint is %s" % login_hint)
+            self.log.debug("login_hint is %s" % login_hint)
             lti_message_hint = args["lti_message_hint"]
-            logger.debug("lti_message_hint is %s" % lti_message_hint)
+            self.log.debug("lti_message_hint is %s" % lti_message_hint)
             client_id = args["client_id"]
-            logger.debug("client_id is %s" % client_id)
+            self.log.debug("client_id is %s" % client_id)
             redirect_uri = guess_callback_uri(
                 "https", self.request.host, self.hub.server.base_url
             )
-            logger.info("redirect_uri: %r", redirect_uri)
+            self.log.info("redirect_uri: %r", redirect_uri)
             state = self.get_state()
             self.set_state_cookie(state)
+            # TODO: validate that received nonces haven't been received before
+            # and that they are within the time-based tolerance window
             nonce_raw = hashlib.sha256(state.encode())
             nonce = nonce_raw.hexdigest()
             self.authorize_redirect(
@@ -185,121 +273,114 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         """
         self.check_state()
         user = await self.login_user()
-        logger.debug(f"user logged in: {user}")
+        self.log.debug(f"user logged in: {user}")
         if user is None:
             raise HTTPError(403, "User missing or null")
         self.redirect(self.get_next_url(user))
-        logger.debug("Redirecting user %s to %s" % (user.id, self.get_next_url(user)))
-
-
-class LTI13ConfigHandler(BaseHandler):
-    """
-    Handles JSON configuration file for LTI 1.3
-    """
-
-    async def get(self) -> None:
-        """
-        Gets the JSON config which is used by LTI platforms
-        to install the external tool.
-
-        - The extensions key contains settings for specific vendors, such as canvas,
-        moodle, edx, among others.
-        - The tool uses public settings by default. Users that wish to install the tool with
-        private settings should either copy/paste the json or toggle the application to private
-        after it is installed with the platform.
-        - Usernames are obtained by first attempting to get and normalize values sent when
-        tools are installed with public settings. If private, the username is set using the
-        anonumized user data when requests are sent with private installation settings.
-        """
-        self.set_header("Content-Type", "application/json")
-
-        # get the origin protocol
-        protocol = get_client_protocol(self)
-        logger.debug("Origin protocol is: %s" % protocol)
-        # build the full target link url value required for the jwks endpoint
-        target_link_url = f"{protocol}://{self.request.host}/"
-        logger.debug("Target link url is: %s" % target_link_url)
-        keys = {
-            "title": "LTIAuthenticator",
-            "scopes": [
-                "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
-                "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly",
-                "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-                "https://purl.imsglobal.org/spec/lti-ags/scope/score",
-                "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly",
-                "https://canvas.instructure.com/lti/public_jwk/scope/update",
-                "https://canvas.instructure.com/lti/data_services/scope/create",
-                "https://canvas.instructure.com/lti/data_services/scope/show",
-                "https://canvas.instructure.com/lti/data_services/scope/update",
-                "https://canvas.instructure.com/lti/data_services/scope/list",
-                "https://canvas.instructure.com/lti/data_services/scope/destroy",
-                "https://canvas.instructure.com/lti/data_services/scope/list_event_types",
-                "https://canvas.instructure.com/lti/feature_flags/scope/show",
-                "https://canvas.instructure.com/lti/account_lookup/scope/show",
-            ],
-            "extensions": [
-                {
-                    "platform": "canvas.instructure.com",
-                    "settings": {
-                        "platform": "canvas.instructure.com",
-                        "placements": [
-                            {
-                                "placement": "course_navigation",
-                                "message_type": "LtiResourceLinkRequest",
-                                "windowTarget": "_blank",
-                                "target_link_uri": target_link_url,
-                                "custom_fields": {
-                                    "email": "$Person.email.primary",
-                                    "lms_user_id": "$User.id",
-                                },  # noqa: E231
-                            },
-                            {
-                                "placement": "assignment_selection",
-                                "message_type": "LtiResourceLinkRequest",
-                                "target_link_uri": target_link_url,
-                            },
-                        ],
-                    },
-                    "privacy_level": "public",
-                }
-            ],
-            "description": "JupyterHub Learning Tools Interoperability (LTI) v1.3 tool.",
-            "custom_fields": {
-                "email": "$Person.email.primary",
-                "lms_user_id": "$User.id",
-            },  # noqa: E231
-            "public_jwk_url": f"{target_link_url}hub/lti13/jwks",
-            "target_link_uri": target_link_url,
-            "oidc_initiation_url": f"{target_link_url}hub/oauth_login",
-        }
-        self.write(json.dumps(keys))
+        self.log.debug("Redirecting user %s to %s" % (user.id, self.get_next_url(user)))
 
 
 class LTI13JWKSHandler(BaseHandler):
     """
-    Handler to serve our JWKS
+    Handler to serve the JSON Web Key Set (JWKS) used to verify the JSON Web Token (JWT)
+    issued by the authorization server (a.k.a Platform, such as an LMS).
     """
 
     def get(self) -> None:
         """
-        - This method requires that the LTI13_PRIVATE_KEY environment variable
+        This method requires that the LTI13_PRIVATE_KEY environment variable
         is set with the full path to the RSA private key in PEM format.
         """
         if not os.environ.get("LTI13_PRIVATE_KEY"):
             raise EnvironmentError("LTI13_PRIVATE_KEY environment variable not set")
         key_path = os.environ.get("LTI13_PRIVATE_KEY")
-        # check the pem permission
+        # ensure pem permissions are correctly set
         if not os.access(key_path, os.R_OK):
-            logger.error(f"The pem file {key_path} cannot be load")
+            self.log.error(f"Unable to access {key_path}")
             raise PermissionError()
         private_key = pem.parse_file(key_path)
         public_key = RSA.import_key(private_key[0].as_text()).publickey().exportKey()
-        logger.debug("public_key is %s" % public_key)
+        self.log.debug("public_key is %s" % public_key)
 
         jwk = get_jwk(public_key)
-        logger.debug("the jwks is %s" % jwk)
+        self.log.debug("The jwks is %s" % jwk)
         keys_obj = {"keys": []}
         keys_obj["keys"].append(jwk)
         # we do not need to use json.dumps because tornado is converting our dict automatically and adding the content-type as json
         # https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler.write
         self.write(keys_obj)
+
+
+class FileSelectHandler(BaseHandler):
+    @web.authenticated
+    async def get(self):
+        """Return a sorted list of notebooks recursively found in shared path"""
+        user = self.current_user
+        auth_state = await user.get_auth_state()
+        self.log.debug("Current user for file select handler is %s" % user.name)
+        # decoded = self.authenticator.decoded
+        self.course_id = auth_state["course_id"]
+        self.grader_name = f"grader-{self.course_id}"
+        self.grader_root = Path(
+            "/home",
+            self.grader_name,
+        )
+        self.course_root = self.grader_root / self.course_id
+        self.course_shared_folder = Path("/shared", self.course_id)
+        a = ""
+        link_item_files = []
+        notebooks = list(self.course_shared_folder.glob("**/*.ipynb"))
+        notebooks.sort()
+        for f in notebooks:
+            fpath = str(f.relative_to(self.course_shared_folder))
+            self.log.debug("Getting files fpath %s" % fpath)
+
+            if fpath.startswith(".") or f.name.startswith("."):
+                self.log.debug("Ignoring file %s" % fpath)
+                continue
+            # generate the assignment link that uses gitpuller
+            user_redirect_path = quote("/user-redirect/git-pull", safe="")
+            assignment_link_path = f"?next={user_redirect_path}"
+            urlpath_workspace = f"tree/{self.course_id}/{fpath}"
+            self.log.debug(f"urlpath_workspace:{urlpath_workspace}")
+            query_params_for_git = [
+                ("repo", f"/home/jovyan/shared/{self.course_id}"),
+                ("branch", "master"),
+                ("urlpath", urlpath_workspace),
+            ]
+            encoded_query_params_without_safe_chars = quote(
+                urlencode(query_params_for_git), safe=""
+            )
+
+            url = f"https://{self.request.host}/{assignment_link_path}?{encoded_query_params_without_safe_chars}"
+            self.log.debug("URL to fetch files is %s" % url)
+            link_item_files.append(
+                {
+                    "path": fpath,
+                    "content_items": json.dumps(
+                        {
+                            "@context": "http://purl.imsglobal.org/ctx/lti/v1/ContentItem",
+                            "@graph": [
+                                {
+                                    "@type": "LtiLinkItem",
+                                    "@id": url,
+                                    "url": url,
+                                    "title": f.name,
+                                    "text": f.name,
+                                    "mediaType": "application/vnd.ims.lti.v1.ltilink",
+                                    "placementAdvice": {
+                                        "presentationDocumentTarget": "frame"
+                                    },
+                                }
+                            ],
+                        }
+                    ),
+                }
+            )
+        self.log.debug("Rendering file-select.html template")
+        html = self.render_template(
+            "file_select.html",
+            files=link_item_files,
+            action_url=auth_state["launch_return_url"],
+        )
+        self.finish(html)

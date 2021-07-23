@@ -219,7 +219,7 @@ def get_headers_to_jwt_encode(private_key_text: str) -> dict:
 
 def get_pem_text_from_file(private_key_path: str) -> str:
     """
-    Parses the pem file to get its value as unicode text
+    Parses the pem file to get its value as unicode text.
 
     Args:
       private_key_path: absolute file system path for pem key file.
@@ -229,6 +229,7 @@ def get_pem_text_from_file(private_key_path: str) -> str:
     """
     # check the pem file permission
     if not os.access(private_key_path, os.R_OK):
+        logger.debug("Unable to access %s due to permission error" % private_key_path)
         raise PermissionError()
     # parse file generates a list of PEM objects
     certs = pem.parse_file(private_key_path)

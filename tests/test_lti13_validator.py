@@ -195,9 +195,11 @@ def test_validate_claim_values_with_privacy_enabled(
     Is the JWT valid when privacy is enabled?
     """
     validator = LTI13LaunchValidator()
-    jws = make_lti13_resource_link_request_privacy_enabled
+    # jws = make_lti13_resource_link_request_privacy_enabled
 
-    assert validator.validate_launch_request(jws)
+    assert validator.validate_launch_request(
+        make_lti13_resource_link_request_privacy_enabled
+    )
 
 
 def test_validate_deep_linking_request_is_valid_with_message_type_claim(

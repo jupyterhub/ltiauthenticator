@@ -43,7 +43,7 @@ async def test_get_method_raises_an_error_without_lti13_private_key(
 
 @patch("tornado.web.RequestHandler.write")
 def test_get_method_calls_write_method_with_a_dict(
-    mock_write_method, lti13_config_environ, make_mock_request_handler
+    lti13_config_environ, mock_write_method, make_mock_request_handler
 ):
     """
     Does the write method is called with a dict?

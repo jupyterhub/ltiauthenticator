@@ -135,7 +135,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
     ) -> Dict[str, str]:
         """
         Decodes the JSON Web Token (JWT) sent from the platform. The JWT should contain claims
-        that represent properties associated with the request. This method implicitly verifies the JWT's
+        that represent properties associated with the request. This method also verifies the JWT's
         signature using the platform's public key.
 
         Args:
@@ -196,15 +196,17 @@ class LTI13LaunchValidator(LoggingConfigurable):
         jwt_decoded: Dict[str, Any],
     ) -> bool:
         """
-        Validates that a given LTI 1.3 launch request has the required required claims The
+        Validates that a given LTI 1.3 launch request has the required required claims. The
         required claims combine the required claims according to the LTI 1.3 standard and the
-        required claims for this setup to work properly, which are obtaind from the LTI 1.3 standard
-        optional claims and LIS optional claims.
+        required claims for this setup to work properly. Optional claims are from both the the
+        LTI 1.3 standard claims and LIS optional claims.
 
         The required claims are defined as constants.
 
+        Ref: https://www.imsglobal.org/spec/lti/v1p3
+
         Args:
-          jwt_decoded: decode JWT payload
+          jwt_decoded: decoded JWT payload
 
         Returns:
           True if the validation passes, False otherwise.
@@ -248,7 +250,8 @@ class LTI13LaunchValidator(LoggingConfigurable):
 
     def validate_login_request(self, args: Dict[str, Any]) -> bool:
         """
-        Validates step 1 of authentication request.
+        Validates the initial authentication request and ensures the required claims
+        are included in said request.
 
         Args:
           args: dictionary that represents keys/values sent in authentication request

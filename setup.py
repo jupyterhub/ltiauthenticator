@@ -26,23 +26,6 @@ setup(
     author="Yuvi Panda",
     author_email="yuvipanda@gmail.com",
     license="3 Clause BSD",
-<<<<<<< HEAD
-    packages=find_packages(exclude="./tests"),
-    python_requires=">=3.6",
-    install_requires=["jupyterhub>=0.8", "oauthlib>=3.1", "escapism>=1.0"],
-    package_data={
-        "": ["*.html"],
-    },  # noqa: E231
-=======
-    name='jupyterhub-ltiauthenticator',
-    version='1.0.0',
-    description='JupyterHub authenticator implementing LTI v1.1 / v1.3',
-    url='https://github.com/jupyterhub/ltiauthenticator',
-    author='Yuvi Panda',
-    author_email='yuvipanda@gmail.com',
-    license='3 Clause BSD',
-=======
->>>>>>> pre-commit checkpoint
     packages=find_packages(),
     python_requires=">=3.5",
     install_requires=[
