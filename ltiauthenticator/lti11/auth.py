@@ -120,10 +120,8 @@ class LTI11Authenticator(Authenticator):
 
             # raise an http error if the username_key is not in the request's arguments.
             if self.username_key not in args.keys():
-                raise HTTPError(
-                    400,
-                    "%s did not match any of the launch request arguments."
-                    % self.username_key,
+                self.log.warning(
+                    "%s the specified username_key did not match any of the launch request arguments."
                 )
 
             # get the username_key. if empty, fetch the username from the request's user_id value.
