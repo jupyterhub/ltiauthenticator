@@ -244,12 +244,18 @@ The Moodle setup is very similar to both the examples outlined above.
    config.yaml:
 
 ```yaml
-    auth:
-      type: "lti"
-      lti:
-          consumers: { 
-              "client-key"": "client-secret"
-              }
+  hub:
+    config:
+      LTIAuthenticator:
+        consumers: { 
+          "client-key"": "client-secret"
+        }
+      JupyterHub:
+        authenticator_class: ltiauthenticator.LTIAuthenticator
+    extraConfig:
+      myAuthConfig: |
+        from ltiauthenticator import LTIAuthenticator
+        c.JupyterHub.authenticator_class = LTIAuthenticator
 ```
 
 7. If your Moodle environment is using https, you should also use https for your Jupyterhub.
