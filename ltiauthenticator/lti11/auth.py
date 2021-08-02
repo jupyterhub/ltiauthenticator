@@ -63,11 +63,25 @@ class LTI11Authenticator(Authenticator):
         """,
     )
 
+    launch_url_path = Unicode(
+        "/lti/launch",
+        config=True,
+        help="""
+        The path that is appended to the JupyterHub's base url to identify the LTI 1.1
+        launch request path. For example:
+
+        base_url = "/acme"
+        launch_url_path = "/lti/mylaunch"
+
+        In this case the self.launch_url_path would equal: "/acme/hub/lti/mylaunch".
+        """,
+    )
+
     def get_handlers(self, app: JupyterHub) -> BaseHandler:
-        return [("/lti/launch", LTI11AuthenticateHandler)]
+        return [(f"{self.launch_url_path}", LTI11AuthenticateHandler)]
 
     def login_url(self, base_url):
-        return url_path_join(base_url, "/lti/launch")
+        return url_path_join(base_url, f"{self.launch_url_path}")
 
     async def authenticate(  # noqa: C901
         self, handler: BaseHandler, data: dict = None

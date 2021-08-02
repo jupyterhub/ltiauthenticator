@@ -1,12 +1,15 @@
 from jupyterhub.handlers import BaseHandler
 from tornado import gen
 
+from .templates import LTI11_CONFIG_TEMPLATE
+from ..utils import get_client_protocol
+
 
 class LTI11AuthenticateHandler(BaseHandler):
     """
-    Handler for /lti/launch
+    Handler for the LTI11Authenticator's launch_url_path config.
 
-    Implements v1 of the LTI protocol for passing authentication information
+    Implements v1.1 of the LTI protocol for passing authentication information
     through.
 
     If there's a custom parameter called 'next', will redirect user to
@@ -48,3 +51,60 @@ class LTI11AuthenticateHandler(BaseHandler):
         )
 
         self.redirect(body_argument)
+
+
+class LTI11ConfigHandler(BaseHandler):
+    """
+    Renders XML configuration file for LTI 1.1
+    """
+
+    title = Unicode(
+        default_value="JupyterHub",
+        config=True,
+        help="""
+        The tool's title.
+        """,
+    )
+
+    description = Unicode(
+        default_value="canvas.instructure.com",
+        config=True,
+        help="""
+        The tool's description.
+        """,
+    )
+
+    icon = Unicode(
+        default_value="canvas.instructure.com",
+        config=True,
+        help="""
+        The icon used to represent the tool. This icon is usually displayed in the LTI 1.1 consumer interface.
+        """,
+    )
+
+    async def get(self) -> None:
+        """
+        Gets the XML config which is used by LTI consumers to install the external tool.
+
+        - The extensions key contains settings for specific vendors, such as canvas,
+        moodle, edx, among others.
+        - The tool uses public settings by default. Users that wish to install the tool with
+        private settings should either copy/paste the json or toggle the application to private
+        after it is installed with the platform.
+        - Usernames are obtained by first attempting to get and normalize values sent when
+        tools are installed with public settings. If private, the username is set using the
+        anonumized user data when requests are sent with private installation settings.
+        """
+        self.set_header("Content-Type", "application/json")
+
+        # get the origin protocol
+        protocol = get_client_protocol(self)
+        # build the configuration XML
+        config_xml = LTI11_CONFIG_TEMPLATE.format(
+            description=self.description,
+            icon=self.icon,
+            launch_url=f"{protocol}://{self.request.host}{self.request.uri}",
+            title=self.title,
+        )
+
+        self.write(config_xml)
