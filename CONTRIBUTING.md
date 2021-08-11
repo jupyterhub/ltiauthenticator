@@ -17,10 +17,9 @@ LTIAuthenticator requires Python >= 3.6.
 2. Install the development requirements, which include things like linting and testing tools:
 
    ```bash
+   python3 -m pip install -e .
    python3 -m pip install -r dev-requirements.txt
    ```
-
-> **NOTE**: this will also install the package in editable mode, equivalent to `pip install -e .`.
 
 3. Set up pre-commit hooks for automatic code formatting and linting:
 
