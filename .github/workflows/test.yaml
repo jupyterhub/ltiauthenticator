@@ -3,7 +3,7 @@
 #
 name: Tests
 
-# Trigger the workflow's on pushed branches or commits to main/master branch.
+# Trigger the workflow's on pushed branches or commits to main branch.
 on:
   pull_request:
   push:
