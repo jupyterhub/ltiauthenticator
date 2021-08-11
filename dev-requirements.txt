@@ -3,4 +3,5 @@ bump2version
 flake8
 pre-commit
 pytest
+pytest-asyncio
 pytest-flakes
