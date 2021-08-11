@@ -25,12 +25,12 @@ jupyterhub --config examples/jupyterhub_config_lti11.py
 
 4. Configure [JupyterHub as an external tool and launch it from your LMS](../README.md#using-ltiauthenticator)
 
-> **TIP**: Most Learning Management Systems (LMS's) require launches with `TLS` enabled (`https`). Consider tunneling your local JupyterHub service to a publicly available `https` link, such as with [`ngrok`](https://ngrok.com) or [`localtunnel`](https://github.com/localtunnel/localtunnel).
+> **TIP**: Most Learning Management Systems (LMS's) require launches with `TLS` enabled (`https`). To avoid having to setup TSL consider tunneling your local JupyterHub service to a publicly available `https` link, such as with [`ngrok`](https://ngrok.com) or [`localtunnel`](https://github.com/localtunnel/localtunnel).
 
 5. (Optional) Update the `username_key`:
 
 Edit the provided `jupyterhub_config_lti11.py` to change the `username_key` to another value to represent the
-username. LTI 1.1 parameters that represent Personably Identifiable Information (PII) have the `lis_person_*` prefix.
+user's username. LTI 1.1 parameters that represent Personably Identifiable Information (PII) have the `lis_person_*` prefix.
 You could also use a parameter substitution to extract PII values from your LMS.
 
 To obtain a full list of possible parameter substitution settings refer to the IMS Global LTI 1.1 [implementation guide](https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide) -> Apendix C.2.
