@@ -7,7 +7,7 @@ from ..utils import get_client_protocol
 
 class LTI11AuthenticateHandler(BaseHandler):
     """
-    Handler for the LTI11Authenticator's launch_url_path config.
+    Handler for the LTI11Authenticator's XML config.
 
     Implements v1.1 of the LTI protocol for passing authentication information
     through.
@@ -53,9 +53,9 @@ class LTI11AuthenticateHandler(BaseHandler):
         self.redirect(body_argument)
 
 
-class LTI11ConfigHandler(BaseHandler):
+class LTI11XMLConfigHandler(BaseHandler):
     """
-    Renders XML configuration file for LTI 1.1
+    Renders XML configuration file for LTI 1.1.
     """
 
     title = Unicode(
