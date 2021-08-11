@@ -19,7 +19,7 @@ c.Authenticator.enable_auth_state = True
 # Set the LTI 1.1 authenticator.
 c.JupyterHub.authenticator_class = 'ltiauthenticator.LTIAuthenticator'
 
-# Add the LTI 1.1 consumer key and shared secret. Note the use of 
+# Add the LTI 1.1 consumer key and shared secret. Note the use of
 # `LTI11Authenticator` vs the legacy `LTIAuthenticator`.
 c.LTI11Authenticator.consumers = {
     os.environ['LTI_CLIENT_KEY']: os.environ['LTI_SHARED_SECRET']
