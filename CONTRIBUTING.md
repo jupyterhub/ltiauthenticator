@@ -14,20 +14,15 @@ LTIAuthenticator requires Python >= 3.6.
    git clone https://github.com/jupyterhub/ltiauthenticator
    ```
 
-2. Do a development install with `pip`:
-
-   ```bash
-   cd ltiauthenticator
-   python3 -m pip install --editable .
-   ```
-
-3. Install the development requirements, which include things like linting and testing tools:
+2. Install the development requirements, which include things like linting and testing tools:
 
    ```bash
    python3 -m pip install -r dev-requirements.txt
    ```
 
-4. Set up pre-commit hooks for automatic code formatting and linting:
+> **NOTE**: this will also install the package in editable mode, equivalent to `pip install -e .`.
+
+3. Set up pre-commit hooks for automatic code formatting and linting:
 
    ```bash
    pre-commit install
