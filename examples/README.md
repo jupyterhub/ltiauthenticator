@@ -17,6 +17,13 @@ npm install -g configurable-http-proxy
 python3 -m pip install notebook
 ```
 
+3. Create your secure LTI 1.1 consumer key and shared secret values:
+
+```bash
+export LTI_CLIENT_KEY=$(openssl rand -hex 32)
+export LTI_SHARED_SECRET=$(openssl rand -hex 32)
+```
+
 3. Start the JupyterHub with example configuration for LTI 1.1:
 
 ```bash
@@ -30,7 +37,7 @@ jupyterhub --config examples/jupyterhub_config_lti11.py
 5. (Optional) Update the `username_key`:
 
 Edit the provided `jupyterhub_config_lti11.py` to change the `username_key` to another value to represent the
-user's username. LTI 1.1 parameters that represent Personably Identifiable Information (PII) have the `lis_person_*` prefix.
-You could also use a parameter substitution to extract PII values from your LMS.
+user's username. LTI 1.1 parameters that represent Personably Identifiable Information (PII) values have the `lis_person_*`
+prefix.
 
-To obtain a full list of possible parameter substitution settings refer to the IMS Global LTI 1.1 [implementation guide](https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide) -> Apendix C.2.
+You could also use a parameter substitution to extract PII values from your LMS. To obtain a full list of possible parameter substitution settings refer to the IMS Global LTI 1.1 [implementation guide](https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide) -> Apendix C.2.
