@@ -107,7 +107,7 @@ pip install jupyterhub-ltiauthenticator
     `next`, which can contain the relative URL that the user should be redirected
     to after authentication. For example, if you are using
     [nbgitpuller](https://github.com/data-8/nbgitpuller) and want the user to see
-    [this file](https://github.com/binder-examples/requirements/blob/master/index.ipynb) after
+    [this file](https://github.com/binder-examples/requirements/blob/HEAD/index.ipynb) after
     logging in, you could set the **Custom parameters** field to the following
     string:
 

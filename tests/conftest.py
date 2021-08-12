@@ -171,7 +171,7 @@ def make_lti11_success_authentication_request_args():
 @pytest.fixture(scope="function")
 def make_lti11_mock_request_handler() -> RequestHandler:
     """
-    Sourced from https://github.com/jupyterhub/oauthenticator/blob/master/oauthenticator/tests/mocks.py
+    Sourced from https://github.com/jupyterhub/oauthenticator/blob/HEAD/oauthenticator/tests/mocks.py
     """
 
     def _make_lti11_mock_request_handler(

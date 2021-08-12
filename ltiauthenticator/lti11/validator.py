@@ -89,7 +89,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
                 )
 
         # Inspiration to validate nonces/timestamps from OAuthlib
-        # https://github.com/oauthlib/oauthlib/blob/master/oauthlib/oauth1/rfc5849/endpoints/base.py#L147
+        # https://github.com/oauthlib/oauthlib/blob/HEAD/oauthlib/oauth1/rfc5849/endpoints/base.py#L147
         if len(str(int(args["oauth_timestamp"]))) != 10:
             raise HTTPError(401, "Invalid timestamp format.")
         try:
