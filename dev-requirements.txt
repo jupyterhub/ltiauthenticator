@@ -1,6 +1,7 @@
 black
 bump2version
 flake8
+github-activity
 pre-commit
 pytest
 pytest-flakes
