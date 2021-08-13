@@ -2,6 +2,7 @@ black
 bump2version
 codecov
 flake8
+github-activity
 pre-commit
 pytest
 pytest-asyncio
