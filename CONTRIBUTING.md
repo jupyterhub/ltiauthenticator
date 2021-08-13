@@ -2,7 +2,7 @@
 
 Welcome! As a [Jupyter](https://jupyter.org) project, you can follow the [Jupyter contributor guide](https://jupyter.readthedocs.io/en/latest/contributing/content-contributor.html).
 
-Make sure to also follow [Project Jupyter's Code of Conduct](https://github.com/jupyter/governance/blob/master/conduct/code_of_conduct.md) for a friendly and welcoming collaborative environment.
+Make sure to also follow [Project Jupyter's Code of Conduct](https://github.com/jupyter/governance/blob/HEAD/conduct/code_of_conduct.md) for a friendly and welcoming collaborative environment.
 
 ## Setting up a development environment
 
@@ -14,20 +14,14 @@ LTIAuthenticator requires Python >= 3.6.
    git clone https://github.com/jupyterhub/ltiauthenticator
    ```
 
-2. Do a development install with `pip`:
+2. Install the development requirements, which include things like linting and testing tools:
 
    ```bash
-   cd ltiauthenticator
-   python3 -m pip install --editable .
-   ```
-
-3. Install the development requirements, which include things like linting and testing tools:
-
-   ```bash
+   python3 -m pip install -e .
    python3 -m pip install -r dev-requirements.txt
    ```
 
-4. Set up pre-commit hooks for automatic code formatting and linting:
+3. Set up pre-commit hooks for automatic code formatting and linting:
 
    ```bash
    pre-commit install
