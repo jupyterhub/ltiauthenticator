@@ -1,6 +1,9 @@
 black
 bump2version
+codecov
 flake8
 pre-commit
 pytest
+pytest-asyncio
+pytest-cov
 pytest-flakes
