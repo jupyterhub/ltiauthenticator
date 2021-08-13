@@ -65,7 +65,3 @@ jobs:
         # FIXME: --color=yes explicitly set because:
         #        https://github.com/actions/runner/issues/241
         run: pytest -v --color=yes --cov=ltiauthenticator ltiauthenticator/tests
-
-      # https://github.com/marketplace/actions/codecov
-      - name: Submit codecov report
-        uses: codecov/codecov-action@v1

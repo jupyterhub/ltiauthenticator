@@ -16,9 +16,9 @@ exclude = '''
     | \.vscode
     | \.venv
     | _build
-    | ansible
     | build
     | dist
+    | examples
   )
 )
 '''

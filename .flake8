@@ -30,4 +30,5 @@ exclude =
     .travis,
     .vscode,
     docs,
+    examples,
     venv
