@@ -62,23 +62,30 @@ class LTI11XMLConfigHandler(BaseHandler):
         default_value="JupyterHub",
         config=True,
         help="""
-        The tool's title.
+        The externa tool's title.
         """,
     )
 
     description = Unicode(
-        default_value="canvas.instructure.com",
         config=True,
         help="""
-        The tool's description.
+        The external tool's description.
         """,
     )
 
     icon = Unicode(
-        default_value="canvas.instructure.com",
         config=True,
         help="""
         The icon used to represent the tool. This icon is usually displayed in the LTI 1.1 consumer interface.
+        The image should have 16x16 px, long-term https and only accepts the gif, png, or jpg file types.
+        """,
+    )
+
+    launch_url = Unicode(
+        config=True,
+        help="""
+        The launch URL for the JupyterHub when using the LTI 1.1 authenticator. If set, this value will
+        override the launch url that is calculated based on the requests's protocol (scheme), host, and path.
         """,
     )
 
@@ -99,11 +106,14 @@ class LTI11XMLConfigHandler(BaseHandler):
 
         # get the origin protocol
         protocol = get_client_protocol(self)
+        # calculate the launch_url or fetch the launch_url from settings
+        if not self.launch_url:
+            self.launch_url = (f"{protocol}://{self.request.host}{self.request.uri}",)
         # build the configuration XML
         config_xml = LTI11_CONFIG_TEMPLATE.format(
             description=self.description,
             icon=self.icon,
-            launch_url=f"{protocol}://{self.request.host}{self.request.uri}",
+            launch_url=self.launch_url,
             title=self.title,
         )
 
