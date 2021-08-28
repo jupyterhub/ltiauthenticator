@@ -108,56 +108,52 @@ def make_lti11_success_authentication_request_args():
         Return a valid request arguments make from LMS to our tool (when authentication steps were success)
         """
         args = {
-            "oauth_callback": ["about:blank".encode()],
+            "oauth_callback": [b"about:blank"],
             "oauth_consumer_key": [oauth_consumer_key.encode()],
-            "oauth_signature_method": ["HMAC-SHA1".encode()],
-            "oauth_timestamp": ["1585947271".encode()],
-            "oauth_nonce": ["01fy8HKIASKuD9gK9vWUcBj9fql1nOCWfOLPzeylsmg".encode()],
-            "oauth_signature": ["abc123".encode()],
-            "oauth_version": ["1.0".encode()],
-            "context_id": ["888efe72d4bbbdf90619353bb8ab5965ccbe9b3f".encode()],
-            "context_label": ["intro101".encode()],
-            "context_title": ["intro101".encode()],
-            "course_lineitems": [
-                "my.platform.com/api/lti/courses/1/line_items".encode()
-            ],
-            "custom_canvas_assignment_title": ["test-assignment".encode()],
-            "custom_canvas_course_id": ["616".encode()],
-            "custom_canvas_enrollment_state": ["active".encode()],
-            "custom_canvas_user_id": ["1091".encode()],
-            "custom_canvas_user_login_id": ["student1@example.com".encode()],
+            "oauth_signature_method": [b"HMAC-SHA1"],
+            "oauth_timestamp": [b"1585947271"],
+            "oauth_nonce": [b"01fy8HKIASKuD9gK9vWUcBj9fql1nOCWfOLPzeylsmg"],
+            "oauth_signature": [b"abc123"],
+            "oauth_version": [b"1.0"],
+            "context_id": [b"888efe72d4bbbdf90619353bb8ab5965ccbe9b3f"],
+            "context_label": [b"intro101"],
+            "context_title": [b"intro101"],
+            "course_lineitems": [b"my.platform.com/api/lti/courses/1/line_items"],
+            "custom_canvas_assignment_title": [b"test-assignment"],
+            "custom_canvas_course_id": [b"616"],
+            "custom_canvas_enrollment_state": [b"active"],
+            "custom_canvas_user_id": [b"1091"],
+            "custom_canvas_user_login_id": [b"student1@example.com"],
             "ext_roles": [ext_roles.encode()],
-            "launch_presentation_document_target": ["iframe".encode()],
-            "launch_presentation_height": ["1000".encode()],
-            "launch_presentation_locale": ["en".encode()],
+            "launch_presentation_document_target": [b"iframe"],
+            "launch_presentation_height": [b"1000"],
+            "launch_presentation_locale": [b"en"],
             "launch_presentation_return_url": [
-                "https: //illumidesk.instructure.com/courses/161/external_content/success/external_tool_redirect".encode()
+                b"https: //illumidesk.instructure.com/courses/161/external_content/success/external_tool_redirect"
             ],
-            "launch_presentation_width": ["1000".encode()],
+            "launch_presentation_width": [b"1000"],
             "lis_outcome_service_url": [
-                "http://www.imsglobal.org/developers/LTI/test/v1p1/common/tool_consumer_outcome.php?b64=MTIzNDU6OjpzZWNyZXQ=".encode()
+                b"http://www.imsglobal.org/developers/LTI/test/v1p1/common/tool_consumer_outcome.php?b64=MTIzNDU6OjpzZWNyZXQ="
             ],
-            "lis_person_contact_email_primary": ["student1@example.com".encode()],
-            "lis_person_name_family": ["Bar".encode()],
-            "lis_person_name_full": ["Foo Bar".encode()],
-            "lis_person_name_given": ["Foo".encode()],
-            "lti_message_type": ["basic-lti-launch-request".encode()],
-            "lis_result_sourcedid": ["feb-123-456-2929::28883".encode()],
-            "lti_version": ["LTI-1p0".encode()],
-            "resource_link_id": ["888efe72d4bbbdf90619353bb8ab5965ccbe9b3f".encode()],
-            "resource_link_title": ["Test-Assignment-Another-LMS".encode()],
+            "lis_person_contact_email_primary": [b"student1@example.com"],
+            "lis_person_name_family": [b"Bar"],
+            "lis_person_name_full": [b"Foo Bar"],
+            "lis_person_name_given": [b"Foo"],
+            "lti_message_type": [b"basic-lti-launch-request"],
+            "lis_result_sourcedid": [b"feb-123-456-2929::28883"],
+            "lti_version": [b"LTI-1p0"],
+            "resource_link_id": [b"888efe72d4bbbdf90619353bb8ab5965ccbe9b3f"],
+            "resource_link_title": [b"Test-Assignment-Another-LMS"],
             "roles": [roles.encode()],
             "tool_consumer_info_product_family_code": [lms_vendor.encode()],
-            "tool_consumer_info_version": ["cloud".encode()],
-            "tool_consumer_instance_contact_email": [
-                "notifications@mylms.com".encode()
-            ],
+            "tool_consumer_info_version": [b"cloud"],
+            "tool_consumer_instance_contact_email": [b"notifications@mylms.com"],
             "tool_consumer_instance_guid": [
-                "srnuz6h1U8kOMmETzoqZTJiPWzbPXIYkAUnnAJ4u:test-lms".encode()
+                b"srnuz6h1U8kOMmETzoqZTJiPWzbPXIYkAUnnAJ4u:test-lms"
             ],
-            "tool_consumer_instance_name": ["myorg".encode()],
-            "user_id": ["185d6c59731a553009ca9b59ca3a885100000".encode()],
-            "user_image": ["https://lms.example.com/avatar-50.png".encode()],
+            "tool_consumer_instance_name": [b"myorg"],
+            "user_id": [b"185d6c59731a553009ca9b59ca3a885100000"],
+            "user_image": [b"https://lms.example.com/avatar-50.png"],
         }
         return args
 
