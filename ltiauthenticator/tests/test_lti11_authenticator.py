@@ -1,12 +1,10 @@
 import json
-
 from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-
-from tornado.web import HTTPError
 from tornado.httputil import HTTPServerRequest
+from tornado.web import HTTPError
 from tornado.web import RequestHandler
 
 from ltiauthenticator.lti11.auth import LTI11Authenticator

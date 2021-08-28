@@ -1,18 +1,14 @@
 import os
 import secrets
 import time
-
-from oauthlib.oauth1.rfc5849 import signature
+from typing import Dict
+from unittest.mock import Mock
 
 import pytest
-
-from typing import Dict
-
+from oauthlib.oauth1.rfc5849 import signature
+from tornado.httputil import HTTPServerRequest
 from tornado.web import Application
 from tornado.web import RequestHandler
-from tornado.httputil import HTTPServerRequest
-
-from unittest.mock import Mock
 
 
 @pytest.fixture(scope="function")
