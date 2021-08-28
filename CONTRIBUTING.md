@@ -84,17 +84,17 @@ When squashing and merging to the `main` branch, use the following format to pro
 - `Scope` is used to define what is being updated. Our current scopes include:
 
 1. lti11
-3. lti13
+2. lti13
 
 - `Commit Types` are listed below:
 
-| Commit Type | Commit Format |
-| --- | --- |
-| Chores | `chore` |
-| Documentation | `docs` |
-| Features | `feat` |
-| Fixes | `fix` |
-| Refactoring | `refactor` |
+| Commit Type   | Commit Format |
+| ------------- | ------------- |
+| Chores        | `chore`       |
+| Documentation | `docs`        |
+| Features      | `feat`        |
+| Fixes         | `fix`         |
+| Refactoring   | `refactor`    |
 
 Use the `BREAKING CHANGE` in the commit's footer if a release has a breaking change.
 
@@ -102,20 +102,20 @@ Examples:
 
 - Commit a new feature:
 
-    ```
-    feat(workspace): Publish static notebooks with live widgets
-    ```
+  ```
+  feat(workspace): Publish static notebooks with live widgets
+  ```
 
 - Commit a bug fix:
 
-    ```
-    fix(core): Allow students to open submitted assignments from grades section
-    ```
+  ```
+  fix(core): Allow students to open submitted assignments from grades section
+  ```
 
 - Commit a version with a breaking change:
 
-    ```
-    feat(core): Deprecate observer role from group memberships
+  ```
+  feat(core): Deprecate observer role from group memberships
 
-    BREAKING CHANGE: `extends` key in config file is now used for extending other config files
-    ```
+  BREAKING CHANGE: `extends` key in config file is now used for extending other config files
+  ```

@@ -1,4 +1,5 @@
 # LTI Launch JupyterHub Authenticator
+
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/jupyterhub/ltiauthenticator/Tests?logo=github)](https://github.com/jupyterhub/ltiauthenticator/actions)
 [![Latest PyPI version](https://img.shields.io/pypi/v/jupyterhub-ltiauthenticator?logo=pypi)](https://pypi.python.org/pypi/jupyterhub-ltiauthenticator)
 
@@ -43,18 +44,18 @@ pip install jupyterhub-ltiauthenticator
 
     _Note_: Anyone with these two strings will be able to access your hub, so keep them secure!!
 
-4. By default, the user's name will be the `custom_canvas_user_id` passed in by canvas. If you
-   would like to use some other bit of information from the LTI request, you can pick what should
-   be used as the user id.
+4.  By default, the user's name will be the `custom_canvas_user_id` passed in by canvas. If you
+    would like to use some other bit of information from the LTI request, you can pick what should
+    be used as the user id.
 
-   ```python
-   # Set the user's email as their user id
-   c.LTIAuthenticator.username_key = 'lis_person_contact_email_primary'
-   ```
+    ```python
+    # Set the user's email as their user id
+    c.LTIAuthenticator.username_key = 'lis_person_contact_email_primary'
+    ```
 
-   A [partial list of keys in an LTI request](https://www.edu-apps.org/code.html#params)
-   is available to help. Your LMS provider might also implement custom keys
-   you can use.
+    A [partial list of keys in an LTI request](https://www.edu-apps.org/code.html#params)
+    is available to help. Your LMS provider might also implement custom keys
+    you can use.
 
 5.  Pick a name for edX to call your JupyterHub server. Then, along with the two random strings you generated in step 4, paste them together to create an _LTI Passport String_ in the following format:
 
@@ -73,7 +74,7 @@ pip install jupyterhub-ltiauthenticator
     Then [add the Passport String](http://edx.readthedocs.io/projects/edx-partner-course-staff/en/latest/exercises_tools/lti_component.html#adding-an-lti-passport-to-the-course-configuration)
     to EdX. Remember to save your changes when done!
 
-5.  Configure JupyterHub to accept LTI Launch requests from EdX. You do this by
+6.  Configure JupyterHub to accept LTI Launch requests from EdX. You do this by
     supplying JupyterHub with the client key & secret generated in step 3 (you don't need the hub name from step 4).
 
     _Note: While you could paste these keys directly into your configuration file, they are secure credentials and should not be committed to any version control repositories. It is therefore best practice to store them securely. Here, we have stored them in environment variables._
@@ -89,7 +90,7 @@ pip install jupyterhub-ltiauthenticator
     Consumers. You can do so by just adding all the client keys & secrets to the
     `c.LTIAuthenticator.consumers` traitlet like above.
 
-6.  In a Unit where you want there to be a link to the hub,
+7.  In a Unit where you want there to be a link to the hub,
     [add an LTI Component](http://edx.readthedocs.io/projects/edx-partner-course-staff/en/latest/exercises_tools/lti_component.html#adding-an-lti-component-to-a-course-unit).
 
     You should enter the following information into the appropriate component
@@ -113,13 +114,13 @@ pip install jupyterhub-ltiauthenticator
 
     ```js
     [
-      'next=/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb'
+      "next=/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb",
     ];
     ```
 
     _Note_: If you have a `base_url` set in your jupyterhub configuration, that should be prefixed to your next parameter. ([Further explanation](#common-gotchas))
 
-7.  You are done! You can click the Link to see what the user workflow would look
+8.  You are done! You can click the Link to see what the user workflow would look
     like. You can repeat step 6 in all the units that should have a link to the
     Hub for the user.
 
@@ -215,60 +216,72 @@ _Note_: You will see **Client Secret** and **Secret Key** used interchangably.
 
 The Moodle setup is very similar to both the examples outlined above.
 
-1. You need to be a Moodle Administrator, or have another Moodle Role that gives you
-   Permissions to manage Activity Modules.
+1.  You need to be a Moodle Administrator, or have another Moodle Role that
+    gives you Permissions to manage Activity Modules.
 
-2. You need to have enabled the ['External Tool'](https://docs.moodle.org/37/en/External_tool) Activity Module in your Moodle environment
+2.  You need to have enabled the ['External
+    Tool'](https://docs.moodle.org/37/en/External_tool) Activity Module in your
+    Moodle environment
 
-3. Create an *client-key* for use by Moodle against your hub. You can do so by
-   running `openssl rand -hex 32` and saving the output.
+3.  Create an _client-key_ for use by Moodle against your hub. You can do so by
+    running `openssl rand -hex 32` and saving the output.
 
-4. Create an *client-secret* for use by Moodle against your hub. You can do so by
-   running `openssl rand -hex 32` and saving the output.
+4.  Create an _client-secret_ for use by Moodle against your hub. You can do so
+    by running `openssl rand -hex 32` and saving the output.
 
-5. If you are running Jupyterhub locally, you need to Configure it to accept LTI Launch requests from Moodle. You do this by
-   enabling the LTI Authenticator class and giving JupyterHub access to the client key & secret generated in steps 3 and 4.
+5.  If you are running Jupyterhub locally, you need to Configure it to accept
+    LTI Launch requests from Moodle. You do this by enabling the LTI
+    Authenticator class and giving JupyterHub access to the client key & secret
+    generated in steps 3 and 4.
 
-   juptyerhub_config.py:
-```python
-   c.JupyterHub.authenticator_class = 'ltiauthenticator.LTIAuthenticator'
+    juptyerhub_config.py:
 
-   c.LTIAuthenticator.consumers = {
-       "client-key": "client-secret"
-   }
-```
+    ```python
+    c.JupyterHub.authenticator_class = 'ltiauthenticator.LTIAuthenticator'
 
-6. If you are running Jupyterhub within a Kubernetes Cluster, deployed using helm, you need to
-   supply the client key & secret via the chart yaml configuration.
+    c.LTIAuthenticator.consumers = {
+        "client-key": "client-secret"
+    }
+    ```
 
-   config.yaml:
+6.  If you are running Jupyterhub within a Kubernetes Cluster, deployed using
+    helm, you need to supply the client key & secret via the chart yaml
+    configuration.
 
-```yaml
-  hub:
-    config:
-      LTIAuthenticator:
-        consumers:
-          client-key: client-secret
-      JupyterHub:
-        authenticator_class: ltiauthenticator.LTIAuthenticator
-```
+    config.yaml:
 
-7. If your Moodle environment is using https, you should also use https for your Jupyterhub.
+    ```yaml
+    hub:
+      config:
+        LTIAuthenticator:
+          consumers:
+            client-key: client-secret
+        JupyterHub:
+          authenticator_class: ltiauthenticator.LTIAuthenticator
+    ```
 
-8. Once you hub is up and running with the new LTI configuration, you can now configure Moodle.
+7.  If your Moodle environment is using https, you should also use https for your JupyterHub.
 
-9. In the Moodle course you wish to add, turn on editing, and add an instance of the External Tool Activity Module (https://docs.moodle.org/37/en/External_tool_settings)
-Activtiy Name: This will be the name that appears in the course for students to click on to initate
-    the connection to your hub.
-Click 'Show more...'
-    * Tool name: 
-    * Tool URL: Should be set to `your-hub-url/hub/lti/launch`. So if your hub
-   is accessible at `https://datahub.berkeley.edu`, **Tool URL** should be
-   `https://datahub.berkeley.edu/hub/lti/launch`
-    * Consumer Key: *client key*
-    * Shared secret: *client secret*
-    * Custom parameters: 
-    * Default launch container: This setting will define how the hub is presented to the student, whether it's embedded within a Moodle, with or without blocks, replaces the current window, or is displayed in a new window.
+8.  Once you hub is up and running with the new LTI configuration, you can now configure Moodle.
+
+9.  In the Moodle course you wish to add, turn on editing, and add an instance of the External Tool Activity Module (https://docs.moodle.org/37/en/External_tool_settings)
+
+    Activtiy Name: This will be the name that appears in the course for students
+    to click on to initiate the connection to your hub.
+
+    Click 'Show more...'
+
+    - Tool name:
+    - Tool URL: Should be set to `your-hub-url/hub/lti/launch`. So if your hub
+      is accessible at `https://datahub.berkeley.edu`, _Tool URL_ should be
+      `https://datahub.berkeley.edu/hub/lti/launch`.
+    - Consumer Key: _client key_
+    - Shared secret: _client secret_
+    - Custom parameters:
+    - Default launch container: This setting will define how the hub is
+      presented to the student, whether it's embedded within a Moodle, with or
+      without blocks, replaces the current window, or is displayed in a new
+      window.
 
 10. Click 'Save and return to course' or 'Save and display', you will them either be returned to the course page, or have you hub displayed.
 
@@ -290,7 +303,7 @@ Click 'Show more...'
 
     ```js
     [
-      'next=/jupyter/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb'
+      "next=/jupyter/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb",
     ];
     ```
 

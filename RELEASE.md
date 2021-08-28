@@ -12,9 +12,9 @@ For you to follow along according to these instructions, you need:
 
 - Generate a list of PRs using [executablebooks/github-activity](https://github.com/executablebooks/github-activity)
 
-   ```bash
-   github-activity --output=github-activity-output.md --heading-level=3 jupyterhub/ltiauthenticator
-   ```
+  ```bash
+  github-activity --output=github-activity-output.md --heading-level=3 jupyterhub/ltiauthenticator
+  ```
 
 - Visit and label all uncategorized PRs appropriately with: `maintenance`, `enhancement`, `breaking`, `bug`, or `documentation`.
 - Generate a list of PRs again and add it to the changelog.
@@ -31,8 +31,7 @@ For you to follow along according to these instructions, you need:
    git clean -xfd
    ```
 
-1. Update the version with `bump2version` (can be installed with `pip install -r
-   dev-requirements.txt`)
+1. Update the version with `bump2version` (can be installed with `pip install -r dev-requirements.txt`)
 
    ```bash
    VERSION=...  # e.g. 1.2.3
@@ -61,7 +60,7 @@ We are using CD with GitHub Actions to automatically update PyPI, but if you wan
    ```bash
    python3 setup.py sdist bdist_wheel
    ```
-   
+
 1. Upload it to PyPI
 
    ```bash
