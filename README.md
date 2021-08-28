@@ -1,5 +1,6 @@
 # LTI Launch JupyterHub Authenticator
 
+[![Documentation build status](https://img.shields.io/readthedocs/ltiauthenticator?logo=read-the-docs)](https://ltiauthenticator.readthedocs.io/en/latest/?badge=latest)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/jupyterhub/ltiauthenticator/Tests?logo=github)](https://github.com/jupyterhub/ltiauthenticator/actions)
 [![Latest PyPI version](https://img.shields.io/pypi/v/jupyterhub-ltiauthenticator?logo=pypi)](https://pypi.python.org/pypi/jupyterhub-ltiauthenticator)
 
