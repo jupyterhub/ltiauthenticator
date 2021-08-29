@@ -1,17 +1,14 @@
-from collections import OrderedDict
 import time
-
-from oauthlib.oauth1.rfc5849 import signature
-
-from tornado.web import HTTPError
-
-from traitlets.config import LoggingConfigurable
-
+from collections import OrderedDict
 from typing import Any
 from typing import Dict
 
-from .constants import LTI11_OAUTH_ARGS
+from oauthlib.oauth1.rfc5849 import signature
+from tornado.web import HTTPError
+from traitlets.config import LoggingConfigurable
+
 from .constants import LTI11_LAUNCH_PARAMS_REQUIRED
+from .constants import LTI11_OAUTH_ARGS
 
 
 class LTI11LaunchValidator(LoggingConfigurable):

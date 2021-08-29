@@ -1,12 +1,10 @@
 import json
-
 from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-
-from tornado.web import HTTPError
 from tornado.httputil import HTTPServerRequest
+from tornado.web import HTTPError
 from tornado.web import RequestHandler
 
 from ltiauthenticator.lti11.auth import LTI11Authenticator
@@ -53,7 +51,7 @@ async def test_authenticator_returns_auth_dict_when_custom_canvas_user_id_is_emp
     Do we get a valid username when the custom_canvas_user_id is empty?
     """
     local_args = make_lti11_success_authentication_request_args()
-    local_args["custom_canvas_user_id"] = ["".encode()]
+    local_args["custom_canvas_user_id"] = [b""]
     with patch.object(
         LTI11LaunchValidator, "validate_launch_request", return_value=True
     ):
@@ -140,8 +138,8 @@ async def test_empty_username_raises_http_error(
     """Does an empty username value raise the correct 400 HTTPError?"""
     local_args = make_lti11_success_authentication_request_args()
     local_authenticator = LTI11Authenticator()
-    local_args["custom_canvas_user_id"] = ["".encode()]
-    local_args["user_id"] = ["".encode()]
+    local_args["custom_canvas_user_id"] = [b""]
+    local_args["user_id"] = [b""]
 
     with patch.object(
         LTI11LaunchValidator, "validate_launch_request", return_value=True
