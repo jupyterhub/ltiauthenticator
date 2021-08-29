@@ -1,20 +1,11 @@
 import os
 import secrets
 import time
-<<<<<<< HEAD:ltiauthenticator/tests/conftest.py
-=======
-
-from jupyterhub.tests.mocking import MockHub
-
-from oauthlib.oauth1.rfc5849 import signature
-
-import pytest
-
->>>>>>> add lti 1.1 config handler:tests/conftest.py
 from typing import Dict
 from unittest.mock import Mock
 
 import pytest
+from jupyterhub.tests.mocking import MockHub
 from oauthlib.oauth1.rfc5849 import signature
 from tornado.httputil import HTTPServerRequest
 from tornado.web import Application
