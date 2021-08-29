@@ -1,5 +1,3 @@
-from tornado import gen
-
 from jupyterhub.handlers import BaseHandler
 from tornado import gen
 

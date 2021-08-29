@@ -2,9 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
-
 from .mocking import MockLTI11Authenticator
+from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
 
 
 @pytest.mark.asyncio

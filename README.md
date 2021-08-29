@@ -80,7 +80,7 @@ config.yaml:
     auth:
       type: "lti"
       lti:
-          consumers: { 
+          consumers: {
               "client-key"": "client-secret"
               }
 ```
@@ -130,7 +130,7 @@ string:
 
 ```js
 [
-    'next=/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb'
+  "next=/hub/user-redirect/git-pull?repo=https://github.com/binder-examples/requirements&subPath=index.ipynb",
 ];
 ```
 
@@ -164,8 +164,8 @@ The application can be created at the account level or the course level. If the 
 
 - If you run the course in public mode, ltiauthenticator will parse the student's canvas ID as the JupyterHub username.
 - If you run the course in anonymous mode, ltiauthenticator will fall back to the LTI user ID, an anonymized version.
-    - Currently, the only method for de-anonymizing the LTI user ID in Canvas is with [the "masquerade" permission](https://canvas.instructure.com/doc/api/file.masquerading.html), which grants the user full access to act as any user account.
-    - Unless you are able to obtain masquerade permissions, it is recommended to run the course in public mode.
+  - Currently, the only method for de-anonymizing the LTI user ID in Canvas is with [the "masquerade" permission](https://canvas.instructure.com/doc/api/file.masquerading.html), which grants the user full access to act as any user account.
+  - Unless you are able to obtain masquerade permissions, it is recommended to run the course in public mode.
 
 2. Configure JupyterHub to accept LTI Launch requests from Canvas. You do this by supplying JupyterHub with the client key & secret generated in step 1.
 
@@ -282,7 +282,7 @@ The Moodle setup is very similar to both the examples outlined above.
       without blocks, replaces the current window, or is displayed in a new
       window.
 
-7. Click 'Save and return to course' or 'Save and display', you will them either be returned to the course page, or have you hub displayed.
+10. Click 'Save and return to course' or 'Save and display', you will them either be returned to the course page, or have you hub displayed.
 
 ## Common Gotchas
 
