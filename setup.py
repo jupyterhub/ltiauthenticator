@@ -21,7 +21,7 @@ with open(os.path.join("_version.py")) as f:
 
 setup(
     name="jupyterhub-ltiauthenticator",
-    version="1.0.1.dev",
+    version=version_ns["__version__"],
     description="JupyterHub authenticator implementing LTI v1",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
