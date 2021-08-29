@@ -10,6 +10,8 @@ from tornado.web import RequestHandler
 from ltiauthenticator.lti11.auth import LTI11Authenticator
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 
+from .mocking import MockLTI11Authenticator
+
 
 @pytest.mark.asyncio
 async def test_authenticator_uses_lti11validator(
@@ -22,7 +24,8 @@ async def test_authenticator_uses_lti11validator(
         LTI11LaunchValidator, "validate_launch_request", return_value=True
     ) as mock_validator:
 
-        authenticator = LTI11Authenticator()
+        authenticator = MockLTI11Authenticator()
+        authenticator.username_key = "custom_canvas_user_id"
         handler = Mock(spec=RequestHandler)
         request = HTTPServerRequest(
             method="POST",
@@ -30,13 +33,11 @@ async def test_authenticator_uses_lti11validator(
         )
         handler.request = request
 
-        handler.request.arguments = make_lti11_success_authentication_request_args(
-            "lmsvendor"
-        )
+        handler.request.arguments = make_lti11_success_authentication_request_args()
         handler.request.get_argument = (
-            lambda x, strip=True: make_lti11_success_authentication_request_args(
-                "lmsvendor"
-            )[x][0].decode()
+            lambda x, strip=True: make_lti11_success_authentication_request_args()[x][
+                0
+            ].decode()
         )
 
         _ = await authenticator.authenticate(handler, None)
@@ -84,7 +85,7 @@ async def test_authenticator_returns_auth_dict_when_custom_canvas_user_id_does_n
     with patch.object(
         LTI11LaunchValidator, "validate_launch_request", return_value=True
     ):
-        authenticator = LTI11Authenticator()
+        authenticator = MockLTI11Authenticator()
         handler = Mock(
             spec=RequestHandler,
             get_secure_cookie=Mock(return_value=json.dumps(["key", "secret"])),
@@ -109,7 +110,7 @@ async def test_authenticator_returns_correct_username_when_using_lis_person_cont
     Do we get a valid username with lms vendors other than canvas?
     """
     local_args = make_lti11_success_authentication_request_args()
-    local_authenticator = LTI11Authenticator()
+    local_authenticator = MockLTI11Authenticator()
     local_authenticator.username_key = "lis_person_contact_email_primary"
     with patch.object(
         LTI11LaunchValidator, "validate_launch_request", return_value=True

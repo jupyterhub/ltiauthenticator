@@ -6,5 +6,8 @@ github-activity
 pre-commit
 pytest
 pytest-asyncio
+<<<<<<< HEAD
 pytest-cov
+=======
+>>>>>>> add lti 1.1 config handler
 pytest-flakes

@@ -4,6 +4,8 @@ import pytest
 
 from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
 
+from .mocking import MockLTI11Authenticator
+
 
 @pytest.mark.asyncio
 async def test_lti_11_authenticate_handler_invokes_redirect_method(
@@ -39,3 +41,12 @@ async def test_lti_11_authenticate_handler_invokes_login_user_method(
                 local_handler.application, local_handler.request
             ).post()
             assert mock_login_user.called
+
+
+@pytest.mark.asyncio
+async def test_lti_11_handler_paths(app):
+    """Test if all handlers are correctly set with the LTI11Authenticator."""
+    auth = MockLTI11Authenticator()
+    handlers = auth.get_handlers(app)
+    assert handlers[0][0] == "/lti/launch"
+    assert handlers[1][0] == "/lti11/config"

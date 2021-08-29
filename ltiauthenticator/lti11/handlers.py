@@ -1,14 +1,13 @@
+from tornado import gen
+
 from jupyterhub.handlers import BaseHandler
 from tornado import gen
 
 from .templates import LTI11_CONFIG_TEMPLATE
-from ..utils import get_client_protocol
 
 
 class LTI11AuthenticateHandler(BaseHandler):
     """
-    Handler for the LTI11Authenticator's XML config.
-
     Implements v1.1 of the LTI protocol for passing authentication information
     through.
 
@@ -53,68 +52,26 @@ class LTI11AuthenticateHandler(BaseHandler):
         self.redirect(body_argument)
 
 
-class LTI11XMLConfigHandler(BaseHandler):
+class LTI11ConfigHandler(BaseHandler):
     """
-    Renders XML configuration file for LTI 1.1.
+    Renders LTI 1.1 configuration file in XML format.
     """
-
-    title = Unicode(
-        default_value="JupyterHub",
-        config=True,
-        help="""
-        The externa tool's title.
-        """,
-    )
-
-    description = Unicode(
-        config=True,
-        help="""
-        The external tool's description.
-        """,
-    )
-
-    icon = Unicode(
-        config=True,
-        help="""
-        The icon used to represent the tool. This icon is usually displayed in the LTI 1.1 consumer interface.
-        The image should have 16x16 px, long-term https and only accepts the gif, png, or jpg file types.
-        """,
-    )
-
-    launch_url = Unicode(
-        config=True,
-        help="""
-        The launch URL for the JupyterHub when using the LTI 1.1 authenticator. If set, this value will
-        override the launch url that is calculated based on the requests's protocol (scheme), host, and path.
-        """,
-    )
 
     async def get(self) -> None:
         """
         Gets the XML config which is used by LTI consumers to install the external tool.
-
-        - The extensions key contains settings for specific vendors, such as canvas,
-        moodle, edx, among others.
-        - The tool uses public settings by default. Users that wish to install the tool with
-        private settings should either copy/paste the json or toggle the application to private
-        after it is installed with the platform.
-        - Usernames are obtained by first attempting to get and normalize values sent when
-        tools are installed with public settings. If private, the username is set using the
-        anonumized user data when requests are sent with private installation settings.
         """
-        self.set_header("Content-Type", "application/json")
+        self.set_header("Content-Type", "application/xml")
 
-        # get the origin protocol
-        protocol = get_client_protocol(self)
-        # calculate the launch_url or fetch the launch_url from settings
-        if not self.launch_url:
-            self.launch_url = (f"{protocol}://{self.request.host}{self.request.uri}",)
+        # calculate the launch_url
+        launch_url = self.authenticator.get_launch_url(self)
+
         # build the configuration XML
         config_xml = LTI11_CONFIG_TEMPLATE.format(
-            description=self.description,
-            icon=self.icon,
-            launch_url=self.launch_url,
-            title=self.title,
+            description=self.authenticator.config_description,
+            icon=self.authenticator.config_icon,
+            launch_url=launch_url,
+            title=self.authenticator.config_title,
         )
 
         self.write(config_xml)

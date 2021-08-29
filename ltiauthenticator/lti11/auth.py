@@ -4,11 +4,20 @@ from jupyterhub.app import JupyterHub
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
+<<<<<<< HEAD
 from tornado.web import HTTPError
+=======
+
+from textwrap import dedent
+
+from tornado.web import HTTPError, RequestHandler
+
+>>>>>>> add lti 1.1 config handler
 from traitlets.config import Dict
 from traitlets.config import Unicode
 
 from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
+from ltiauthenticator.lti11.handlers import LTI11ConfigHandler
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 from ltiauthenticator.utils import convert_request_to_dict
 from ltiauthenticator.utils import get_client_protocol
@@ -28,8 +37,33 @@ class LTI11Authenticator(Authenticator):
     auto_login = True
     login_service = "LTI 1.1"
 
+    config_description = Unicode(
+        default_value="JupyterHub LTI 1.1 external tool",
+        config=True,
+        help="""
+        The external tool's description.
+        """,
+    )
+
+    config_icon = Unicode(
+        default_value="",
+        config=True,
+        help="""
+        The icon used to represent the tool. This icon is usually displayed in the LTI 1.1 consumer interface.
+        The image should have 16x16 px, long-term https and only accepts the gif, png, or jpg file types.
+        """,
+    )
+
+    config_title = Unicode(
+        default_value="JupyterHub",
+        config=True,
+        help="""
+        The externa tool's title defined within the LTI 1.1 XML config.
+        """,
+    )
+
     consumers = Dict(
-        {},
+        default={},
         config=True,
         help="""
         A dict of consumer keys mapped to consumer secrets for those keys.
@@ -39,7 +73,7 @@ class LTI11Authenticator(Authenticator):
     )
 
     username_key = Unicode(
-        "custom_canvas_user_id",
+        default="custom_canvas_user_id",
         allow_none=True,
         config=True,
         help="""
@@ -63,25 +97,19 @@ class LTI11Authenticator(Authenticator):
         """,
     )
 
-    launch_url_path = Unicode(
-        "/lti/launch",
-        config=True,
-        help="""
-        The path that is appended to the JupyterHub's base url to identify the LTI 1.1
-        launch request path. For example:
-
-        base_url = "/acme"
-        launch_url_path = "/lti/mylaunch"
-
-        In this case the self.launch_url_path would equal: "/acme/hub/lti/mylaunch".
-        """,
-    )
+    def login_url(self, base_url: str) -> str:
+        return url_path_join(base_url, "/lti/launch")
 
     def get_handlers(self, app: JupyterHub) -> BaseHandler:
-        return [(f"{self.launch_url_path}", LTI11AuthenticateHandler)]
+        return [
+            ("/lti/launch", LTI11AuthenticateHandler),
+            ("/lti11/config", LTI11ConfigHandler),
+        ]
 
-    def login_url(self, base_url):
-        return url_path_join(base_url, f"{self.launch_url_path}")
+    def get_launch_url(self, handler: RequestHandler):
+        """Calculates the launch URL."""
+        protocol = get_client_protocol(handler)
+        return f"{protocol}://{handler.request.host}{handler.request.uri}/lti/launch"
 
     async def authenticate(  # noqa: C901
         self, handler: BaseHandler, data: dict = None
