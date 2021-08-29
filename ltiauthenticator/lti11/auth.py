@@ -4,15 +4,8 @@ from jupyterhub.app import JupyterHub
 from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
-<<<<<<< HEAD
 from tornado.web import HTTPError
-=======
-
-from textwrap import dedent
-
-from tornado.web import HTTPError, RequestHandler
-
->>>>>>> add lti 1.1 config handler
+from tornado.web import RequestHandler
 from traitlets.config import Dict
 from traitlets.config import Unicode
 
