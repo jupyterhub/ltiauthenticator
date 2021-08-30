@@ -5,25 +5,32 @@ from typing import Dict
 from unittest.mock import Mock
 
 import pytest
-from jupyterhub.tests.mocking import MockHub
+from jupyterhub.app import JupyterHub
 from oauthlib.oauth1.rfc5849 import signature
 from tornado.httputil import HTTPServerRequest
 from tornado.web import Application
 from tornado.web import RequestHandler
+from traitlets.config import Config
 
 from ltiauthenticator.lti11.templates import LTI11_CONFIG_TEMPLATE
 
 
 @pytest.fixture
-def app():
+def app() -> JupyterHub:
     """Creates an instance of the JupyterHub application.
 
     Returns:
         MockHub: a mocked JupyterHub instance.
     """
-    hub = MockHub()
-    hub.init_db()
-    return hub
+
+    def _app(cfg: Config) -> JupyterHub:
+        hub = JupyterHub(config=cfg)
+        hub.tornado_settings = {"foo": "bar"}
+        hub.init_hub()
+        hub.base_url = "/mytenant"
+        return hub
+
+    return _app
 
 
 @pytest.fixture(scope="function")

@@ -5,7 +5,6 @@ from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from tornado.web import HTTPError
-from tornado.web import RequestHandler
 from traitlets.config import Dict
 from traitlets.config import Unicode
 
@@ -101,11 +100,6 @@ class LTI11Authenticator(Authenticator):
             ("/lti/launch", LTI11AuthenticateHandler),
             ("/lti11/config", LTI11ConfigHandler),
         ]
-
-    def get_launch_url(self, handler: RequestHandler):
-        """Calculates the launch URL."""
-        protocol = get_client_protocol(handler)
-        return f"{protocol}://{handler.request.host}{handler.request.uri}/lti/launch"
 
     async def authenticate(  # noqa: C901
         self, handler: BaseHandler, data: dict = None
