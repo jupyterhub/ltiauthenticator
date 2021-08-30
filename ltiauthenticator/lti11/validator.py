@@ -1,17 +1,14 @@
-from collections import OrderedDict
 import time
-
-from oauthlib.oauth1.rfc5849 import signature
-
-from tornado.web import HTTPError
-
-from traitlets.config import LoggingConfigurable
-
+from collections import OrderedDict
 from typing import Any
 from typing import Dict
 
-from .constants import LTI11_OAUTH_ARGS
+from oauthlib.oauth1.rfc5849 import signature
+from tornado.web import HTTPError
+from traitlets.config import LoggingConfigurable
+
 from .constants import LTI11_LAUNCH_PARAMS_REQUIRED
+from .constants import LTI11_OAUTH_ARGS
 
 
 class LTI11LaunchValidator(LoggingConfigurable):
@@ -89,7 +86,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
                 )
 
         # Inspiration to validate nonces/timestamps from OAuthlib
-        # https://github.com/oauthlib/oauthlib/blob/master/oauthlib/oauth1/rfc5849/endpoints/base.py#L147
+        # https://github.com/oauthlib/oauthlib/blob/HEAD/oauthlib/oauth1/rfc5849/endpoints/base.py#L147
         if len(str(int(args["oauth_timestamp"]))) != 10:
             raise HTTPError(401, "Invalid timestamp format.")
         try:

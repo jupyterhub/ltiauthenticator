@@ -2,33 +2,26 @@ import json
 import logging
 import os
 import time
-import uuid
 import urllib
+import uuid
+from typing import Dict
 
 import jwt
 import pem
-
 from Crypto.PublicKey import RSA
-
+from jupyterhub.auth import LocalAuthenticator
 from oauthenticator.oauth2 import OAuthenticator
-
-from tornado.web import HTTPError
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPClientError
-
+from tornado.web import HTTPError
 from traitlets.config import Unicode
-
-from typing import Dict
-
-from jupyterhub.auth import LocalAuthenticator
 
 from ltiauthenticator.lti13.handlers import LTI13CallbackHandler
 from ltiauthenticator.lti13.handlers import LTI13LoginHandler
 from ltiauthenticator.lti13.validator import LTI13LaunchValidator
-
-from ltiauthenticator.utils import normalize_string
 from ltiauthenticator.utils import email_to_username
 from ltiauthenticator.utils import get_jwk
+from ltiauthenticator.utils import normalize_string
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

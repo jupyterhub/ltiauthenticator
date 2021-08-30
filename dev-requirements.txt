@@ -1,6 +1,8 @@
 black
 bump2version
+codecov
 flake8
+github-activity
 mock
 pip-tools
 pre-commit

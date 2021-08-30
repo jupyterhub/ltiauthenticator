@@ -1,7 +1,6 @@
 import json
 
 from jwcrypto.jwk import JWK
-
 from tornado.log import app_log
 from tornado.web import RequestHandler
 

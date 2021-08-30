@@ -1,7 +1,8 @@
 import os
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 
 # setup logic from github.com/jupyterhub/jupyterhub
@@ -32,7 +33,7 @@ setup(
         "josepy==1.4.0",
         "jupyterhub>=1.3.0",
         "jwcrypto==0.8",
-        "oauthlib>=3.0",
+        "jwt==1.2.0" "oauthlib>=3.0",
         "oauthenticator>=0.13.0",
         "pem==20.1.0",
         "pycryptodome==3.9.8",

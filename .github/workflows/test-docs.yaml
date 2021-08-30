@@ -1,0 +1,34 @@
+# This is a GitHub workflow defining a set of jobs with a set of steps.
+# ref: https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
+#
+name: Test docs
+
+# Trigger the workflow's on all PRs and pushes so that other contributors can
+# run tests in their own forks.
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "**/test-docs.yaml"
+  push:
+    paths:
+      - "docs/**"
+      - "**/test-docs.yaml"
+  workflow_dispatch:
+
+jobs:
+  linkcheck:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install deps
+        run: pip install -r docs/requirements.txt
+
+      - name: make linkcheck
+        run: |
+          cd docs
+          make linkcheck SPHINXOPTS='--color -W --keep-going'

@@ -65,3 +65,7 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# JupyterHub files
+jupyterhub.sqlite
+jupyterhub_cookie_secret

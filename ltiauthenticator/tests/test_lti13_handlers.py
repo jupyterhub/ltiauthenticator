@@ -1,9 +1,9 @@
 import hashlib
+from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
-from unittest import mock
 from oauthenticator.oauth2 import _deserialize_state
 from oauthenticator.oauth2 import _serialize_state
 

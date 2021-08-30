@@ -1,8 +1,8 @@
+import os
+from unittest.mock import patch
+
 import pem
 import pytest
-import os
-
-from unittest.mock import patch
 
 from ltiauthenticator.lti13.utils import get_lms_access_token
 from ltiauthenticator.lti13.utils import get_pem_text_from_file

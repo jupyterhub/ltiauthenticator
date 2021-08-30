@@ -1,23 +1,18 @@
 import json
-import jwt
-
-from josepy.jws import JWS
-from josepy.jws import Header
-
-from tornado.httpclient import AsyncHTTPClient
-from tornado.web import HTTPError
-
-from traitlets.config import LoggingConfigurable
-
 from typing import Any
 from typing import Dict
 
+import jwt
+from josepy.jws import Header
+from josepy.jws import JWS
+from tornado.httpclient import AsyncHTTPClient
+from tornado.web import HTTPError
+from traitlets.config import LoggingConfigurable
+
 from ltiauthenticator.lti13.constants import LTI13_DEEP_LINKING_REQUIRED_CLAIMS
 from ltiauthenticator.lti13.constants import LTI13_GENERAL_REQUIRED_CLAIMS
-from ltiauthenticator.lti13.constants import LTI13_RESOURCE_LINK_REQUIRED_CLAIMS
 from ltiauthenticator.lti13.constants import LTI13_LOGIN_REQUEST_ARGS
 from ltiauthenticator.lti13.constants import LTI13_RESOURCE_LINK_REQUIRED_CLAIMS
-from ltiauthenticator.lti13.constants import LTI13_DEEP_LINKING_REQUIRED_CLAIMS
 
 
 class LTI13LaunchValidator(LoggingConfigurable):

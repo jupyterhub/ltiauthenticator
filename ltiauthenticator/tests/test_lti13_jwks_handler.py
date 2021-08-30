@@ -1,13 +1,11 @@
 from os import chmod
 from os import environ
+from unittest.mock import patch
 
 import pytest
-
-from ltiauthenticator.lti13.handlers import LTI13JWKSHandler
-
 from tornado.web import RequestHandler
 
-from unittest.mock import patch
+from ltiauthenticator.lti13.handlers import LTI13JWKSHandler
 
 
 @pytest.mark.asyncio

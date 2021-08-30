@@ -28,8 +28,7 @@ exclude =
     .github,
     .ipynb_checkpoints,
     .pytest_cache,
-    .travis,
     .vscode,
     docs,
-    node_modules,
+    examples,
     venv

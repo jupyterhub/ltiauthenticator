@@ -1,9 +1,8 @@
 import json
-import pytest
-
-from tornado.web import RequestHandler
-
 from unittest.mock import patch
+
+import pytest
+from tornado.web import RequestHandler
 
 from ltiauthenticator.lti13.handlers import LTI13ConfigHandler
 

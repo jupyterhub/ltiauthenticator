@@ -1,5 +1,4 @@
 # LTI 1.3
-
 # Initial authentication request arguments
 # https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login
 LTI13_LOGIN_REQUEST_ARGS = [

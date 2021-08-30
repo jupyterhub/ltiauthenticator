@@ -2,37 +2,31 @@ import hashlib
 import json
 import os
 import re
+import uuid
 from pathlib import Path
 from typing import cast
-import uuid
-
 from urllib.parse import quote
+from urllib.parse import unquote
 from urllib.parse import urlencode
 from urllib.parse import urlparse
-from urllib.parse import unquote
-
-from oauthenticator.oauth2 import STATE_COOKIE_NAME
-from oauthenticator.oauth2 import OAuthCallbackHandler
-from oauthenticator.oauth2 import OAuthLoginHandler
-from oauthenticator.oauth2 import _serialize_state
-from oauthenticator.oauth2 import guess_callback_uri
-from tornado.httputil import url_concat
-
-from tornado.httputil import url_concat
 
 import pem
 from Crypto.PublicKey import RSA
 from jupyterhub.handlers import BaseHandler
+from oauthenticator.oauth2 import _serialize_state
+from oauthenticator.oauth2 import guess_callback_uri
+from oauthenticator.oauth2 import OAuthCallbackHandler
 from oauthenticator.oauth2 import OAuthLoginHandler
+from oauthenticator.oauth2 import STATE_COOKIE_NAME
 from tornado import web
-from tornado.web import RequestHandler
+from tornado.httputil import url_concat
 from tornado.web import HTTPError
-
-from .validator import LTI13LaunchValidator
+from tornado.web import RequestHandler
 
 from ..utils import convert_request_to_dict
 from ..utils import get_client_protocol
 from ..utils import get_jwk
+from .validator import LTI13LaunchValidator
 
 
 class LTI13ConfigHandler(BaseHandler):
@@ -175,7 +169,7 @@ class LTI13LoginHandler(OAuthLoginHandler):
         args.update(extra_params)
         url = os.environ.get("LTI13_AUTHORIZE_URL")
         if not url:
-            raise EnvironmentError("LTI13_AUTHORIZE_URL env var is not set")
+            raise OSError("LTI13_AUTHORIZE_URL env var is not set")
         handler.redirect(url_concat(url, args))
 
     def get_state(self):
@@ -277,7 +271,7 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         if user is None:
             raise HTTPError(403, "User missing or null")
         self.redirect(self.get_next_url(user))
-        self.log.debug("Redirecting user %s to %s" % (user.id, self.get_next_url(user)))
+        self.log.debug(f"Redirecting user {user.id} to {self.get_next_url(user)}")
 
 
 class LTI13JWKSHandler(BaseHandler):
@@ -292,7 +286,7 @@ class LTI13JWKSHandler(BaseHandler):
         is set with the full path to the RSA private key in PEM format.
         """
         if not os.environ.get("LTI13_PRIVATE_KEY"):
-            raise EnvironmentError("LTI13_PRIVATE_KEY environment variable not set")
+            raise OSError("LTI13_PRIVATE_KEY environment variable not set")
         key_path = os.environ.get("LTI13_PRIVATE_KEY")
         # ensure pem permissions are correctly set
         if not os.access(key_path, os.R_OK):
