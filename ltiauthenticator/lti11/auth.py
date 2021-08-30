@@ -42,8 +42,11 @@ class LTI11Authenticator(Authenticator):
         default_value="",
         config=True,
         help="""
-        The icon used to represent the tool. This icon is usually displayed in the LTI 1.1 consumer interface.
-        The image should have 16x16 px, long-term https and only accepts the gif, png, or jpg file types.
+        The icon is both optional and indicates a URL to be used for an icon to the tool. This icon is
+        usually displayed in the LTI 1.1 consumer interface. The image should have 16x16 px, long-term
+        http/https and, generally speaking, LMS Platforms generally only accept the gif, png, or jpg file types.
+
+        For example: https://my.content.domain/img/tool_icon.jpg
         """,
     )
 
