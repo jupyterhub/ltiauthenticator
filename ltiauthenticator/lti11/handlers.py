@@ -58,7 +58,7 @@ class LTI11ConfigHandler(BaseHandler):
 
     def get(self) -> None:
         """
-        Gets the XML config which is used by LTI consumers to install the external tool.
+        Renders the XML config which is used by LTI consumers to install the external tool.
         """
         self.set_header("Content-Type", "application/xml")
 
