@@ -49,15 +49,15 @@ For you to follow along according to these instructions, you need:
    git commit -m "back to dev"
    ```
 
-1. Push your two commits to master.
+1. Push your two commits to main.
 
    ```shell
    # first push commits without a tags to ensure the
    # commits comes through, because a tag can otherwise
    # be pushed all alone without company of rejected
    # commits, and we want have our tagged release coupled
-   # with a specific commit in master
-   git push $ORIGIN master
+   # with a specific commit in main
+   git push $ORIGIN main
    ```
 
 1. Create a git tag for the pushed release commit and push it.

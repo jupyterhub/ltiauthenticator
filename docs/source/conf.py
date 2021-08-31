@@ -54,8 +54,9 @@ extensions = [
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-# The master toctree document.
-master_doc = "index"
+# The root toctree document.
+# root_doc is used in Sphinx 4+, master_doc in previous versions.
+root_doc = master_doc = "index"
 
 # The suffix(es) of source filenames.
 source_suffix = [".md", ".rst"]
