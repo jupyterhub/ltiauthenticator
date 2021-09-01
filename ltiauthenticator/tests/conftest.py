@@ -5,32 +5,43 @@ from typing import Dict
 from unittest.mock import Mock
 
 import pytest
+from jupyterhub.app import JupyterHub
 from oauthlib.oauth1.rfc5849 import signature
 from tornado.httputil import HTTPServerRequest
 from tornado.web import Application
 from tornado.web import RequestHandler
+from traitlets.config import Config
+
+from ltiauthenticator.lti11.templates import LTI11_CONFIG_TEMPLATE
+
+
+@pytest.fixture
+def app() -> JupyterHub:
+    """Creates an instance of the JupyterHub application.
+
+    Returns:
+        MockHub: a mocked JupyterHub instance.
+    """
+
+    def _app(cfg: Config) -> JupyterHub:
+        hub = JupyterHub(config=cfg)
+        hub.tornado_settings = {"foo": "bar"}
+        hub.init_hub()
+        hub.base_url = "/mytenant"
+        return hub
+
+    return _app
 
 
 @pytest.fixture(scope="function")
-def user_model(username: str, **kwargs) -> dict:
-    """Return a user model"""
-    user = {
-        "username": username,
-        "auth_state": {k: v for k, v in kwargs.items() if not k.startswith("oauth_")},
-    }
-    user.update(kwargs)
-    return user
-
-
-@pytest.fixture(scope="function")
-def make_lti11_basic_launch_request_args() -> Dict[str, str]:
+def make_lti11_basic_launch_request_args():
     def _make_lti11_basic_launch_args(
         roles: str = "Instructor",
         ext_roles: str = "urn:lti:instrole:ims/lis/Instructor",
         lms_vendor: str = "canvas",
         oauth_consumer_key: str = "my_consumer_key",
         oauth_consumer_secret: str = "my_shared_secret",
-    ):
+    ) -> Dict[str, str]:
         oauth_timestamp = str(int(time.time()))
         oauth_nonce = secrets.token_urlsafe(32)
         args = {
@@ -103,7 +114,7 @@ def make_lti11_success_authentication_request_args():
         ext_roles: str = "urn:lti:instrole:ims/lis/Instructor",
         lms_vendor: str = "canvas",
         oauth_consumer_key: str = "my_consumer_key",
-    ):
+    ) -> Dict[str, str.encode]:
         """
         Return a valid request arguments make from LMS to our tool (when authentication steps were success)
         """
@@ -195,3 +206,21 @@ def make_lti11_mock_request_handler() -> RequestHandler:
         return handler
 
     return _make_lti11_mock_request_handler
+
+
+@pytest.fixture(scope="function")
+def make_lti11_config():
+    """Make the LTI 1.1 config XML"""
+
+    def _make_lti11_config(
+        title: str = "LTI 1.1 configuration",
+        description: str = "LTI 1.1 description",
+        icon: str = "http://localhost:8000",
+        launch_url: str = "/lti/launch",
+    ) -> str:
+        lti11_config = LTI11_CONFIG_TEMPLATE.format(
+            title, description, icon, launch_url
+        )
+        return lti11_config
+
+    return _make_lti11_config

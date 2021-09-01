@@ -6,6 +6,9 @@ import os
 c.JupyterHub.ip = "0.0.0.0"
 c.JupyterHub.port = 8000
 
+# Custom base url
+c.JupyterHub.base_url = "/mytenant"
+
 # Set log level
 c.Application.log_level = "DEBUG"
 
