@@ -19,9 +19,7 @@ from traitlets.config import Unicode
 from ltiauthenticator.lti13.handlers import LTI13CallbackHandler
 from ltiauthenticator.lti13.handlers import LTI13LoginHandler
 from ltiauthenticator.lti13.validator import LTI13LaunchValidator
-from ltiauthenticator.utils import email_to_username
 from ltiauthenticator.utils import get_jwk
-from ltiauthenticator.utils import normalize_string
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -149,8 +147,8 @@ class LTI13Authenticator(OAuthenticator):
 
     # The client_id, authorize_url, and token_url config settings
     # are available in the OAuthenticator base class. They are overriden
-    # with this class for the sake of clarity.
-    # The endpoint config is specific to LTI 1.3.
+    # with this class for the sake of clarity. The endpoint config is specific
+    # to LTI 1.3.
     client_id = Unicode(
         "",
         help="""
@@ -225,89 +223,25 @@ class LTI13Authenticator(OAuthenticator):
         jwt_decoded = await validator.jwt_verify_and_decode(
             id_token, self.endpoint, False, audience=self.client_id
         )
-        self.log.debug("Decoded JWT is %s" % jwt_decoded)
+        self.log.debug("Decoded JWT: %s" % jwt_decoded)
 
         if validator.validate_launch_request(jwt_decoded):
-            course_id = jwt_decoded[
-                "https://purl.imsglobal.org/spec/lti/claim/context"
-            ]["label"]
-            course_id = normalize_string(course_id)
-            self.log.debug("Normalized course label is %s" % course_id)
-            username = ""
-            if "email" in jwt_decoded and jwt_decoded["email"]:
-                username = email_to_username(jwt_decoded["email"])
-            elif "name" in jwt_decoded and jwt_decoded["name"]:
-                username = jwt_decoded["name"]
-            elif "given_name" in jwt_decoded and jwt_decoded["given_name"]:
-                username = jwt_decoded["given_name"]
-            elif "family_name" in jwt_decoded and jwt_decoded["family_name"]:
-                username = jwt_decoded["family_name"]
-            elif (
-                "https://purl.imsglobal.org/spec/lti/claim/lis" in jwt_decoded
-                and "person_sourcedid"
-                in jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/lis"]
-                and jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/lis"][
-                    "person_sourcedid"
-                ]
-            ):
-                username = jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/lis"][
-                    "person_sourcedid"
-                ].lower()
-            elif (
-                "lms_user_id"
-                in jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/custom"]
-                and jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/custom"][
-                    "lms_user_id"
-                ]
-            ):
-                username = str(
-                    jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/custom"][
-                        "lms_user_id"
-                    ]
-                )
+            # get the username_key. if empty or None, fetch the username from the request's lms_user_id value.
+            # if the lms_user_id isn't available raise an 400 http error.
+            username = jwt_decoded.get(self.username_key)
+            if not username:
+                # if the username isn't set, fallback to fetch the username from the
+                # subject claim
+                if "sub" in jwt_decoded and jwt_decoded["sub"]:
+                    username = jwt_decoded["sub"]
+                else:
+                    raise HTTPError(400, "Unable to set the username")
+
             self.log.debug("username is %s" % username)
-            # ensure the username is normalized
-            self.log.debug("username is %s" % username)
-            if username == "":
-                raise HTTPError("Unable to set the username")
-
-            # set role to learner role (by default) if instructor or learner/student roles aren't
-            # sent with the request
-            user_role = "Learner"
-            for role in jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/roles"]:
-                if role.find("Instructor") >= 1:
-                    user_role = "Instructor"
-                elif role.find("Learner") >= 1 or role.find("Student") >= 1:
-                    user_role = "Learner"
-            self.log.debug("user_role is %s" % user_role)
-
-            launch_return_url = ""
-            if (
-                "https://purl.imsglobal.org/spec/lti/claim/launch_presentation"
-                in jwt_decoded
-                and "return_url"
-                in jwt_decoded[
-                    "https://purl.imsglobal.org/spec/lti/claim/launch_presentation"
-                ]
-            ):
-                launch_return_url = jwt_decoded[
-                    "https://purl.imsglobal.org/spec/lti/claim/launch_presentation"
-                ]["return_url"]
-
-            lms_user_id = jwt_decoded["sub"] if "sub" in jwt_decoded else username
-
-            # ensure the user name is normalized
-            username_normalized = normalize_string(username)
-            self.log.debug("Assigned username is: %s" % username_normalized)
 
             return {
-                "name": username_normalized,
-                "auth_state": {
-                    "course_id": course_id,
-                    "user_role": user_role,
-                    "lms_user_id": lms_user_id,
-                    "launch_return_url": launch_return_url,
-                },  # noqa: E231
+                "name": username,
+                "auth_state": {k: v for k, v in jwt_decoded.items()},  # noqa: E231
             }
 
 

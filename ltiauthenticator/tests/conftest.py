@@ -52,7 +52,7 @@ def make_http_response() -> HTTPResponse:
 
         Example:
 
-            local_handler = make_mock_request_handler(RequestHandler)
+            local_handler = make_lti11_mock_request_handler(RequestHandler)
             response_args = {'handler': local_handler.request, 'body': {'code': 200}}
             http_response = await factory_http_response(**response_args)
 
@@ -82,13 +82,50 @@ def make_http_response() -> HTTPResponse:
 
 
 @pytest.fixture(scope="function")
+def make_lti11_mock_request_handler() -> RequestHandler:
+    """
+    Sourced from https://github.com/jupyterhub/oauthenticator/blob/HEAD/oauthenticator/tests/mocks.py
+    """
+
+    def _make_lti11_mock_request_handler(
+        handler: RequestHandler,
+        uri: str = "https://hub.example.com",
+        method: str = "POST",
+        **settings: dict,
+    ) -> RequestHandler:
+        """Instantiate a Handler in a mock application"""
+        application = Application(
+            hub=Mock(
+                base_url="/hub/",
+                server=Mock(base_url="/hub/"),
+            ),
+            cookie_secret=os.urandom(32),
+            db=Mock(rollback=Mock(return_value=None)),
+            **settings,
+        )
+        request = HTTPServerRequest(
+            method=method,
+            uri=uri,
+            connection=Mock(),
+        )
+        handler = RequestHandler(
+            application=application,
+            request=request,
+        )
+        handler._transforms = []
+        return handler
+
+    return _make_lti11_mock_request_handler
+
+
+@pytest.fixture(scope="function")
 def http_async_httpclient_with_simple_response(
-    request, make_http_response, make_mock_request_handler
+    request, make_http_response, make_lti11_mock_request_handler
 ):
     """
     Creates a patch of AsyncHttpClient.fetch method, useful when other tests are making http request
     """
-    local_handler = make_mock_request_handler(RequestHandler)
+    local_handler = make_lti11_mock_request_handler(RequestHandler)
     test_request_body_param = (
         request.param if hasattr(request, "param") else {"message": "ok"}
     )
@@ -241,43 +278,6 @@ def make_lti11_success_authentication_request_args():
 
 
 @pytest.fixture(scope="function")
-def make_mock_request_handler() -> RequestHandler:
-    """
-    Sourced from https://github.com/jupyterhub/oauthenticator/blob/HEAD/oauthenticator/tests/mocks.py
-    """
-
-    def _make_mock_request_handler(
-        handler: RequestHandler,
-        uri: str = "https://hub.example.com",
-        method: str = "POST",
-        **settings: dict,
-    ) -> RequestHandler:
-        """Instantiate a Handler in a mock application"""
-        application = Application(
-            hub=Mock(
-                base_url="/hub/",
-                server=Mock(base_url="/hub/"),
-            ),
-            cookie_secret=os.urandom(32),
-            db=Mock(rollback=Mock(return_value=None)),
-            **settings,
-        )
-        request = HTTPServerRequest(
-            method=method,
-            uri=uri,
-            connection=Mock(),
-        )
-        handler = RequestHandler(
-            application=application,
-            request=request,
-        )
-        handler._transforms = []
-        return handler
-
-    return _make_mock_request_handler
-
-
-@pytest.fixture(scope="function")
 def lti13_config_environ(monkeypatch, pem_file):
     """
     Set the enviroment variables used in Course class
@@ -287,10 +287,10 @@ def lti13_config_environ(monkeypatch, pem_file):
         "LTI13_ENDPOINT", "https://my.platform.domain/api/lti/security/jwks"
     )
     monkeypatch.setenv(
-        "OAUTH2_TOKEN_URL", "https://my.platform.domain/login/oauth2/token"
+        "OAUTH_CLIENT_ID", "https://my.platform.domain/login/oauth2/token"
     )
     monkeypatch.setenv(
-        "OAUTH2_CLIENT_ID", "https://my.platform.domain/login/oauth2/token"
+        "OAUTH2_TOKEN_URL", "https://my.platform.domain/login/oauth2/token"
     )
     monkeypatch.setenv(
         "OAUTH2_AUTHORIZE_URL", "https://my.platform.domain/api/lti/authorize_redirect"
@@ -298,28 +298,33 @@ def lti13_config_environ(monkeypatch, pem_file):
 
 
 @pytest.fixture(scope="function")
-def lti13_login_params():
+def make_lti13_login_params():
     """
     Creates a dictionary with k/v's that emulates an initial login request.
     """
-    client_id = "125900000000000085"
-    iss = "https://platform.vendor.com"
-    login_hint = "185d6c59731a553009ca9b59ca3a885104ecb4ad"
-    target_link_uri = "https://edu.example.com/hub"
-    lti_message_hint = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXJpZmllciI6IjFlMjk2NjEyYjZmMjdjYmJkZTg5YmZjNGQ1ZmQ5ZDBhMzhkOTcwYzlhYzc0NDgwYzdlNTVkYzk3MTQyMzgwYjQxNGNiZjMwYzM5Nzk1Y2FmYTliOWYyYTgzNzJjNzg3MzAzNzAxZDgxMzQzZmRmMmIwZDk5ZTc3MWY5Y2JlYWM5IiwiY2FudmFzX2RvbWFpbiI6ImlsbHVtaWRlc2suaW5zdHJ1Y3R1cmUuY29tIiwiY29udGV4dF90eXBlIjoiQ291cnNlIiwiY29udGV4dF9pZCI6MTI1OTAwMDAwMDAwMDAwMTM2LCJleHAiOjE1OTE4MzMyNTh9.uYHinkiAT5H6EkZW9D7HJ1efoCmRpy3Id-gojZHlUaA"
 
-    params = {
-        "client_id": [client_id.encode()],
-        "iss": [iss.encode()],
-        "login_hint": [login_hint.encode()],
-        "target_link_uri": [target_link_uri.encode()],
-        "lti_message_hint": [lti_message_hint.encode()],
-    }
-    return params
+    def _make_lti13_login_params(
+        client_id: str = "125900000000000085",
+        iss: str = "https://platform.vendor.com",
+        login_hint: str = "185d6c59731a553009ca9b59ca3a885104ecb4ad",
+        target_link_uri: str = "https://edu.example.com/hub",
+        lti_message_hint: str = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXJpZmllciI6IjFlMjk2NjEyYjZmMjdjYmJkZTg5YmZjNGQ1ZmQ5ZDBhMzhkOTcwYzlhYzc0NDgwYzdlNTVkYzk3MTQyMzgwYjQxNGNiZjMwYzM5Nzk1Y2FmYTliOWYyYTgzNzJjNzg3MzAzNzAxZDgxMzQzZmRmMmIwZDk5ZTc3MWY5Y2JlYWM5IiwiY2FudmFzX2RvbWFpbiI6ImlsbHVtaWRlc2suaW5zdHJ1Y3R1cmUuY29tIiwiY29udGV4dF90eXBlIjoiQ291cnNlIiwiY29udGV4dF9pZCI6MTI1OTAwMDAwMDAwMDAwMTM2LCJleHAiOjE1OTE4MzMyNTh9.uYHinkiAT5H6EkZW9D7HJ1efoCmRpy3Id-gojZHlUaA",
+    ) -> Dict[str, List[bytes]]:
+
+        params = {
+            "client_id": [client_id.encode()],
+            "iss": [iss.encode()],
+            "login_hint": [login_hint.encode()],
+            "target_link_uri": [target_link_uri.encode()],
+            "lti_message_hint": [lti_message_hint.encode()],
+        }
+        return params
+
+    return _make_lti13_login_params
 
 
 @pytest.fixture(scope="function")
-def lti13_login_params_decoded():
+def make_lti13_login_params_decoded():
     """
     Creates a dictionary with k/v's that emulates an initial login request.
     """
@@ -432,41 +437,38 @@ def make_lti13_resource_link_request() -> Dict[str, str]:
 
 @pytest.fixture(scope="function")
 def make_lti13_platform_jwks() -> Dict[str, List[Dict[str, str]]]:
-    def _make_lti13_platform_jwks():
-        """
-        Valid response when retrieving jwks from the platform.
-        """
-        jwks = {
-            "keys": [
-                {
-                    "kty": "RSA",
-                    "e": "AQAB",
-                    "n": "sBrymOqJsg3huJMJmmYi7kSQX5IPPFJokfZaFPCM87TDBtjvV_ha_i_wJYDGoiqM3GKY-h1PditDxpMrqUOwKoIYXYySKurdAQr_G2pmkkdFtX0FDclgzjJyioElpgzrZdgy4y5TaW-HOOCaW7fFFOArkCkwqdAdxXRH4daLQCX0QyAPbgZPigsWbMm9DnQlBYIfkDVAf0kmiOvWsYOvuEMbapgZC5meW6XcNRQ2goEp6RJWF5SQ0ZTI64rxFG2FiGpqF4LyzgtP1th4qBKMTyKFfiHn0CA_LBIaZ90_htR6onTKgYr8v4TREJkdLyu7tyrSZjfUYCTdzkLFT9_dXQ",
-                    "kid": "2020-03-01T00:00:01Z",
-                    "alg": "RS256",
-                    "use": "sig",
-                },
-                {
-                    "kty": "RSA",
-                    "e": "AQAB",
-                    "n": "7AugnfFImg9HWNN1gfp-9f0Qx26ctPMVGj4BmKdknP2wnVWQPn7jvYl6J0H7YZY40adSePU-urJ2ICQnVyJjKu9DPNOvWanB-hG96zhf_6wsU8rZJhXwfJzM-K7xhd7f0pf0VFG7HZAJXFazoPkCTLpdQ_daNVp7jklhz2qzBe0Y_cIZaCqfAWMI7M046kYKkvk87rPkwi75O3sOqF7GmOIWCHqNzt3p69gPeYOirin9XeAEL9ZmTwgtVHSXM8W1sLCnTEukRLuuAZzTjC79B7TwEqDu5kXI7MuOHOueX3ePKjulXwRDVxK4JyuT0XPBe6xrFbh9hXBK9SB3XY33mw",
-                    "kid": "2020-04-01T00:00:04Z",
-                    "alg": "RS256",
-                    "use": "sig",
-                },
-                {
-                    "kty": "RSA",
-                    "e": "AQAB",
-                    "n": "x5bJTy70O2XAMGVYq7ahfHZC6yovIfrH9pglFare2icDKVGA7u-9Fdruuma4lwwhRg6d7H3avZLY392zJKJByVkjNEfl0tszhbJ99jWoIzhvPNlk0_tCo1_9oCGEjZgh1wB8wVJIDm-Rt6ar5JwYNBGqPXbjWZTVRm5w9GccqLuK7Bc9RBecmU-WI1_pbWyz0T2I-9kn39K0u4Xhv3zTrZg_mkGsTNsVpBKkSSlHJnxsxq2_0v6TYNtzVmp2s7G11V3Ftp1gRQNaZcP2cEKISTip_Zj-bp63n8LaqH52Go1Jt7d1YFUSVth2OeWg4PURel8RIW5d0XwyaVVGbDMR2Q",
-                    "kid": "2020-05-01T00:00:01Z",
-                    "alg": "RS256",
-                    "use": "sig",
-                },
-            ]
-        }
-        return jwks
-
-    return _make_lti13_platform_jwks
+    """
+    Valid response when retrieving jwks from the platform.
+    """
+    jwks = {
+        "keys": [
+            {
+                "kty": "RSA",
+                "e": "AQAB",
+                "n": "sBrymOqJsg3huJMJmmYi7kSQX5IPPFJokfZaFPCM87TDBtjvV_ha_i_wJYDGoiqM3GKY-h1PditDxpMrqUOwKoIYXYySKurdAQr_G2pmkkdFtX0FDclgzjJyioElpgzrZdgy4y5TaW-HOOCaW7fFFOArkCkwqdAdxXRH4daLQCX0QyAPbgZPigsWbMm9DnQlBYIfkDVAf0kmiOvWsYOvuEMbapgZC5meW6XcNRQ2goEp6RJWF5SQ0ZTI64rxFG2FiGpqF4LyzgtP1th4qBKMTyKFfiHn0CA_LBIaZ90_htR6onTKgYr8v4TREJkdLyu7tyrSZjfUYCTdzkLFT9_dXQ",
+                "kid": "2020-03-01T00:00:01Z",
+                "alg": "RS256",
+                "use": "sig",
+            },
+            {
+                "kty": "RSA",
+                "e": "AQAB",
+                "n": "7AugnfFImg9HWNN1gfp-9f0Qx26ctPMVGj4BmKdknP2wnVWQPn7jvYl6J0H7YZY40adSePU-urJ2ICQnVyJjKu9DPNOvWanB-hG96zhf_6wsU8rZJhXwfJzM-K7xhd7f0pf0VFG7HZAJXFazoPkCTLpdQ_daNVp7jklhz2qzBe0Y_cIZaCqfAWMI7M046kYKkvk87rPkwi75O3sOqF7GmOIWCHqNzt3p69gPeYOirin9XeAEL9ZmTwgtVHSXM8W1sLCnTEukRLuuAZzTjC79B7TwEqDu5kXI7MuOHOueX3ePKjulXwRDVxK4JyuT0XPBe6xrFbh9hXBK9SB3XY33mw",
+                "kid": "2020-04-01T00:00:04Z",
+                "alg": "RS256",
+                "use": "sig",
+            },
+            {
+                "kty": "RSA",
+                "e": "AQAB",
+                "n": "x5bJTy70O2XAMGVYq7ahfHZC6yovIfrH9pglFare2icDKVGA7u-9Fdruuma4lwwhRg6d7H3avZLY392zJKJByVkjNEfl0tszhbJ99jWoIzhvPNlk0_tCo1_9oCGEjZgh1wB8wVJIDm-Rt6ar5JwYNBGqPXbjWZTVRm5w9GccqLuK7Bc9RBecmU-WI1_pbWyz0T2I-9kn39K0u4Xhv3zTrZg_mkGsTNsVpBKkSSlHJnxsxq2_0v6TYNtzVmp2s7G11V3Ftp1gRQNaZcP2cEKISTip_Zj-bp63n8LaqH52Go1Jt7d1YFUSVth2OeWg4PURel8RIW5d0XwyaVVGbDMR2Q",
+                "kid": "2020-05-01T00:00:01Z",
+                "alg": "RS256",
+                "use": "sig",
+            },
+        ]
+    }
+    return jwks
 
 
 @pytest.fixture(scope="function")
@@ -488,7 +490,7 @@ def make_lti13_resource_link_request_privacy_enabled(
 
 
 @pytest.fixture(scope="function")
-def build_lti13_jwt_id_token(json_lti13_launch_request: Dict[str, str]) -> jwt:
+def make_lti13_jwt_id_token(json_lti13_launch_request: Dict[str, str]) -> jwt:
     """
     Thin wrapper for the jwt.encode() method. Use the `make_lti13_resource_link_request`
     or `make_lti13_resource_link_request_privacy_enabled` fixture to create the json and
@@ -505,7 +507,7 @@ def build_lti13_jwt_id_token(json_lti13_launch_request: Dict[str, str]) -> jwt:
 
 
 @pytest.fixture
-def pem_file(tmp_path):
+def make_pem_file(tmp_path):
     """
     Create a test private key file used with LTI 1.3 request/reponse flows
     """

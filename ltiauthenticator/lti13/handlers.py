@@ -3,11 +3,9 @@ import json
 import os
 import re
 import uuid
-from pathlib import Path
 from typing import cast
 from urllib.parse import quote
 from urllib.parse import unquote
-from urllib.parse import urlencode
 from urllib.parse import urlparse
 
 import pem
@@ -18,7 +16,6 @@ from oauthenticator.oauth2 import guess_callback_uri
 from oauthenticator.oauth2 import OAuthCallbackHandler
 from oauthenticator.oauth2 import OAuthLoginHandler
 from oauthenticator.oauth2 import STATE_COOKIE_NAME
-from tornado import web
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 from tornado.web import RequestHandler
@@ -303,78 +300,3 @@ class LTI13JWKSHandler(BaseHandler):
         # we do not need to use json.dumps because tornado is converting our dict automatically and adding the content-type as json
         # https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler.write
         self.write(keys_obj)
-
-
-class FileSelectHandler(BaseHandler):
-    @web.authenticated
-    async def get(self):
-        """Return a sorted list of notebooks recursively found in shared path"""
-        user = self.current_user
-        auth_state = await user.get_auth_state()
-        self.log.debug("Current user for file select handler is %s" % user.name)
-        # decoded = self.authenticator.decoded
-        self.course_id = auth_state["course_id"]
-        self.grader_name = f"grader-{self.course_id}"
-        self.grader_root = Path(
-            "/home",
-            self.grader_name,
-        )
-        self.course_root = self.grader_root / self.course_id
-        self.course_shared_folder = Path("/shared", self.course_id)
-        a = ""
-        link_item_files = []
-        notebooks = list(self.course_shared_folder.glob("**/*.ipynb"))
-        notebooks.sort()
-        for f in notebooks:
-            fpath = str(f.relative_to(self.course_shared_folder))
-            self.log.debug("Getting files fpath %s" % fpath)
-
-            if fpath.startswith(".") or f.name.startswith("."):
-                self.log.debug("Ignoring file %s" % fpath)
-                continue
-            # generate the assignment link that uses gitpuller
-            user_redirect_path = quote("/user-redirect/git-pull", safe="")
-            assignment_link_path = f"?next={user_redirect_path}"
-            urlpath_workspace = f"tree/{self.course_id}/{fpath}"
-            self.log.debug(f"urlpath_workspace:{urlpath_workspace}")
-            query_params_for_git = [
-                ("repo", f"/home/jovyan/shared/{self.course_id}"),
-                ("branch", "master"),
-                ("urlpath", urlpath_workspace),
-            ]
-            encoded_query_params_without_safe_chars = quote(
-                urlencode(query_params_for_git), safe=""
-            )
-
-            url = f"https://{self.request.host}/{assignment_link_path}?{encoded_query_params_without_safe_chars}"
-            self.log.debug("URL to fetch files is %s" % url)
-            link_item_files.append(
-                {
-                    "path": fpath,
-                    "content_items": json.dumps(
-                        {
-                            "@context": "http://purl.imsglobal.org/ctx/lti/v1/ContentItem",
-                            "@graph": [
-                                {
-                                    "@type": "LtiLinkItem",
-                                    "@id": url,
-                                    "url": url,
-                                    "title": f.name,
-                                    "text": f.name,
-                                    "mediaType": "application/vnd.ims.lti.v1.ltilink",
-                                    "placementAdvice": {
-                                        "presentationDocumentTarget": "frame"
-                                    },
-                                }
-                            ],
-                        }
-                    ),
-                }
-            )
-        self.log.debug("Rendering file-select.html template")
-        html = self.render_template(
-            "file_select.html",
-            files=link_item_files,
-            action_url=auth_state["launch_return_url"],
-        )
-        self.finish(html)
