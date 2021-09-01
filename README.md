@@ -32,13 +32,7 @@ Start by following the steps below to configure your JupyterHub setup with the b
 
 > **Note**: if you LMS is not listed feel free to send us a PR with instructions for this new LMS.
 
-There are two configuration values to define with LTI 1.1:
-
-- The **consumers** setting: the value for the LTI 1.1 configuration `consumer key` and `shared secret`.
-- The **username_key** setting: the parameter from the LTI 1.1 launch request used to set the JupyterHub username.
-- The **config_description** setting:
-- The **config_icon** setting:
-- The **config_title** setting:
+The table below describes the configuration options available with the LTI v1.1 authenticator:
 
 | LTI Authenticator Configuration Setting | Required | Description                                                              | Default                            |
 | --------------------------------------- | -------- | ------------------------------------------------------------------------ | ---------------------------------- |
@@ -102,15 +96,19 @@ If you are running **JupyterHub within a Kubernetes Cluster**, deployed using he
 
 ```yaml
 # Custom config for JupyterHub's helm chart
-auth:
-  type: "lti"
-  lti:
-    consumers: { "client-key": "client-secret" }
-    username_key: "lis_person_contact_email_primary"
-    config_icon: "https://my.static.assets/img/icon.jpg"
+hub:
+  config:
+    # Additional documentation related to authentication and authorization available at
+    # https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/authentication.html
+    JupyterHub:
+      authenticator_class: lti
+    LTI11Authenticator:
+      consumers: { "client-key": "client-secret" }
+      username_key: "lis_person_contact_email_primary"
+      config_icon: "https://my.static.assets/img/icon.jpg"
 ```
 
-> _Note_: all settings available with the `jupyterhub-ltiauthenticator` package are available with the `lti` key when defining a custom config for the JupyterHub helm chart.
+_Note_: in the helm chart example configuration above `hub.config.LTI11Authenticator.username_key: lis_person_contact_email_primary` is equivalent to the standard JupyterHub configuration using `jupyterhub_config.py` with `c.LTI11Authenticator.username_key = lis_person_contact_email_primary`.
 
 ### Open edX
 

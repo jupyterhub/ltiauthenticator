@@ -53,7 +53,14 @@ class LTI11AuthenticateHandler(BaseHandler):
 
 class LTI11ConfigHandler(BaseHandler):
     """
-    Renders LTI 1.1 configuration file in XML format.
+    Renders LTI 1.1 configuration file in XML format. Having the external tool's
+    settings available with a configuration URL with the standard LTI 1.1 XML format
+    allows users to use the URL and/or Paste XML options when defining the external
+    tool settings within a a tool consumer, such as a Learning Management System (LMS).
+
+    This configuration option is also known as Defining an LTI Link for a Tool Consumer.
+
+    ref: http://www.imsglobal.org/specs/lti/xml
     """
 
     def get(self) -> None:
