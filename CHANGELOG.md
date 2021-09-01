@@ -2,7 +2,7 @@
 
 ## [1.1]
 
-### [1.1.0] - 2021-08-16
+### [1.1.0] - 2021-09-01
 
 #### New features added
 
@@ -15,6 +15,7 @@
 
 #### Maintenance and upkeep improvements
 
+- Fix release instructions by reverting to use bump2version [#66](https://github.com/jupyterhub/ltiauthenticator/pull/66) ([@consideRatio](https://github.com/consideRatio))
 - Add pyupgrade and prettier to pre-commit, and apply it [#63](https://github.com/jupyterhub/ltiauthenticator/pull/63) ([@consideRatio](https://github.com/consideRatio))
 - Use pre-commit.ci to run pre-commit tests [#62](https://github.com/jupyterhub/ltiauthenticator/pull/62) ([@consideRatio](https://github.com/consideRatio))
 - docs: initialize read-the-docs based documentation [#61](https://github.com/jupyterhub/ltiauthenticator/pull/61) ([@consideRatio](https://github.com/consideRatio))

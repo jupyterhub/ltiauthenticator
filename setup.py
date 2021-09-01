@@ -1,28 +1,13 @@
-import os
-import sys
-
 from setuptools import find_packages
 from setuptools import setup
 
 
-# setup logic from github.com/jupyterhub/jupyterhub
-v = sys.version_info
-if v[:2] < (3, 6):
-    error = "ERROR: LTIAuthenticator requires Python version 3.6 or above."
-    print(error, file=sys.stderr)
-    sys.exit(1)
-
-# Get the current package version.
-here = os.path.abspath(os.path.dirname(__file__))
-version_ns = {}
-with open(os.path.join("_version.py")) as f:
-    exec(f.read(), {}, version_ns)
-
-
 setup(
     name="jupyterhub-ltiauthenticator",
-    version="1.0.0",
-    description="JupyterHub authenticator implementing LTI v1.1 / v1.3",
+    version="1.1.1.dev",
+    description="JupyterHub authenticator implementing LTI v1",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     url="https://github.com/jupyterhub/ltiauthenticator",
     author="Yuvi Panda",
     author_email="yuvipanda@gmail.com",
