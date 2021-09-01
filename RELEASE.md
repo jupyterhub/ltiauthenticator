@@ -10,15 +10,15 @@ For you to follow along according to these instructions, you need:
 
 1. Update `CHANGELOG.md`
 
-- Generate a list of PRs using [executablebooks/github-activity](https://github.com/executablebooks/github-activity)
+   - Generate a list of PRs using [executablebooks/github-activity](https://github.com/executablebooks/github-activity)
 
-  ```bash
-  github-activity --output=github-activity-output.md --heading-level=3 jupyterhub/ltiauthenticator
-  ```
+     ```bash
+     github-activity --output=github-activity-output.md --heading-level=3 jupyterhub/ltiauthenticator
+     ```
 
-- Visit and label all uncategorized PRs appropriately with: `maintenance`, `enhancement`, `breaking`, `bug`, or `documentation`.
-- Generate a list of PRs again and add it to the changelog.
-- Manually highlight the breaking changes and summarize the release.
+   - Visit and label all uncategorized PRs appropriately with: `maintenance`, `enhancement`, `breaking`, `bug`, or `documentation`.
+   - Generate a list of PRs again and add it to the changelog.
+   - Manually highlight the breaking changes and summarize the release.
 
 1. Once the changelog is up to date, checkout main and make sure it is up to date and clean.
 
