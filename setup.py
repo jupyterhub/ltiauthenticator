@@ -1,22 +1,5 @@
-import os
-import sys
-
 from setuptools import find_packages
 from setuptools import setup
-
-
-# setup logic from github.com/jupyterhub/jupyterhub
-v = sys.version_info
-if v[:2] < (3, 6):
-    error = "ERROR: LTIAuthenticator requires Python version 3.6 or above."
-    print(error, file=sys.stderr)
-    sys.exit(1)
-
-# Get the current package version.
-here = os.path.abspath(os.path.dirname(__file__))
-version_ns = {}
-with open(os.path.join("_version.py")) as f:
-    exec(f.read(), {}, version_ns)
 
 
 setup(
