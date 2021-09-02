@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name="jupyterhub-ltiauthenticator",
-    version="1.1.1.dev",
+    version="1.2.0",
     description="JupyterHub authenticator implementing LTI v1",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
