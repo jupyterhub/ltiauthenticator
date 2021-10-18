@@ -9,6 +9,7 @@ from traitlets.config import Dict
 from traitlets.config import Unicode
 
 from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
+from ltiauthenticator.lti11.handlers import LTI11ConfigHandler
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 from ltiauthenticator.utils import convert_request_to_dict
 from ltiauthenticator.utils import get_client_protocol
@@ -28,8 +29,36 @@ class LTI11Authenticator(Authenticator):
     auto_login = True
     login_service = "LTI 1.1"
 
+    config_description = Unicode(
+        default_value="JupyterHub LTI 1.1 external tool",
+        config=True,
+        help="""
+        The external tool's description.
+        """,
+    )
+
+    config_icon = Unicode(
+        default_value="",
+        config=True,
+        help="""
+        The icon is both optional and indicates a URL to be used for an icon to the tool. This icon is
+        usually displayed in the LTI 1.1 consumer interface. The image should have 16x16 px, long-term
+        http/https and, generally speaking, LMS Platforms generally only accept the gif, png, or jpg file types.
+
+        For example: https://my.content.domain/img/tool_icon.jpg
+        """,
+    )
+
+    config_title = Unicode(
+        default_value="JupyterHub",
+        config=True,
+        help="""
+        The externa tool's title defined within the LTI 1.1 XML config.
+        """,
+    )
+
     consumers = Dict(
-        {},
+        default={},
         config=True,
         help="""
         A dict of consumer keys mapped to consumer secrets for those keys.
@@ -39,7 +68,7 @@ class LTI11Authenticator(Authenticator):
     )
 
     username_key = Unicode(
-        "custom_canvas_user_id",
+        default="custom_canvas_user_id",
         allow_none=True,
         config=True,
         help="""
@@ -63,11 +92,14 @@ class LTI11Authenticator(Authenticator):
         """,
     )
 
-    def get_handlers(self, app: JupyterHub) -> BaseHandler:
-        return [("/lti/launch", LTI11AuthenticateHandler)]
-
-    def login_url(self, base_url):
+    def login_url(self, base_url: str) -> str:
         return url_path_join(base_url, "/lti/launch")
+
+    def get_handlers(self, app: JupyterHub) -> BaseHandler:
+        return [
+            ("/lti/launch", LTI11AuthenticateHandler),
+            ("/lti11/config", LTI11ConfigHandler),
+        ]
 
     async def authenticate(  # noqa: C901
         self, handler: BaseHandler, data: dict = None

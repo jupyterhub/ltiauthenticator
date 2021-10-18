@@ -1,85 +1,21 @@
 import json
-
-from jwcrypto.jwk import JWK
-from tornado.log import app_log
-from tornado.web import RequestHandler
-
-
-def get_client_protocol(handler: RequestHandler) -> dict:
-    """
-    Gets first protocol from the x-forwarded-proto header that should
-    represent the client's original http/https request.
-
-    Args:
-        handler: a tornado.web.RequestHandler object
-
-    Returns:
-        A decoded dict with keys/values extracted from the request's arguments
-    """
-    if "x-forwarded-proto" in handler.request.headers:
-        hops = [
-            h.strip() for h in handler.request.headers["x-forwarded-proto"].split(",")
-        ]
-        protocol = hops[0]
-    else:
-        protocol = handler.request.protocol
-    app_log.debug("First protocol from x-forwarded-proto list: %s" % protocol)
-    return protocol
-
-
-def convert_request_to_dict(arguments: dict) -> dict:
-    """
-    Converts the arguments obtained from a request to a dict.
-
-    Args:
-        handler: a tornado.web.RequestHandler object
-
-    Returns:
-        A decoded dict with keys/values extracted from the request's arguments
-    """
-    args = {}
-    for k, values in arguments.items():
-        args[k] = values[0].decode()
-    app_log.debug("Request converted to dict: %s" % args)
-    return args
-
-
-def get_jwk(public_key):
-    """Get the JSON Web Key (JWK) from the public key.
-
-    Args:
-        public_key ([type]): [description]
-
-    Returns:
-        [type]: [description]
-    """
-    jwk_obj = JWK.from_pem(public_key)
-    public_jwk = json.loads(jwk_obj.export_public())
-    public_jwk["alg"] = "RS256"
-    public_jwk["use"] = "sig"
-    return public_jwk
-
-
-import uuid
-import json
-import jwt
 import logging
-import pem
 import os
 import re
 import time
 import urllib
-
-from Crypto.PublicKey import RSA
-from jwcrypto.jwk import JWK
-
-from tornado.httpclient import AsyncHTTPClient
-from tornado.httpclient import HTTPClientError
-from tornado.web import RequestHandler
-
+import uuid
 from typing import Any
 from typing import Dict
 from typing import List
+
+import jwt
+import pem
+from Crypto.PublicKey import RSA
+from jwcrypto.jwk import JWK
+from tornado.httpclient import AsyncHTTPClient
+from tornado.httpclient import HTTPClientError
+from tornado.web import RequestHandler
 
 from ltiauthenticator.lti13.constants import DEFAULT_ROLE_NAMES_FOR_INSTRUCTOR
 from ltiauthenticator.lti13.constants import DEFAULT_ROLE_NAMES_FOR_STUDENT

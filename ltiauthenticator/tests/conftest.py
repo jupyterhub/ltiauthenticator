@@ -1,153 +1,45 @@
-import json
-import os
 import secrets
 import time
-from io import StringIO
 from typing import Dict
 from typing import List
-from unittest.mock import Mock
-from unittest.mock import patch
 
 import jwt
 import pytest
 from Crypto.PublicKey import RSA
+from jupyterhub.app import JupyterHub
 from oauthlib.oauth1.rfc5849 import signature
-from tornado.httpclient import AsyncHTTPClient
-from tornado.httpclient import HTTPResponse
-from tornado.httputil import HTTPHeaders
-from tornado.httputil import HTTPServerRequest
-from tornado.web import Application
-from tornado.web import RequestHandler
+from traitlets.config import Config
 
 
-@pytest.fixture(scope="function")
-def user_model(username: str, **kwargs) -> dict:
-    """Return a user model"""
-    user = {
-        "username": username,
-        "auth_state": {k: v for k, v in kwargs.items() if not k.startswith("oauth_")},
-    }
-    user.update(kwargs)
-    return user
-
-
-@pytest.fixture(scope="function")
-def make_http_response() -> HTTPResponse:
-    """Creates an HTTPResponse
+@pytest.fixture
+def app() -> JupyterHub:
+    """Creates an instance of the JupyterHub application.
 
     Returns:
-        HTTPResponse: [description]
+        MockHub: a mocked JupyterHub instance.
     """
 
-    def _make_http_response(
-        handler: RequestHandler,
-        code: int = 200,
-        reason: str = "OK",
-        headers: HTTPHeaders = HTTPHeaders({"content-type": "application/json"}),
-        effective_url: str = "http://hub.example.com/",
-        body: Dict[str, str] = {"foo": "bar"},
-    ) -> HTTPResponse:
-        """
-        Creates an HTTPResponse object from a given request.
+    def _app(cfg: Config) -> JupyterHub:
+        hub = JupyterHub(config=cfg)
+        hub.tornado_settings = {"foo": "bar"}
+        hub.init_hub()
+        hub.base_url = "/mytenant"
+        return hub
 
-        Example:
-
-            local_handler = make_lti11_mock_request_handler(RequestHandler)
-            response_args = {'handler': local_handler.request, 'body': {'code': 200}}
-            http_response = await factory_http_response(**response_args)
-
-        Args:
-          handler: tornado.web.RequestHandler object.
-          code: response code, e.g. 200 or 404
-          reason: reason phrase describing the status code
-          headers: HTTPHeaders (response header object), use the dict within the constructor, e.g.
-            {"content-type": "application/json"}
-          effective_url: final location of the resource after following any redirects
-          body: dictionary that represents the StringIO (buffer) body
-
-        Returns:
-          A tornado.client.HTTPResponse object
-        """
-        dict_to_buffer = StringIO(json.dumps(body)) if body is not None else None
-        return HTTPResponse(
-            request=handler,
-            code=code,
-            reason=reason,
-            headers=headers,
-            effective_url=effective_url,
-            buffer=dict_to_buffer,
-        )
-
-    return _make_http_response
+    return _app
 
 
 @pytest.fixture(scope="function")
-def make_lti11_mock_request_handler() -> RequestHandler:
-    """
-    Sourced from https://github.com/jupyterhub/oauthenticator/blob/HEAD/oauthenticator/tests/mocks.py
-    """
+def make_lti11_basic_launch_request_args():
+    """Create an LTI 1.1 launch request."""
 
-    def _make_lti11_mock_request_handler(
-        handler: RequestHandler,
-        uri: str = "https://hub.example.com",
-        method: str = "POST",
-        **settings: dict,
-    ) -> RequestHandler:
-        """Instantiate a Handler in a mock application"""
-        application = Application(
-            hub=Mock(
-                base_url="/hub/",
-                server=Mock(base_url="/hub/"),
-            ),
-            cookie_secret=os.urandom(32),
-            db=Mock(rollback=Mock(return_value=None)),
-            **settings,
-        )
-        request = HTTPServerRequest(
-            method=method,
-            uri=uri,
-            connection=Mock(),
-        )
-        handler = RequestHandler(
-            application=application,
-            request=request,
-        )
-        handler._transforms = []
-        return handler
-
-    return _make_lti11_mock_request_handler
-
-
-@pytest.fixture(scope="function")
-def http_async_httpclient_with_simple_response(
-    request, make_http_response, make_lti11_mock_request_handler
-):
-    """
-    Creates a patch of AsyncHttpClient.fetch method, useful when other tests are making http request
-    """
-    local_handler = make_lti11_mock_request_handler(RequestHandler)
-    test_request_body_param = (
-        request.param if hasattr(request, "param") else {"message": "ok"}
-    )
-    with patch.object(
-        AsyncHTTPClient,
-        "fetch",
-        return_value=make_http_response(
-            handler=local_handler.request, body=test_request_body_param
-        ),
-    ):
-        yield AsyncHTTPClient()
-
-
-@pytest.fixture(scope="function")
-def make_lti11_basic_launch_request_args() -> Dict[str, str]:
     def _make_lti11_basic_launch_args(
         roles: str = "Instructor",
         ext_roles: str = "urn:lti:instrole:ims/lis/Instructor",
         lms_vendor: str = "canvas",
         oauth_consumer_key: str = "my_consumer_key",
         oauth_consumer_secret: str = "my_shared_secret",
-    ):
+    ) -> Dict[str, str]:
         oauth_timestamp = str(int(time.time()))
         oauth_nonce = secrets.token_urlsafe(32)
         args = {
@@ -220,7 +112,7 @@ def make_lti11_success_authentication_request_args():
         ext_roles: str = "urn:lti:instrole:ims/lis/Instructor",
         lms_vendor: str = "canvas",
         oauth_consumer_key: str = "my_consumer_key",
-    ):
+    ) -> Dict[str, str.encode]:
         """
         Return a valid request arguments make from LMS to our tool (when authentication steps were success)
         """

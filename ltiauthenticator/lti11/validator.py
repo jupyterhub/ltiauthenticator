@@ -119,7 +119,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
             ),
         )
         consumer_secret = self.consumers[args["oauth_consumer_key"]]
-        sign = signature.sign_hmac_sha1(base_string, consumer_secret, None)
+        sign = signature.sign_hmac_sha1_with_client(base_string, consumer_secret, None)
         is_valid = signature.safe_string_equals(sign, args["oauth_signature"])
         self.log.debug("signature in request: %s" % args["oauth_signature"])
         self.log.debug("calculated signature: %s" % sign)

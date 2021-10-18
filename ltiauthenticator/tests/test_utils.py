@@ -14,7 +14,7 @@ def test_get_protocol_with_more_than_one_value():
         spec=RequestHandler,
         request=Mock(
             headers={"x-forwarded-proto": "https,http,http"},
-            protocol="https",
+            protocol="http",
         ),
     )
     expected = "https"
