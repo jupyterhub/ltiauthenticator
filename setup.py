@@ -17,7 +17,8 @@ setup(
     install_requires=[
         "escapism>=1.0",
         "josepy>=1.4.0",
-        "jupyterhub>=0.8" "jwcrypto>=0.8",
+        "jupyterhub>=0.8",
+        "jwcrypto>=1.0",
         "oauthlib>=3.1",
         "oauthenticator>=0.13.0",
         "pem>=20.1.0",
