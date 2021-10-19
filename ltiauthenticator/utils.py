@@ -186,8 +186,15 @@ async def get_lms_access_token(
     return json.loads(resp.body)
 
 
-def get_jwk(public_key):
-    """Gets the JSON Web Key"""
+def get_jwk(public_key: bytes) -> Dict[str, str]:
+    """Gets the JSON Web Key from PKCS#8 formatted data from a PEM file.
+
+    Args:
+        public_key (bytes): PKCS#8 formmatted public key.
+
+    Returns:
+        Dict[str, str]: dictionary that represents the JWK.
+    """
 
     jwk_obj = JWK.from_pem(public_key)
     public_jwk = json.loads(jwk_obj.export_public())
@@ -196,7 +203,7 @@ def get_jwk(public_key):
     return public_jwk
 
 
-def get_headers_to_jwt_encode(private_key_text: str) -> dict:
+def get_headers_to_jwt_encode(private_key_text: str) -> Dict[str, str]:
     """
     Helper method that gets the dict headers to use in jwt.encode method
 
@@ -204,7 +211,7 @@ def get_headers_to_jwt_encode(private_key_text: str) -> dict:
       private_key_text: The PEM-Encoded content as text
 
     Returns:
-      A dict if the publickey can be exported or None otherwise
+      A dictionary if the publickey can be exported or None otherwise
     """
     public_key = RSA.importKey(private_key_text).publickey().exportKey()
     headers = None
