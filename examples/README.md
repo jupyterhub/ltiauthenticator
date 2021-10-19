@@ -15,7 +15,7 @@ virtualenv -p python3 venv
 source venv/bin/activate
 ```
 
-2. Install [requirements](https://jupyterhub.readthedocs.io/en/stable/quickstart.html#installation):
+1. Install [requirements](https://jupyterhub.readthedocs.io/en/stable/quickstart.html#installation):
 
 ```bash
 python3 -m pip install jupyterhub
@@ -23,31 +23,75 @@ npm install -g configurable-http-proxy
 python3 -m pip install notebook
 ```
 
-3. Create your secure LTI 1.1 consumer key and shared secret values:
+1. Create a secure value for the `JUPYTERHUB_CRYPT_KEY`:
+
+Create a secure token with the `openssl` command from your terminal:
+
+```bash
+openssl rand -hex 32
+```
+
+Copy the the result and export it as an environment variable:
+
+```bash
+export JUPYTERHUB_CRYPT_KEY=<secure-value-from-openssl-here>
+```
+
+### LTI 1.1
+
+Create your secure LTI 1.1 consumer key and shared secret values:
 
 ```bash
 export LTI_CLIENT_KEY=$(openssl rand -hex 32)
 export LTI_SHARED_SECRET=$(openssl rand -hex 32)
 ```
 
-## Example 1: Testing the `username_key` settings with LTI 1.1 launches
+#### Test the `username_key` settings with LTI 1.1 launches
 
 This example demonstrates how users can change the `username_key` to fetch values from the LTI 1.1 launch request that can be used to set the username.
 
 1. Confirm the `username_key` value in the provided `jupyterhub_config_lti11.py` example:
 
-Edit the provided `jupyterhub_config_lti11.py` to change the `username_key` to another value to represent the
-user's username. LTI 1.1 parameters that represent Personably Identifiable Information (PII) values have the `lis_person_*`
-prefix. The included example has the `lis_person_name_full` LTI 1.1 parameter assigned to the `username_key`. A full list of the `lis_person_*` are available in the [IMS GLobal LTI 1.1 implementation guide](https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide) -> Section 3 (Basic Launch Data).
+Edit the provided `jupyterhub_config_lti11.py` to change the `username_key` to another value to represent the user's username. LTI 1.1 parameters that represent Personably Identifiable Information (PII) values have the `lis_person_*` prefix. The included example has the `lis_person_name_full` LTI 1.1 parameter assigned to the `username_key`. A full list of the `lis_person_*` are available in the [IMS GLobal LTI 1.1 implementation guide](https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide) -> Section 3 (Basic Launch Data).
 
 You could also use a parameter substitution to extract PII values from your LMS. To obtain a full list of possible parameter substitution settings refer to the IMS Global LTI 1.1 [implementation guide](https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide) -> Apendix C.2.
 
-2. Start the JupyterHub with the example configuration for LTI 1.1:
+1. Start the JupyterHub with the example configuration for LTI 1.1:
 
 ```bash
 jupyterhub --config /path/to/jupyterhub_config_lti11.py
 ```
 
-3. Check the username by either viewing the [JupyterHub's username value in the control panel](https://jupyterhub.readthedocs.io/en/stable/reference/urls.html#hub-home) and/or view the JupyterHub logs to confirm what the username is set to.
+1. Check the username by either viewing the [JupyterHub's username value in the control panel](https://jupyterhub.readthedocs.io/en/stable/reference/urls.html#hub-home) and/or view the JupyterHub logs to confirm what the username is set to.
+
+If the actual username value is different from the expected username value, then view the JupyterHub logs in `debug` (the provided examples have `c.Application.log_level = "DEBUG"`) mode to confirm that the original launch request keys/values are correct.
+
+### LTI 1.3
+
+#### Validate Platform Settings
+
+Ensure the `authorization_url`, `client_id`, `token_url`, `endpoint`, and `callback_url` have the correct values. The provided example has standard settings for the Canvas LMS.
+
+#### Test the `username_key` settings with LTI 1.3 launches
+
+This example demonstrates how users can change the `username_key` to fetch values from the LTI 1.3 login initiation flows that can be used to set the username.
+
+1. Confirm the `username_key` value in the provided `jupyterhub_config_lti13.py` example:
+
+Edit the provided `jupyterhub_config_lti13.py` to change the `username_key` to another value to represent the user's username. You can basically use any LTI 1.3 claims that represent Personably Identifiable Information (PII).
+
+You could also use a parameter substitution to extract PII values from your LMS. To obtain a full list of possible parameter substitution settings refer to the IMS Global LTI 1.3 [implementation guide](https://www.imsglobal.org/spec/lti/v1p3/) -> Apendix B: Custom parameter substitution.
+
+1. Start the JupyterHub with the example configuration for LTI 1.3:
+
+```bash
+jupyterhub --config /path/to/jupyterhub_config_lti13.py
+```
+
+### Trouble Shooting
+
+#### The username_key does not fetch the correct value from the launch requests
+
+Check the username by either viewing the [JupyterHub's username value in the control panel](https://jupyterhub.readthedocs.io/en/stable/reference/urls.html#hub-home) and/or view the JupyterHub logs to confirm what the username is set to.
 
 If the actual username value is different from the expected username value, then view the JupyterHub logs in `debug` (the provided examples have `c.Application.log_level = "DEBUG"`) mode to confirm that the original launch request keys/values are correct.

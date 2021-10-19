@@ -18,7 +18,6 @@ setup(
         "josepy==1.4.0",
         "jupyterhub>=1.3.0",
         "jwcrypto==0.8",
-        "jwt==1.2.0",
         "oauthlib>=3.0",
         "oauthenticator>=0.13.0",
         "pem==20.1.0",

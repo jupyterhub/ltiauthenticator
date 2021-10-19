@@ -3,7 +3,11 @@ import json
 import os
 import re
 import uuid
+from typing import Any
 from typing import cast
+from typing import Dict
+from typing import List
+from typing import Optional
 from urllib.parse import quote
 from urllib.parse import unquote
 from urllib.parse import urlparse
@@ -15,7 +19,6 @@ from oauthenticator.oauth2 import _serialize_state
 from oauthenticator.oauth2 import guess_callback_uri
 from oauthenticator.oauth2 import OAuthCallbackHandler
 from oauthenticator.oauth2 import OAuthLoginHandler
-from oauthenticator.oauth2 import STATE_COOKIE_NAME
 from tornado.httputil import url_concat
 from tornado.web import HTTPError
 from tornado.web import RequestHandler
@@ -51,7 +54,7 @@ class LTI13ConfigHandler(BaseHandler):
         protocol = get_client_protocol(self)
         self.log.debug("Origin protocol is: %s" % protocol)
         # build the full target link url value required for the jwks endpoint
-        target_link_url = f"{protocol}://{self.request.host}/"
+        target_link_url = f"{protocol}://{self.request.host}"
         self.log.debug("Target link url is: %s" % target_link_url)
         keys = {
             "title": "IllumiDesk",
@@ -102,9 +105,9 @@ class LTI13ConfigHandler(BaseHandler):
                 "email": "$Person.email.primary",
                 "lms_user_id": "$User.id",
             },  # noqa: E231
-            "public_jwk_url": f"{target_link_url}hub/lti13/jwks",
+            "public_jwk_url": f"{target_link_url}{self.base_url}hub/lti13/jwks",
             "target_link_uri": target_link_url,
-            "oidc_initiation_url": f"{target_link_url}hub/oauth_login",
+            "oidc_initiation_url": f"{target_link_url}{self.base_url}hub/oauth_login",
         }
         self.write(json.dumps(keys))
 
@@ -117,12 +120,15 @@ class LTI13LoginHandler(OAuthLoginHandler):
 
     def authorize_redirect(
         self,
-        client_id: str = None,
-        login_hint: str = None,
-        lti_message_hint: str = None,
-        nonce: str = None,
-        redirect_uri: str = None,
-        state: str = None,
+        redirect_uri: Optional[str] = None,
+        client_id: Optional[str] = None,
+        login_hint: Optional[str] = None,
+        lti_message_hint: Optional[str] = None,
+        nonce: Optional[str] = None,
+        state: Optional[str] = None,
+        extra_params: Optional[Dict[str, Any]] = None,
+        response_type: Optional[str] = "id_token",
+        scope: Optional[List[str]] = ["openid"],
     ) -> None:
         """
         Overrides the OAuth2Mixin.authorize_redirect method to to initiate the LTI 1.3 / OIDC
@@ -146,27 +152,27 @@ class LTI13LoginHandler(OAuthLoginHandler):
             callback and provide Cross-Site Request Forgery (CSRF) mitigation.
         """
         handler = cast(RequestHandler, self)
-        args = {"response_type": "id_token"}
-        args["scope"] = "openid"
-        if redirect_uri is not None:
-            args["redirect_uri"] = redirect_uri
+        args = {"response_type": response_type}
+        args["scope"] = " ".join(scope)
         if client_id is not None:
             args["client_id"] = client_id
-        extra_params = {"extra_params": {}}
-        extra_params["response_mode"] = "form_post"
-        extra_params["prompt"] = "none"
+        if redirect_uri is not None:
+            args["redirect_uri"] = redirect_uri
+        if response_type is not None:
+            args["response_type"] = response_type
         if login_hint is not None:
             extra_params["login_hint"] = login_hint
         if lti_message_hint is not None:
             extra_params["lti_message_hint"] = lti_message_hint
-        if state is not None:
-            extra_params["state"] = state
         if nonce is not None:
             extra_params["nonce"] = nonce
-        args.update(extra_params)
-        url = os.environ.get("LTI13_AUTHORIZE_URL")
-        if not url:
-            raise OSError("LTI13_AUTHORIZE_URL env var is not set")
+        if state is not None:
+            extra_params["state"] = state
+        extra_params["response_mode"] = "form_post"
+        extra_params["prompt"] = "none"
+        if extra_params:
+            args.update(extra_params)
+        url = self.authenticator.authorize_url
         handler.redirect(url_concat(url, args))
 
     def get_state(self):
@@ -204,20 +210,6 @@ class LTI13LoginHandler(OAuthLoginHandler):
             )
         return self._state
 
-    def set_state_cookie(self, state):
-        """
-        Overrides the base method to send the 'samesite' and 'secure' arguments and avoid the issues related with the use of iframes.
-        It depends of python 3.8
-        """
-        self.set_secure_cookie(
-            STATE_COOKIE_NAME,
-            state,
-            expires_days=1,
-            httponly=True,
-            samesite=None,
-            secure=True,
-        )
-
     def post(self):
         """
         Validates required login arguments sent from platform and then uses the authorize_redirect() method
@@ -243,6 +235,7 @@ class LTI13LoginHandler(OAuthLoginHandler):
             # and that they are within the time-based tolerance window
             nonce_raw = hashlib.sha256(state.encode())
             nonce = nonce_raw.hexdigest()
+            self.log.debug("nonce value: %s" % nonce)
             self.authorize_redirect(
                 client_id=client_id,
                 login_hint=login_hint,
@@ -250,6 +243,7 @@ class LTI13LoginHandler(OAuthLoginHandler):
                 nonce=nonce,
                 redirect_uri=redirect_uri,
                 state=state,
+                extra_params={'state': state},
             )
 
 
