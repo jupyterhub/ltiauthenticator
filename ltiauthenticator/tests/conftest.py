@@ -35,6 +35,43 @@ def app() -> JupyterHub:
 
 
 @pytest.fixture(scope="function")
+def make_mock_request_handler() -> RequestHandler:
+    """
+    Sourced from https://github.com/jupyterhub/oauthenticator/blob/master/oauthenticator/tests/mocks.py
+    """
+
+    def _make_mock_request_handler(
+        handler: RequestHandler,
+        uri: str = "https://hub.example.com",
+        method: str = "GET",
+        **settings: dict,
+    ) -> RequestHandler:
+        """Instantiate a Handler in a mock application"""
+        application = Application(
+            hub=Mock(
+                base_url="/hub/",
+                server=Mock(base_url="/hub/"),
+            ),
+            cookie_secret=os.urandom(32),
+            db=Mock(rollback=Mock(return_value=None)),
+            **settings,
+        )
+        request = HTTPServerRequest(
+            method=method,
+            uri=uri,
+            connection=Mock(),
+        )
+        handler = RequestHandler(
+            application=application,
+            request=request,
+        )
+        handler._transforms = []
+        return handler
+
+    return _make_mock_request_handler
+
+
+@pytest.fixture(scope="function")
 def make_lti11_basic_launch_request_args():
     """Create an LTI 1.1 launch request."""
 
@@ -450,3 +487,17 @@ def make_pem_file(tmp_path):
     with open(key_path, "wb") as content_file:
         content_file.write(key.exportKey("PEM"))
     return key_path
+
+
+@pytest.fixture(scope="function")
+def build_lti13_jwt_id_token() -> str:
+    def _make_lti13_jwt_id_token(json_lti13_launch_request: Dict[str, str]):
+        """
+        Returns a valid jwt lti13 id token from a json
+        We can use the `make_lti13_resource_link_request` or `make_lti13_resource_link_request_privacy_enabled`
+        fixture to create the json then call this method.
+        """
+        encoded_jwt = jwt.encode(json_lti13_launch_request, "secret", algorithm="HS256")
+        return encoded_jwt
+
+    return _make_lti13_jwt_id_token

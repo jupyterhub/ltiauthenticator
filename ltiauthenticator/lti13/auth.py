@@ -2,14 +2,17 @@ import logging
 import os
 from typing import Dict
 
+from jupyterhub.app import JupyterHub
 from jupyterhub.auth import LocalAuthenticator
+from jupyterhub.handlers import BaseHandler
 from oauthenticator.oauth2 import OAuthenticator
 from tornado.web import HTTPError
 from traitlets.config import Unicode
 
-from ltiauthenticator.lti13.handlers import LTI13CallbackHandler
-from ltiauthenticator.lti13.handlers import LTI13LoginHandler
-from ltiauthenticator.lti13.validator import LTI13LaunchValidator
+from .handlers import LTI13CallbackHandler
+from .handlers import LTI13ConfigHandler
+from .handlers import LTI13LoginHandler
+from .validator import LTI13LaunchValidator
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -45,12 +48,13 @@ class LTI13Authenticator(OAuthenticator):
 
     endpoint = Unicode(
         os.getenv("LTI13_ENDPOINT", ""),
+        allow_none=False,
         config=True,
         help="""
         The platform's base endpoint used when redirecting requests to the platform
         after receiving the initial login request.
         """,
-    ).tag(config=True)
+    )
 
     username_key = Unicode(
         "email",
@@ -75,6 +79,11 @@ class LTI13Authenticator(OAuthenticator):
         http://www.imsglobal.org/spec/lti/v1p3/#customproperty.
         """,
     )
+
+    def get_handlers(self, app: JupyterHub) -> BaseHandler:
+        return [
+            ("/lti13/config", LTI13ConfigHandler),
+        ]
 
     async def authenticate(  # noqa: C901
         self, handler: LTI13LoginHandler, data: Dict[str, str] = None
@@ -108,8 +117,8 @@ class LTI13Authenticator(OAuthenticator):
                 f"Username_key is {self.username_key} and value fetched from JWT is {username}"
             )
             if not username:
-                if "user_id" in jwt_decoded and jwt_decoded["user_id"]:
-                    username = jwt_decoded["user_id"]
+                if "sub" in jwt_decoded and jwt_decoded["sub"]:
+                    username = jwt_decoded["sub"]
                 else:
                     raise HTTPError(400, "Unable to set the username")
 
