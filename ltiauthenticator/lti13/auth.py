@@ -11,8 +11,9 @@ from traitlets.config import Unicode
 
 from .handlers import LTI13CallbackHandler
 from .handlers import LTI13ConfigHandler
+from .handlers import LTI13LaunchValidator
 from .handlers import LTI13LoginHandler
-from .validator import LTI13LaunchValidator
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

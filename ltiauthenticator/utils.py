@@ -20,6 +20,7 @@ from tornado.web import RequestHandler
 from ltiauthenticator.lti13.constants import DEFAULT_ROLE_NAMES_FOR_INSTRUCTOR
 from ltiauthenticator.lti13.constants import DEFAULT_ROLE_NAMES_FOR_STUDENT
 
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

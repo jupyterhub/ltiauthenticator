@@ -4,6 +4,7 @@ codecov
 flake8
 github-activity
 notebook
+pip-tools
 pre-commit
 pytest
 pytest-asyncio
