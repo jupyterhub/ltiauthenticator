@@ -36,7 +36,7 @@ c.LTI13Authenticator.endpoint = (
     or "https://canvas.instructure.com/api/lti/security/jwks"
 )
 c.LTI13Authenticator.oauth_callback_url = (
-    os.getenv("OAUTH_CALLBACK_URL") or "https://greg-dev.ngrok.io/hub/oauth_callback"
+    os.getenv("OAUTH_CALLBACK_URL") or "http://localhost:8000/hub/oauth_callback"
 )
 c.LTI13Authenticator.token_url = (
     os.getenv("OAUTH2_TOKEN_URL") or "https://canvas.instructure.com/login/oauth2/token"
