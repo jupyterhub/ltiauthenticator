@@ -50,11 +50,3 @@ repos:
     rev: "3.9.2"
     hooks:
       - id: flake8
-
-  # Create fresh requirements.txt with pip-compile
-  - repo: https://github.com/jazzband/pip-tools
-    rev: 6.4.0
-    hooks:
-      - id: pip-compile
-        files: \setup.(py)$
-        types: ["file", "non-executable", "python", "text"]
