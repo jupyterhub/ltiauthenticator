@@ -22,7 +22,7 @@ setup(
         "oauthenticator>=0.13.0",
         "pem>=20.1.0",
         "pycryptodome>=3.9.8",
-        "PyJWT>=1.7.1",
+        "PyJWT==1.7.1",
         "pyjwkest>=1.4.2",
     ],
     package_data={
