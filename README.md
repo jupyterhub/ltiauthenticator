@@ -94,6 +94,8 @@ You may customize these settings with the `config_*` configuration options descr
 
 #### Custom Configuration with JupyterHub's Helm Chart
 
+##### LTI 1.1
+
 If you are running **JupyterHub within a Kubernetes Cluster**, deployed using helm, you need to supply the client key & shared secret with the `lti.consumers` key. The example below also demonstrates how customize the `lti.username_key` to set the user's email as the JupyterHub username and the `lti.config_icon` to define a custom external tool icon when using the LTI 1.1 configuration XML endpoint:
 
 ```yaml
@@ -103,7 +105,8 @@ hub:
     # Additional documentation related to authentication and authorization available at
     # https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/authentication.html
     JupyterHub:
-      authenticator_class: lti
+      authenticator_class: ltiauthenticator.LTIAuthenticator # LTI 1.1
+      authenticator_class: ltiauthenticator.lti13.auth.LTI13Authenticator # LTI 1.3
     LTI11Authenticator:
       consumers: { "client-key": "client-secret" }
       username_key: "lis_person_contact_email_primary"
@@ -111,6 +114,33 @@ hub:
 ```
 
 _Note_: in the helm chart example configuration above `hub.config.LTI11Authenticator.username_key: lis_person_contact_email_primary` is equivalent to the standard JupyterHub configuration using `jupyterhub_config.py` with `c.LTI11Authenticator.username_key = lis_person_contact_email_primary`.
+
+##### LTI 1.3
+
+If you are running **JupyterHub within a Kubernetes Cluster**, deployed using helm, you need to supply the LTI 1.3 (OIDC/OAuth2) endpoints. The example below also demonstrates how customize the `lti13.username_key` to set the user's give name:
+
+```yaml
+# Custom config for JupyterHub's helm chart
+hub:
+  config:
+    # Additional documentation related to authentication and authorization available at
+    # https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/authentication.html
+    JupyterHub:
+      authenticator_class: ltiauthenticator.lti13.auth.LTI13Authenticator
+    LTI13Authenticator:
+      # Use an LTI 1.3 claim to set the username. You can use and LTI 1.3 claim that
+      # identifies the user, such as email, last_name, etc.
+      username_key: "given_name"
+      # The LTI 1.3 authorization url
+      authorize_url: "https://canvas.instructure.com/api/lti/authorize_redirect"
+      # The external tool's client id as represented within the platform (LMS)
+      # Note: the client id is not required by some LMS's for authentication.
+      client_id: "125900000000000329"
+      # The LTI 1.3 endpoint url, also known as the OAuth2 callback url
+      endpoint: "http://localhost:8000/hub/oauth_callback"
+      # The LTI 1.3 token url used to validate JWT signatures
+      token_url: "https://canvas.instructure.com/login/oauth2/token"
+```
 
 #### Configuration of LTI 1.1 with the Learning Management System
 
