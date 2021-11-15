@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3]
+
+### [1.3.0] - 2021-11-15
+
+#### Enhancements made
+
+- Add LTI 1.3 authenticator and config handler [#73](https://github.com/jupyterhub/ltiauthenticator/pull/73) ([@jgwerner](https://github.com/jgwerner))
+
+## Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/ltiauthenticator/graphs/contributors?from=2021-09-01&to=2021-11-15&type=c))
+
+[@consideRatio](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AconsideRatio+updated%3A2021-09-01..2021-11-15&type=Issues) | [@jgwerner](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ajgwerner+updated%3A2021-09-01..2021-11-15&type=Issues) | [@yuvipanda](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ayuvipanda+updated%3A2021-09-01..2021-11-15&type=Issues)
+
 ## [1.2]
 
 ### [1.2.0] - 2021-09-02
