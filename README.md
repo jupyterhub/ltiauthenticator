@@ -4,15 +4,15 @@
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/jupyterhub/ltiauthenticator/Tests?logo=github)](https://github.com/jupyterhub/ltiauthenticator/actions)
 [![Latest PyPI version](https://img.shields.io/pypi/v/jupyterhub-ltiauthenticator?logo=pypi)](https://pypi.python.org/pypi/jupyterhub-ltiauthenticator)
 
-Implements [LTI v1.1](http://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide) authenticator for use with JupyterHub.
+Implements the [LTI v1.1](http://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide) and the [LTI 1.3](http://www.imsglobal.org/spec/lti/v1p3/impl) authenticators for use with JupyterHub.
 
-This converts JupyterHub into a LTI **Tool Provider**, which can be
-then easily used with various **Tool Consumers**, such as Canvas, EdX,
-Moodle, Blackboard, etc.
+This converts JupyterHub into a LTI **Tool Provider**, which can be then easily used with various **Tool Consumers**, such as Canvas, Open EdX, Moodle, Blackboard, etc.
 
-So far, `ltiauthenticator` has been tested with [EdX](http://edx.readthedocs.io/projects/edx-partner-course-staff/en/latest/exercises_tools/lti_component.html), [Canvas](https://canvas.instructure.com/doc/api/file.tools_intro.html), and [Moodle](https://docs.moodle.org/311/en/LTI_and_Moodle). Documentation contributions are highly welcome!
+So far, `ltiauthenticator` has been tested with [Open EdX](http://edx.readthedocs.io/projects/edx-partner-course-staff/en/latest/exercises_tools/lti_component.html), [Canvas](https://canvas.instructure.com/doc/api/file.tools_intro.html), and [Moodle](https://docs.moodle.org/311/en/LTI_and_Moodle). Documentation contributions are highly welcome!
 
-Note that with this authenticator, going directly to the hub url will no longer allow you to log in. You _must_ visit the hub through an appropriate LTI 1.1 compliant Tool Consumer (such as Canvas, Moodle, EdX, etc) to be able to log in.
+Note that with these `LTI` authenticators going directly to the hub url will no longer allow you to log in. You _must_ visit the hub through an appropriate LTI 1.1 compliant Tool Consumer or LTI 1.3 compliant Platform (such as Canvas, Moodle, EdX, etc) to be able to log in.
+
+> **NOTE**: LTI 1.1 identifies the LMS as the `Tool Consumer` and LTI 1.3 identifies the LMS as the `Platform` for for all practical purposes these terms are equivalent.
 
 ## Installation
 
@@ -24,7 +24,9 @@ pip install jupyterhub-ltiauthenticator
 
 ## Using LTIAuthenticator
 
-### Common Configuration Settings
+### LTI 1.1
+
+#### Common Configuration Settings
 
 Due to the fact that LTI 1.1 is an open standard Learning Management System (LMS) vendors that adhere to the LTI 1.1 standard utilize the same configuration settings when integrating with an external tool. Some of these settings are included in a configuration endpoint to facilitate the JupyterHub's as an external tool with your LMS.
 
@@ -110,7 +112,9 @@ hub:
 
 _Note_: in the helm chart example configuration above `hub.config.LTI11Authenticator.username_key: lis_person_contact_email_primary` is equivalent to the standard JupyterHub configuration using `jupyterhub_config.py` with `c.LTI11Authenticator.username_key = lis_person_contact_email_primary`.
 
-### Open edX
+#### Configuration of LTI 1.1 with the Learning Management System
+
+##### Open edX
 
 1. You need access to [Open edX Studio](https://studio.edx.org/) to set up Open edX with LTI 1.1. You might have to contact your Open edX administrator to get access.
 
@@ -146,11 +150,11 @@ _Note_: in the helm chart example configuration above `hub.config.LTI11Authentic
 
 1. You are done! You can click the Link to see what the user workflow would look like. You can repeat step 6 in all the units that should have a link to the Hub for the user.
 
-## Canvas
+##### Canvas
 
 The setup for Canvas is very similar to the process for Open edX.
 
-### Install JupyterHub as an External Tool
+###### Install JupyterHub as an External Tool
 
 [Add a new external app configuration in Canvas](https://community.canvaslms.com/docs/DOC-13135-415257103). You can name it anything, but you'll be using it throughout the Canvas course to refer to your JupyterHub instance, so make it something meaningful and unique. Note that the right to create applications might be limited by your institution. The basic information required to create an application in Canvas' `Manual entry` mode is:
 
@@ -173,7 +177,7 @@ The application can be created at the account level or the course level. If the 
   - Currently, the only method for de-anonymizing the LTI user ID in Canvas is with [the "masquerade" permission](https://canvas.instructure.com/doc/api/file.masquerading.html), which grants the user full access to act as any user account.
   - Unless you are able to obtain masquerade permissions, it is recommended to run the course in public mode.
 
-#### Create a new assignment.
+###### Create a new assignment.
 
 1. Navigate to `Assignments -> Add Assignment`
 1. For `Submission Type`, select `External Tool`
@@ -203,9 +207,9 @@ The application can be created at the account level or the course level. If the 
    like. You can repeat step 7 in all the units that should have a link to the
    Hub for the user.
 
-## Moodle
+#### Moodle
 
-### General Requirements
+##### General Requirements
 
 The Moodle setup is very similar to both the Open edX and Canvas setups described above. In addition to completing the steps from the [common configuration settings section](#common-configuration-settings) ensure that:
 
@@ -215,7 +219,7 @@ The Moodle setup is very similar to both the Open edX and Canvas setups describe
 
 1. If your Moodle environment is using https, you should also use https for your JupyterHub.
 
-### Configuration Steps
+##### Configuration Steps
 
 1. Navigate to the course where you would like to add JupyterHub as an external tool
 1. Turn on editing and add an instance of the `External Tool Activity Module` (https://docs.moodle.org/37/en/External_tool_settings)
@@ -237,7 +241,7 @@ The Moodle setup is very similar to both the Open edX and Canvas setups describe
 
 1. Click `Save and return to course` or `Save and display`, you will either be returned to the course page or create an LTI 1.1 launch request to log into the JupyterHub instance.
 
-## Common Gotchas
+#### Common Gotchas
 
 1.  If you have a `base_url` set in your jupyterhub configruation, this needs to be reflected in your launch URL and custom parameters. For example, if your `jupyterhub_config.py` file contains:
 
@@ -259,4 +263,115 @@ The Moodle setup is very similar to both the Open edX and Canvas setups describe
     ];
     ```
 
-2.  [401 Unauthorized] - [Canvas] Make sure you added your JupyterHub link by first specifying the tool via the 'Find' button (Step 4.2). Otherwise your link will not be sending the appropriate key and secret and your launch request will be recognized as unauthorized.
+1.  [401 Unauthorized] - [Canvas] Make sure you added your JupyterHub link by first specifying the tool via the 'Find' button (Step 4.2). Otherwise your link will not be sending the appropriate key and secret and your launch request will be recognized as unauthorized.
+
+### LTI 1.3
+
+#### Common Configuration Settings
+
+Like LTI 1.1, LTI 1.3 is an open standard. Many Learning Management System (LMS) vendors support the LTI 1.3 standard and as such vendors are able to integrate with various LMS's as External Tools.
+
+Start by following the steps below to configure your JupyterHub setup with the basic settings. Then, navigate to your LMS vendor's section to complete the installation and configuration steps.
+
+> **Note**: if your LMS is not listed feel free to send us a PR with instructions for this new LMS.
+
+The table below describes the configuration options available with the LTI v1.1 authenticator:
+
+| LTI Authenticator Configuration Setting | Required | Description                                                              | Default                            |
+| --------------------------------------- | -------- | ------------------------------------------------------------------------ | ---------------------------------- | ---------------- |
+| config_description                      | No       | The LTI 1.1 external tool description                                    | `JupyterHub LTI 1.1 external tool` |
+| config_icon                             | No       | The http/s URL with the LTI 1.1 icon                                     | `nil`                              |
+| config_title                            | No       | The LTI 1.1 external tool Title                                          | `JupyterHub`                       |
+| consumers                               | Yes      | The key/value pair that represents the client key and shared secret      | `{}`                               |
+| username_key                            | No       | The LTI 1.1 launch parameter that contains the JupyterHub username value | `canvas_custom_user_id`            | ++++++++++++++++ |
+
+#### The Username Key Setting (LTI11Authenticator.username_key)
+
+Regardless of the LMS vendor you are using (Canvas, Moodle, Open edX, etc), the user's name will default to use the `custom_canvas_user_id`. (This is due to legacy behavior and will default to a more generic LTI 1.1 parameter in a future release). Change the `username_key` setting if you would like to use another value from the LTI 1.1 launch request.
+
+The example below illustrates how to fetch the user's email to set the JupyterHub username by specifying the `lis_person_contact_email_primary` LTI 1.1 launch request parameter:
+
+```python
+# Set the user's email as their user id
+c.LTIAuthenticator.username_key = 'lis_person_contact_email_primary'
+```
+
+A [partial list of keys in an LTI request](https://www.edu-apps.org/code.html#params) is available as a reference if you would like to use another value to set the JupyterHub username. As a general rule of thumb, Personally Identifiable Information (PII) values are represented with the `lis_person_*` arguments in the launch request. Your LMS provider might also implement custom keys you can use, such as with the use of [custom parameter substitution](https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide).
+
+#### LTI 1.3 Configuration JSON Settings
+
+The LTI 1.3 configuration XML settings are available at `/lti11/config` endpoint. Some LMS vendors accept XML and/or URLs that render the configuration XML to simplify the LTI 1.1 External Tool installation process.
+
+You may customize these settings with the `config_*` configuration options described in the [common configuration settings](#common-configuration-settings) section.
+
+#### Custom Configuration with JupyterHub's Helm Chart
+
+If you are running **JupyterHub within a Kubernetes Cluster**, deployed using helm, you need to supply the client key & shared secret with the `lti.consumers` key. The example below also demonstrates how customize the `lti.username_key` to set the user's email as the JupyterHub username and the `lti.config_icon` to define a custom external tool icon when using the LTI 1.1 configuration XML endpoint:
+
+```yaml
+# Custom config for JupyterHub's helm chart
+hub:
+  config:
+    # Additional documentation related to authentication and authorization available at
+    # https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/authentication.html
+    JupyterHub:
+      authenticator_class: lti
+    LTI11Authenticator:
+      consumers: { "client-key": "client-secret" }
+      username_key: "lis_person_contact_email_primary"
+      config_icon: "https://my.static.assets/img/icon.jpg"
+```
+
+_Note_: in the helm chart example configuration above `hub.config.LTI11Authenticator.username_key: lis_person_contact_email_primary` is equivalent to the standard JupyterHub configuration using `jupyterhub_config.py` with `c.LTI11Authenticator.username_key = lis_person_contact_email_primary`.
+
+#### Configuration of LTI 1.3 with the Learning Management System
+
+#### Canvas
+
+The setup for the Canvas LMS.
+
+##### Configure the JupyterHub as as a Developer Key
+
+1. [To install the JupyterHub as an External Tool](https://community.canvaslms.com/t5/Canvas-Releases-Board/Canvas-Release-LTI-1-3-and-LTI-Advantage-2019-06-22/td-p/246652) admin users need to create a `Developer Key`. (More detailed instructions and screen shots on how to access this section are provided in the link above).
+
+1. Once the Developer Key configuration for is open then select the `Enter URL` method within the `Configure` -> `Method` dropdown. This allows admin users to add the JupyterHub configuration by referring to a JupyterHub endpoint that renders the LTI 1.3 Developer Key configuration in JSON. By default the configuration URL is structured with the `https://<my-hub.domain.com>/hub/lti13/config` format.
+
+1. Add the `Redirect URIs`. By default, the redirect URI is equivalent to the callback URL. As such the default URL for the Redirect URIs field should be `https://<my-hub.domain.com>/hub/oauth_callback`.
+
+1. Add a `Key Name` to identify the `Developer Key`.
+
+1. (Optional) Enter owner's email and developer key notes.
+
+1. Save the `Developer Key` settings by clicking on the `Save` button.
+
+##### Enable the Developer Key and copy Client ID
+
+1. You should now see the new `Developer Key` in the `Admin` -> `Developer Keys` -> `Accounts` tab. By default the Developer Key is disabled. Enable the JupyterHub installation by clicking on the On/Off toggler in the `State` column to `ON`.
+
+1. Copy the value that represents the `Client ID` in the `Datails` column. This value should look something like `125900000000000318`.
+
+##### Install the JupyterHub as an External Tool in your Canvas Course
+
+1. Navigate to the course where you would like to enable the JupyterHub.
+
+1. Click on the course's `Settings` link.
+
+1. Click on the `Apps` tab and then on `View App Configurations`.
+
+1. Click on the `+App` button to add a new application. Select `By Client ID` from the `Configuration Type` dropdown and paste the `Client ID` value that you copied from the `Developer Keys` -> `<Your Developer Key Name>` -> `Details` column.
+
+1. Save the application.
+
+Once the application is saved you will see the option to launch the JupyterHub from the Course navigation menu. You will also have the option to add `Assignments` as an `External Tool`.
+
+**Privacy Settings**:
+
+Like the Privacy Settings for LTI 1.1, the LTI 1.3 External Tool application in [Canvas may be configured with privacy enabled](https://community.canvaslms.com/t5/Canvas-Developers-Group/LTI-1-3-Configuration-Claims-Course-Placement-Privacy/td-p/229252). The user ID in these cases will fetch the value from the LTI 1.3 subject (`sub` claim) which is a unique and opaque identifier for the student.
+
+##### Create a new assignment as an External Tool
+
+To configure an assignment with LTI 1.3 as an External Tool [follow the instructions from the LTI 1.1 -> Create a new assignment section](#create-a-new-assignment-as-an-external-tool).
+
+#### Common Gotchas
+
+Refer to the [common gotchas](#common-gotchas) section in the LTI 1.1 section.
