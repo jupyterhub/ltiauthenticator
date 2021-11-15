@@ -124,10 +124,4 @@ Examples:
 
 #### Releases
 
-Please refer to the documentation within this repo's [RELEASE.md](https://github.com/jupyterhub/ltiauthenticator/blob/main/RELEASE.md). The example below updates the release to `1.3.0` and outputs the results (`--verbose`):
-
-```bash
-bump2version --verbose --new-version 1.3.0 -
-```
-
-Use the `--dry-run` flag to emulate the update without actually changing the files.
+Please refer to the documentation within this repo's [RELEASE.md](https://github.com/jupyterhub/ltiauthenticator/blob/main/RELEASE.md).
