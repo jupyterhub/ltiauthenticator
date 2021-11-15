@@ -8,7 +8,7 @@
 
 - Add LTI 1.3 authenticator and config handler [#73](https://github.com/jupyterhub/ltiauthenticator/pull/73) ([@jgwerner](https://github.com/jgwerner))
 
-## Contributors to this release
+#### Contributors to this release
 
 ([GitHub contributors page for this release](https://github.com/jupyterhub/ltiauthenticator/graphs/contributors?from=2021-09-01&to=2021-11-15&type=c))
 

@@ -124,4 +124,4 @@ Examples:
 
 #### Releases
 
-Please refer to the documentation within JupyterHub's [RELEASE.md](https://github.com/jupyterhub/jupyterhub/blob/main/RELEASE.md).
+Please refer to the documentation within this repo's [RELEASE.md](https://github.com/jupyterhub/ltiauthenticator/blob/main/RELEASE.md).
