@@ -124,7 +124,7 @@ Examples:
 
 #### Releases
 
-Please refer to the documentation within JupyterHub's [RELEASE.md](https://github.com/jupyterhub/jupyterhub/blob/main/RELEASE.md). We recomment using [`bump2version`](https://github.com/c4urself/bump2version) instead of `tbump`, however. The example below updates the release to `1.3.0` and outputs the results (`--verbose`):
+Please refer to the documentation within this repo's [RELEASE.md](https://github.com/jupyterhub/ltiauthenticator/blob/main/RELEASE.md). The example below updates the release to `1.3.0` and outputs the results (`--verbose`):
 
 ```bash
 bump2version --verbose --new-version 1.3.0 -
