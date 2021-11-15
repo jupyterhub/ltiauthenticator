@@ -13,6 +13,7 @@ __pycache__/
 .Python
 venv/
 env/
+venv/
 build/
 develop-eggs/
 dist/
@@ -68,3 +69,6 @@ target/
 # JupyterHub
 jupyterhub_cookie_secret
 jupyterhub.sqlite
+
+# Proxy process id files
+*.pid
