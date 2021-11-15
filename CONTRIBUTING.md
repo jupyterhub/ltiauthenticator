@@ -75,6 +75,8 @@ For the most part, contributors do not need to worry about commit message format
 
 ### For Maintainers
 
+#### Pull Requests and Commits
+
 When squashing and merging to the `main` branch, use the following format to provide consistent updates to the `CHANGELOG.md` file:
 
     <Commit Type>(scope): <Merge Description>
@@ -103,13 +105,13 @@ Examples:
 - Commit a new feature:
 
   ```
-  feat(workspace): Publish static notebooks with live widgets
+  feat(lti11): Add custom handler to fetch XML configuration
   ```
 
 - Commit a bug fix:
 
   ```
-  fix(core): Allow students to open submitted assignments from grades section
+  fix(lti13): Fix authentication bug from Assignment links
   ```
 
 - Commit a version with a breaking change:
@@ -119,3 +121,7 @@ Examples:
 
   BREAKING CHANGE: `extends` key in config file is now used for extending other config files
   ```
+
+#### Releases
+
+Please refer to the documentation within JupyterHub's [RELEASE.md](https://github.com/jupyterhub/jupyterhub/blob/main/RELEASE.md).
