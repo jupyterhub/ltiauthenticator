@@ -1,7 +1,7 @@
 # LTI Authenticator for JupyterHub
 
 ```{warning} Incomplete documentation
-This website is still under construction, complement its content with https://github.com/jupyterhub/litauthenticator#readme until it is.
+This website is still under construction, complement its content with [github.com/jupyterhub/ltiauthenticator#readme](https://github.com/jupyterhub/ltiauthenticator#readme) until it is.
 ```
 
 This website documents the use of an authenticator plugin for JupyterHub for use
