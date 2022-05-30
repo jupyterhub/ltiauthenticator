@@ -144,11 +144,11 @@ class LTI13LaunchValidator(LoggingConfigurable):
           Decoded dictionary that represents the k/v's included with the JWT
         """
         if verify is False:
+            unverified_token = jwt.decode(id_token, options={"verify_signature": False})
             self.log.debug(
-                "JWK verification is off, returning token %s"
-                % jwt.decode(id_token, verify=False)
+                f"JWK verification is off, returning token {unverified_token}"
             )
-            return jwt.decode(id_token, verify=False)
+            return unverified_token
 
         jws = JWS.from_compact(id_token)
         self.log.debug("Retrieving matching jws %s" % jws)
@@ -164,7 +164,12 @@ class LTI13LaunchValidator(LoggingConfigurable):
             % (id_token, key_from_jwks, verify)
         )
 
-        return jwt.decode(id_token, key=key_from_jwks, verify=False, audience=audience)
+        return jwt.decode(
+            id_token,
+            key=key_from_jwks,
+            audience=audience,
+            options={"verify_signature": False},
+        )
 
     def is_deep_link_launch(
         self,

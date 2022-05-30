@@ -168,7 +168,7 @@ async def get_lms_access_token(
     params = {
         "grant_type": "client_credentials",
         "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-        "client_assertion": token.decode(),
+        "client_assertion": token,
         "scope": scope,
     }
     logger.debug("LTI 1.3 OAuth parameters are %s" % params)

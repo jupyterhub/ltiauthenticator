@@ -497,7 +497,9 @@ def build_lti13_jwt_id_token() -> str:
         We can use the `make_lti13_resource_link_request` or `make_lti13_resource_link_request_privacy_enabled`
         fixture to create the json then call this method.
         """
-        encoded_jwt = jwt.encode(json_lti13_launch_request, "secret", algorithm="HS256")
+        encoded_jwt = jwt.encode(
+            json_lti13_launch_request, "secret", algorithm="HS256"
+        ).encode()
         return encoded_jwt
 
     return _make_lti13_jwt_id_token
