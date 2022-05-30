@@ -52,10 +52,10 @@ class LTI13ConfigHandler(BaseHandler):
 
         # get the origin protocol
         protocol = get_client_protocol(self)
-        self.log.debug("Origin protocol is: %s" % protocol)
+        self.log.debug(f"Origin protocol is: {protocol}")
         # build the full target link url value required for the jwks endpoint
         target_link_url = f"{protocol}://{self.request.host}"
-        self.log.debug("Target link url is: %s" % target_link_url)
+        self.log.debug(f"Target link url is: {target_link_url}")
         keys = {
             "title": "IllumiDesk",
             "scopes": [
@@ -217,25 +217,25 @@ class LTI13LoginHandler(OAuthLoginHandler):
         """
         validator = LTI13LaunchValidator()
         args = convert_request_to_dict(self.request.arguments)
-        self.log.debug("Initial login request args are %s" % args)
+        self.log.debug(f"Initial login request args are {args}")
         if validator.validate_login_request(args):
             login_hint = args["login_hint"]
-            self.log.debug("login_hint is %s" % login_hint)
+            self.log.debug(f"login_hint is {login_hint}")
             lti_message_hint = args["lti_message_hint"]
-            self.log.debug("lti_message_hint is %s" % lti_message_hint)
+            self.log.debug(f"lti_message_hint is {lti_message_hint}")
             client_id = args["client_id"]
-            self.log.debug("client_id is %s" % client_id)
+            self.log.debug(f"client_id is {client_id}")
             redirect_uri = guess_callback_uri(
                 "https", self.request.host, self.hub.server.base_url
             )
-            self.log.info("redirect_uri: %r", redirect_uri)
+            self.log.info(f"redirect_uri: {redirect_uri}")
             state = self.get_state()
             self.set_state_cookie(state)
             # TODO: validate that received nonces haven't been received before
             # and that they are within the time-based tolerance window
             nonce_raw = hashlib.sha256(state.encode())
             nonce = nonce_raw.hexdigest()
-            self.log.debug("nonce value: %s" % nonce)
+            self.log.debug(f"nonce value: {nonce}")
             self.authorize_redirect(
                 client_id=client_id,
                 login_hint=login_hint,
@@ -285,10 +285,10 @@ class LTI13JWKSHandler(BaseHandler):
             raise PermissionError()
         private_key = pem.parse_file(key_path)
         public_key = RSA.import_key(private_key[0].as_text()).publickey().exportKey()
-        self.log.debug("public_key is %s" % public_key)
+        self.log.debug(f"public_key is {public_key}")
 
         jwk = get_jwk(public_key)
-        self.log.debug("The jwks is %s" % jwk)
+        self.log.debug(f"The jwks is {jwk}")
         keys_obj = {"keys": []}
         keys_obj["keys"].append(jwk)
         # we do not need to use json.dumps because tornado is converting our dict automatically and adding the content-type as json

@@ -52,7 +52,7 @@ def normalize_string(name: str) -> str:
     # limit course_id to 25 characters, since its used for o/s username
     # in jupyter/docker-stacks compatible grader notebook (NB_USER)
     normalized_name = name[0:25]
-    logger.debug("String normalized to %s" % normalized_name)
+    logger.debug(f"String normalized to {normalized_name}")
     return normalized_name
 
 
@@ -80,7 +80,7 @@ def email_to_username(email: str) -> str:
     username = re.sub(r"\([^)]*\)", "", username)
     username = re.sub(r"[^\w-]+", "", username)
     username = username.lower()
-    logger.debug("Username normalized to %s" % username)
+    logger.debug(f"Username normalized to {username}")
 
     return username
 
@@ -148,14 +148,14 @@ async def get_lms_access_token(
         "exp": int(time.time()) + 60,
         "jti": str(uuid.uuid4()),
     }
-    logger.debug("Getting LTI 1.3 access token with parameters %s" % token_params)
+    logger.debug(f"Getting LTI 1.3 access token with parameters {token_params}")
     # get the pem-encoded content
     private_key = get_pem_text_from_file(private_key_path)
 
     headers = get_headers_to_jwt_encode(private_key)
 
     token = jwt.encode(token_params, private_key, algorithm="RS256", headers=headers)
-    logger.debug("Obtaining LTI 1.3 token %s" % token)
+    logger.debug(f"Obtaining LTI 1.3 token {token}")
     scope = scope or " ".join(
         [
             "https://purl.imsglobal.org/spec/lti-ags/scope/score",
@@ -164,14 +164,14 @@ async def get_lms_access_token(
             "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly",
         ]
     )
-    logger.debug("LTI 1.3 Scope is %s" % scope)
+    logger.debug(f"LTI 1.3 Scope is {scope}")
     params = {
         "grant_type": "client_credentials",
         "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
         "client_assertion": token.decode(),
         "scope": scope,
     }
-    logger.debug("LTI 1.3 OAuth parameters are %s" % params)
+    logger.debug(f"LTI 1.3 OAuth parameters are {params}")
     client = AsyncHTTPClient()
     body = urllib.parse.urlencode(params)
     try:
@@ -183,7 +183,7 @@ async def get_lms_access_token(
             f"Error by obtaining a token with lms. Detail: {e.response.body if e.response else e.message}"
         )
         raise
-    logger.debug("Token response body is %s" % json.loads(resp.body))
+    logger.debug(f"Token response body is {resp.body}")
     return json.loads(resp.body)
 
 
@@ -235,7 +235,7 @@ def get_pem_text_from_file(private_key_path: str) -> str:
     """
     # check the pem file permission
     if not os.access(private_key_path, os.R_OK):
-        logger.debug("Unable to access %s due to permission error" % private_key_path)
+        logger.debug(f"Unable to access {private_key_path} due to permission error")
         raise PermissionError()
     # parse file generates a list of PEM objects
     certs = pem.parse_file(private_key_path)

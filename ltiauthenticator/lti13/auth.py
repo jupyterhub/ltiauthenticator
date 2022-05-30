@@ -102,7 +102,7 @@ class LTI13Authenticator(OAuthenticator):
         validator = LTI13LaunchValidator()
 
         # get jwks endpoint and token to use as args to decode jwt.
-        self.log.debug("JWKS platform endpoint is %s" % self.endpoint)
+        self.log.debug(f"JWKS platform endpoint is {self.endpoint}")
         id_token = handler.get_argument("id_token")
 
         # extract claims from jwt (id_token) sent by the platform. as tool use the jwks (public key)
@@ -110,7 +110,7 @@ class LTI13Authenticator(OAuthenticator):
         jwt_decoded = await validator.jwt_verify_and_decode(
             id_token, self.endpoint, False, audience=self.client_id
         )
-        self.log.debug("Decoded JWT: %s" % jwt_decoded)
+        self.log.debug(f"Decoded JWT: {jwt_decoded}")
 
         if validator.validate_launch_request(jwt_decoded):
             username = jwt_decoded.get(self.username_key)
@@ -123,7 +123,7 @@ class LTI13Authenticator(OAuthenticator):
                 else:
                     raise HTTPError(400, "Unable to set the username")
 
-            self.log.debug("username is %s" % username)
+            self.log.debug(f"username is {username}")
 
             return {
                 "name": username,

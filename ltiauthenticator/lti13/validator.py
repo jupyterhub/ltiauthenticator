@@ -39,7 +39,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
         client = AsyncHTTPClient()
         resp = await client.fetch(endpoint, validate_cert=verify)
         platform_jwks = json.loads(resp.body)
-        self.log.debug("Retrieved jwks from lms platform %s" % platform_jwks)
+        self.log.debug(f"Retrieved jwks from lms platform {platform_jwks}")
 
         if not platform_jwks or "keys" not in platform_jwks:
             raise ValueError("Platform endpoint returned an empty jwks")
@@ -49,7 +49,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
             if jwk["kid"] != header_kid:
                 continue
             key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
-            self.log.debug("Get keys from jwks dict  %s" % key)
+            self.log.debug(f"Get keys from jwks dict {key}")
         if key is None:
             error_msg = (
                 f"No matching keys were found in the platform. kid: {header_kid}"
@@ -77,15 +77,13 @@ class LTI13LaunchValidator(LoggingConfigurable):
         # does all the required keys exist?
         for claim, v in LTI13_GENERAL_REQUIRED_CLAIMS.items():
             if claim not in jwt_decoded:
-                raise HTTPError(
-                    400, "Required claim %s not included in request" % claim
-                )
+                raise HTTPError(400, f"Required claim {claim} not included in request")
         # some fixed values
         lti_version = jwt_decoded.get(
             "https://purl.imsglobal.org/spec/lti/claim/version"
         )
         if lti_version != "1.3.0":
-            raise HTTPError(400, "Incorrect value %s for version claim" % lti_version)
+            raise HTTPError(400, f"Incorrect value {lti_version} for version claim")
 
         # validate context label
         context_claim = jwt_decoded.get(
@@ -117,7 +115,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 "https://purl.imsglobal.org/spec/lti/claim/message_type"
             ]
         ):
-            raise HTTPError(400, "Incorrect value %s for version claim" % message_type)
+            raise HTTPError(400, f"Incorrect value {message_type} for version claim")
 
         return True
 
@@ -151,17 +149,16 @@ class LTI13LaunchValidator(LoggingConfigurable):
             return jwt.decode(id_token, verify=False)
 
         jws = JWS.from_compact(id_token)
-        self.log.debug("Retrieving matching jws %s" % jws)
+        self.log.debug(f"Retrieving matching jws {jws}")
         json_header = jws.signature.protected
         header = Header.json_loads(json_header)
-        self.log.debug("Header from decoded jwt %s" % header)
+        self.log.debug(f"Header from decoded jwt {header}")
 
         key_from_jwks = await self._retrieve_matching_jwk(
             jwks_endpoint, verify, header.kid
         )
         self.log.debug(
-            "Returning decoded jwt with token %s key %s and verify %s"
-            % (id_token, key_from_jwks, verify)
+            f"Returning decoded jwt with token {id_token} key {key_from_jwks} and verify {verify}"
         )
 
         return jwt.decode(id_token, key=key_from_jwks, verify=False, audience=audience)
@@ -223,7 +220,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
             for claim, v in required_claims_by_message_type.items():
                 if claim not in jwt_decoded:
                     raise HTTPError(
-                        400, "Required claim %s not included in request" % claim
+                        400, f"Required claim {claim} not included in request"
                     )
             if not is_deep_linking:
                 # custom validations with resource launch
@@ -233,12 +230,11 @@ class LTI13LaunchValidator(LoggingConfigurable):
                     ).get("id")
                     == ""
                 ):
+                    id = jwt_decoded.get(
+                        "https://purl.imsglobal.org/spec/lti/claim/resource_link"
+                    ).get("id")
                     raise HTTPError(
-                        400,
-                        "Incorrect value %s for id in resource_link claim"
-                        % jwt_decoded.get(
-                            "https://purl.imsglobal.org/spec/lti/claim/resource_link"
-                        ).get("id"),
+                        400, f"Incorrect value {id} for id in resource_link claim"
                     )
 
         return True
@@ -257,10 +253,10 @@ class LTI13LaunchValidator(LoggingConfigurable):
         for param in LTI13_LOGIN_REQUEST_ARGS:
             if param not in args:
                 raise HTTPError(
-                    400, "Required LTI 1.3 arg %s not included in request" % param
+                    400, f"Required LTI 1.3 arg {param} not included in request"
                 )
             if not args.get(param):
                 raise HTTPError(
-                    400, "Required LTI 1.3 arg %s does not have a value" % param
+                    400, f"Required LTI 1.3 arg {param} does not have a value"
                 )
         return True
