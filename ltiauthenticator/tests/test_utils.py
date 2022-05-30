@@ -2,8 +2,7 @@ from unittest.mock import Mock
 
 from tornado.web import RequestHandler
 
-from ltiauthenticator.utils import convert_request_to_dict
-from ltiauthenticator.utils import get_client_protocol
+from ltiauthenticator.utils import convert_request_to_dict, get_client_protocol
 
 
 def test_get_protocol_with_more_than_one_value():

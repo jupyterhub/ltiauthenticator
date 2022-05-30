@@ -1,8 +1,7 @@
 import os
 import secrets
 import time
-from typing import Dict
-from typing import List
+from typing import Dict, List
 from unittest.mock import Mock
 
 import jwt
@@ -11,8 +10,7 @@ from Crypto.PublicKey import RSA
 from jupyterhub.app import JupyterHub
 from oauthlib.oauth1.rfc5849 import signature
 from tornado.httputil import HTTPServerRequest
-from tornado.web import Application
-from tornado.web import RequestHandler
+from tornado.web import Application, RequestHandler
 from traitlets.config import Config
 
 

@@ -5,14 +5,11 @@ from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from tornado.web import HTTPError
-from traitlets.config import Dict
-from traitlets.config import Unicode
+from traitlets.config import Dict, Unicode
 
-from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
-from ltiauthenticator.lti11.handlers import LTI11ConfigHandler
+from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler, LTI11ConfigHandler
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
-from ltiauthenticator.utils import convert_request_to_dict
-from ltiauthenticator.utils import get_client_protocol
+from ltiauthenticator.utils import convert_request_to_dict, get_client_protocol
 
 
 class LTI11Authenticator(Authenticator):

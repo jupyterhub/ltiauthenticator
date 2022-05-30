@@ -1,8 +1,7 @@
 [tool.black]
 skip-string-normalization = true
-target_version = [
-    "py36",
-    "py37",
-    "py38",
-    "py39",
-]
+# target-version should be all supported versions
+target-version = ["py37", "py38", "py39", "py310"]
+
+[tool.isort]
+profile = "black"
