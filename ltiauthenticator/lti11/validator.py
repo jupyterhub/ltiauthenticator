@@ -60,11 +60,11 @@ class LTI11LaunchValidator(LoggingConfigurable):
         for param in LTI11_OAUTH_ARGS:
             if param not in args.keys():
                 raise HTTPError(
-                    400, "Required oauth arg %s not included in request" % param
+                    400, f"Required oauth arg {param} not included in request"
                 )
             if not args.get(param):
                 raise HTTPError(
-                    400, "Required oauth arg %s does not have a value" % param
+                    400, f"Required oauth arg {param} does not have a value"
                 )
 
         # Ensure that consumer key is registered in in jupyterhub_config.py
@@ -76,11 +76,11 @@ class LTI11LaunchValidator(LoggingConfigurable):
         for param in LTI11_LAUNCH_PARAMS_REQUIRED:
             if param not in args.keys():
                 raise HTTPError(
-                    400, "Required LTI 1.1 arg arg %s not included in request" % param
+                    400, f"Required LTI 1.1 arg arg {param} not included in request"
                 )
             if not args.get(param):
                 raise HTTPError(
-                    400, "Required LTI 1.1 arg %s does not have a value" % param
+                    400, f"Required LTI 1.1 arg {param} does not have a value"
                 )
 
         # Inspiration to validate nonces/timestamps from OAuthlib
@@ -97,7 +97,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
                 raise HTTPError(
                     401,
                     "Timestamp given is invalid, differ from "
-                    "allowed by over %s seconds." % str(int(time.time() - ts)),
+                    f"allowed by over {int(time.time() - ts)} seconds.",
                 )
             if (
                 ts in LTI11LaunchValidator.nonces
@@ -119,8 +119,8 @@ class LTI11LaunchValidator(LoggingConfigurable):
         consumer_secret = self.consumers[args["oauth_consumer_key"]]
         sign = signature.sign_hmac_sha1(base_string, consumer_secret, None)
         is_valid = signature.safe_string_equals(sign, args["oauth_signature"])
-        self.log.debug("signature in request: %s" % args["oauth_signature"])
-        self.log.debug("calculated signature: %s" % sign)
+        self.log.debug(f"signature in request: {args['oauth_signature']}")
+        self.log.debug(f"calculated signature: {sign}")
         if not is_valid:
             raise HTTPError(401, "Invalid oauth_signature")
 

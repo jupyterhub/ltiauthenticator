@@ -128,27 +128,27 @@ class LTI11Authenticator(Authenticator):
         validator = LTI11LaunchValidator(self.consumers)
 
         self.log.debug(
-            "Original arguments received in request: %s" % handler.request.arguments
+            f"Original arguments received in request: {handler.request.arguments}"
         )
 
         # extract the request arguments to a dict
         args = convert_request_to_dict(handler.request.arguments)
-        self.log.debug("Decoded args from request: %s" % args)
+        self.log.debug(f"Decoded args from request: {args}")
 
         # get the origin protocol
         protocol = get_client_protocol(handler)
-        self.log.debug("Origin protocol is: %s" % protocol)
+        self.log.debug(f"Origin protocol is: {protocol}")
 
         # build the full launch url value required for oauth1 signatures
         launch_url = f"{protocol}://{handler.request.host}{handler.request.uri}"
-        self.log.debug("Launch url is: %s" % launch_url)
+        self.log.debug(f"Launch url is: {launch_url}")
 
         if validator.validate_launch_request(launch_url, handler.request.headers, args):
 
             # raise an http error if the username_key is not in the request's arguments.
             if self.username_key not in args.keys():
                 self.log.warning(
-                    "%s the specified username_key did not match any of the launch request arguments."
+                    f"The username_key '{self.username_key}' did not match any of the launch request arguments."
                 )
 
             # get the username_key. if empty, fetch the username from the request's user_id value.
@@ -160,8 +160,7 @@ class LTI11Authenticator(Authenticator):
             if not username:
                 raise HTTPError(
                     400,
-                    "The %s value in the launch request is empty or None."
-                    % self.username_key,
+                    f"The {self.username_key} value in the launch request is empty or None.",
                 )
 
             # return standard authentication where all launch request arguments are added to the auth_state key
