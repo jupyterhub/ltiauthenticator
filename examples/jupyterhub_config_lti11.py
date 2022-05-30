@@ -1,7 +1,6 @@
 """ Example JupyterHub configuration file with LTI 1.1 settings. """
 import os
 
-
 # Set port and IP
 c.JupyterHub.ip = "0.0.0.0"
 c.JupyterHub.port = 8000

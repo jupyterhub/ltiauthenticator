@@ -9,11 +9,12 @@ from oauthenticator.oauth2 import OAuthenticator
 from tornado.web import HTTPError
 from traitlets.config import Unicode
 
-from .handlers import LTI13CallbackHandler
-from .handlers import LTI13ConfigHandler
-from .handlers import LTI13LaunchValidator
-from .handlers import LTI13LoginHandler
-
+from .handlers import (
+    LTI13CallbackHandler,
+    LTI13ConfigHandler,
+    LTI13LaunchValidator,
+    LTI13LoginHandler,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

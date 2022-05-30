@@ -5,21 +5,19 @@ import re
 import time
 import urllib
 import uuid
-from typing import Any
-from typing import Dict
-from typing import List
+from typing import Any, Dict, List
 
 import jwt
 import pem
 from Crypto.PublicKey import RSA
 from jwcrypto.jwk import JWK
-from tornado.httpclient import AsyncHTTPClient
-from tornado.httpclient import HTTPClientError
+from tornado.httpclient import AsyncHTTPClient, HTTPClientError
 from tornado.web import RequestHandler
 
-from ltiauthenticator.lti13.constants import DEFAULT_ROLE_NAMES_FOR_INSTRUCTOR
-from ltiauthenticator.lti13.constants import DEFAULT_ROLE_NAMES_FOR_STUDENT
-
+from ltiauthenticator.lti13.constants import (
+    DEFAULT_ROLE_NAMES_FOR_INSTRUCTOR,
+    DEFAULT_ROLE_NAMES_FOR_STUDENT,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

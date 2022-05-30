@@ -3,29 +3,22 @@ import json
 import os
 import re
 import uuid
-from typing import Any
-from typing import cast
-from typing import Dict
-from typing import List
-from typing import Optional
-from urllib.parse import quote
-from urllib.parse import unquote
-from urllib.parse import urlparse
+from typing import Any, Dict, List, Optional, cast
+from urllib.parse import quote, unquote, urlparse
 
 import pem
 from Crypto.PublicKey import RSA
 from jupyterhub.handlers import BaseHandler
-from oauthenticator.oauth2 import _serialize_state
-from oauthenticator.oauth2 import guess_callback_uri
-from oauthenticator.oauth2 import OAuthCallbackHandler
-from oauthenticator.oauth2 import OAuthLoginHandler
+from oauthenticator.oauth2 import (
+    OAuthCallbackHandler,
+    OAuthLoginHandler,
+    _serialize_state,
+    guess_callback_uri,
+)
 from tornado.httputil import url_concat
-from tornado.web import HTTPError
-from tornado.web import RequestHandler
+from tornado.web import HTTPError, RequestHandler
 
-from ..utils import convert_request_to_dict
-from ..utils import get_client_protocol
-from ..utils import get_jwk
+from ..utils import convert_request_to_dict, get_client_protocol, get_jwk
 from .validator import LTI13LaunchValidator
 
 

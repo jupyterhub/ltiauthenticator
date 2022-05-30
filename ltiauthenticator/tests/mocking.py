@@ -2,8 +2,7 @@ from jupyterhub.app import JupyterHub
 from jupyterhub.handlers import BaseHandler
 
 from ltiauthenticator.lti11.auth import LTI11Authenticator
-from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
-from ltiauthenticator.lti11.handlers import LTI11ConfigHandler
+from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler, LTI11ConfigHandler
 from ltiauthenticator.lti13.auth import LTI13Authenticator
 from ltiauthenticator.lti13.handlers import LTI13ConfigHandler
 

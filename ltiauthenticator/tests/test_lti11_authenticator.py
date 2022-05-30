@@ -1,15 +1,14 @@
 import json
-from unittest.mock import Mock
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from tornado.httputil import HTTPServerRequest
-from tornado.web import HTTPError
-from tornado.web import RequestHandler
+from tornado.web import HTTPError, RequestHandler
 
-from .mocking import MockLTI11Authenticator
 from ltiauthenticator.lti11.auth import LTI11Authenticator
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
+
+from .mocking import MockLTI11Authenticator
 
 
 @pytest.mark.asyncio

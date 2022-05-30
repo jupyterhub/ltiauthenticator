@@ -3,8 +3,7 @@ from unittest.mock import patch
 import pytest
 from tornado.web import RequestHandler
 
-from ltiauthenticator.lti13.auth import LTI13Authenticator
-from ltiauthenticator.lti13.auth import LTI13LaunchValidator
+from ltiauthenticator.lti13.auth import LTI13Authenticator, LTI13LaunchValidator
 
 
 @pytest.mark.asyncio
