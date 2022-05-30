@@ -22,13 +22,14 @@ repos:
     rev: 22.3.0
     hooks:
       - id: black
-        args: [--target-version=py36]
+        # args are not passed, but see the config in pyproject.toml
 
   # Autoformat: Python code
-  - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.1.0
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
     hooks:
-      - id: reorder-python-imports
+      - id: isort
+        # args are not passed, but see the config in pyproject.toml
 
   # Autoformat: markdown, yaml
   - repo: https://github.com/pre-commit/mirrors-prettier
