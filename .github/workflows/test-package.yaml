@@ -43,7 +43,7 @@ jobs:
 
       # preserve pip cache to speed up installation
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           # Look to see if there is a cache hit for the corresponding requirements file
