@@ -89,7 +89,7 @@ class LTI13Authenticator(OAuthenticator):
         Name of tool provided to the LMS when installed via the config URL.
 
         This is primarily used for display purposes.
-        """
+        """,
     )
 
     tool_description = Unicode(
@@ -99,7 +99,7 @@ class LTI13Authenticator(OAuthenticator):
         Description of tool provided to the LMS when installed via the config URL.
 
         This is primarily used for display purposes.
-        """
+        """,
     )
 
     def get_handlers(self, app: JupyterHub) -> List[BaseHandler]:
