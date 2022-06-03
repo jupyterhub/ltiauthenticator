@@ -50,7 +50,7 @@ class LTI13ConfigHandler(BaseHandler):
         target_link_url = f"{protocol}://{self.request.host}"
         self.log.debug(f"Target link url is: {target_link_url}")
         keys = {
-            "title": "IllumiDesk",
+            "title": "JupyterHub",
             "scopes": [
                 "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
                 "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly",
@@ -93,7 +93,7 @@ class LTI13ConfigHandler(BaseHandler):
                     "privacy_level": "public",
                 }
             ],
-            "description": "IllumiDesk Learning Tools Interoperability (LTI) v1.3 tool.",
+            "description": "JupyterHub for interactive Jupyter notebook usage",
             "custom_fields": {
                 "email": "$Person.email.primary",
                 "lms_user_id": "$User.id",
