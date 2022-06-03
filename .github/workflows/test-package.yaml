@@ -1,5 +1,5 @@
 # This is a GitHub workflow defining a set of jobs with a set of steps.
-# ref: https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
+# ref: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
 #
 name: Tests
 
@@ -9,16 +9,22 @@ on:
     paths-ignore:
       - "**.md"
       - "docs/**"
-      - "**/test-docs.yaml"
+      - ".github/workflows/*"
+      - "!.github/workflows/test-package.yaml"
   push:
     paths-ignore:
       - "**.md"
       - "docs/**"
-      - "**/test-docs.yaml"
+      - ".github/workflows/*"
+      - "!.github/workflows/test-package.yaml"
+    branches-ignore:
+      - "dependabot/**"
+      - "pre-commit-ci-update-config"
+    tags:
+      - "**"
   workflow_dispatch:
 
 jobs:
-  # Run tests
   test:
     runs-on: ubuntu-20.04
     timeout-minutes: 10
@@ -32,6 +38,7 @@ jobs:
           - "3.7"
           - "3.8"
           - "3.9"
+          - "3.10"
 
     steps:
       - uses: actions/checkout@v3
@@ -59,6 +66,4 @@ jobs:
           pip freeze
 
       - name: Run tests
-        # FIXME: --color=yes explicitly set because:
-        #        https://github.com/actions/runner/issues/241
         run: pytest -v --color=yes --cov=ltiauthenticator ltiauthenticator/tests
