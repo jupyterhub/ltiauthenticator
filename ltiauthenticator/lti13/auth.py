@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict
+from typing import Dict, List
 
 from jupyterhub.app import JupyterHub
 from jupyterhub.auth import LocalAuthenticator
@@ -82,7 +82,27 @@ class LTI13Authenticator(OAuthenticator):
         """,
     )
 
-    def get_handlers(self, app: JupyterHub) -> BaseHandler:
+    tool_name = Unicode(
+        "JupyterHub",
+        config=True,
+        help="""
+        Name of tool provided to the LMS when installed via the config URL.
+
+        This is primarily used for display purposes.
+        """,
+    )
+
+    tool_description = Unicode(
+        "Launch interactive Jupyter Notebooks with JupyterHub",
+        config=True,
+        help="""
+        Description of tool provided to the LMS when installed via the config URL.
+
+        This is primarily used for display purposes.
+        """,
+    )
+
+    def get_handlers(self, app: JupyterHub) -> List[BaseHandler]:
         return [
             ("/lti13/config", LTI13ConfigHandler),
         ]

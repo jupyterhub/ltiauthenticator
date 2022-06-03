@@ -50,7 +50,7 @@ class LTI13ConfigHandler(BaseHandler):
         target_link_url = f"{protocol}://{self.request.host}"
         self.log.debug(f"Target link url is: {target_link_url}")
         keys = {
-            "title": "JupyterHub",
+            "title": self.authenticator.tool_name,
             "scopes": [
                 "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
                 "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly",
@@ -93,7 +93,7 @@ class LTI13ConfigHandler(BaseHandler):
                     "privacy_level": "public",
                 }
             ],
-            "description": "JupyterHub for interactive Jupyter notebook usage",
+            "description": self.authenticator.tool_description,
             "custom_fields": {
                 "email": "$Person.email.primary",
                 "lms_user_id": "$User.id",
