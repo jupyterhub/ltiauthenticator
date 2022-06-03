@@ -1,12 +1,10 @@
 from unittest.mock import patch
 
-import pytest
 from tornado.web import RequestHandler
 
 from ltiauthenticator.lti13.auth import LTI13Authenticator, LTI13LaunchValidator
 
 
-@pytest.mark.asyncio
 async def test_authenticator_invokes_lti13validator_handler_get_argument(
     build_lti13_jwt_id_token,
     make_lti13_resource_link_request,
@@ -29,7 +27,6 @@ async def test_authenticator_invokes_lti13validator_handler_get_argument(
         assert mock_get_argument.called
 
 
-@pytest.mark.asyncio
 async def test_authenticator_invokes_lti13validator_validate_launch_request(
     make_lti13_resource_link_request,
     build_lti13_jwt_id_token,
@@ -54,7 +51,6 @@ async def test_authenticator_invokes_lti13validator_validate_launch_request(
             assert mock_verify_authentication_request.called
 
 
-@pytest.mark.asyncio
 async def test_authenticator_returns_auth_state_name_from_lti13_email_claim(
     make_lti13_resource_link_request,
     build_lti13_jwt_id_token,
@@ -84,7 +80,6 @@ async def test_authenticator_returns_auth_state_name_from_lti13_email_claim(
             assert result["name"] == "usertest@example.com"
 
 
-@pytest.mark.asyncio
 async def test_authenticator_returns_username_in_auth_state_with_privacy_enabled(
     make_lti13_resource_link_request,
     build_lti13_jwt_id_token,

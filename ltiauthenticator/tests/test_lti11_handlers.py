@@ -1,13 +1,10 @@
 from unittest.mock import patch
 
-import pytest
-
 from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler
 
 from .mocking import MockLTI11Authenticator
 
 
-@pytest.mark.asyncio
 async def test_lti_11_authenticate_handler_invokes_redirect_method(
     make_lti11_mock_request_handler,
 ):
@@ -25,7 +22,6 @@ async def test_lti_11_authenticate_handler_invokes_redirect_method(
             assert mock_redirect.called
 
 
-@pytest.mark.asyncio
 async def test_lti_11_authenticate_handler_invokes_login_user_method(
     make_lti11_mock_request_handler,
 ):
@@ -43,7 +39,6 @@ async def test_lti_11_authenticate_handler_invokes_login_user_method(
             assert mock_login_user.called
 
 
-@pytest.mark.asyncio
 async def test_lti_11_handler_paths(app):
     """Test if all handlers are correctly set with the LTI11Authenticator."""
     auth = MockLTI11Authenticator()

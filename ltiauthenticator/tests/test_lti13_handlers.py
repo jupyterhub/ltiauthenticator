@@ -1,9 +1,6 @@
-import pytest
-
 from .mocking import MockLTI13Authenticator
 
 
-@pytest.mark.asyncio
 async def test_lti_13_handler_paths(app):
     """Test if all handlers are correctly set with the LTI13Authenticator."""
     auth = MockLTI13Authenticator()
