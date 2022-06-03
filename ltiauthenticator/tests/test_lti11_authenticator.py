@@ -11,7 +11,6 @@ from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 from .mocking import MockLTI11Authenticator
 
 
-@pytest.mark.asyncio
 async def test_authenticator_uses_lti11validator(
     make_lti11_success_authentication_request_args,
 ):
@@ -42,7 +41,6 @@ async def test_authenticator_uses_lti11validator(
         assert mock_validator.called
 
 
-@pytest.mark.asyncio
 async def test_authenticator_returns_auth_dict_when_custom_canvas_user_id_is_empty(
     make_lti11_success_authentication_request_args,
 ):
@@ -71,7 +69,6 @@ async def test_authenticator_returns_auth_dict_when_custom_canvas_user_id_is_emp
         assert result["name"] == expected["name"]
 
 
-@pytest.mark.asyncio
 async def test_authenticator_returns_correct_username_when_using_lis_person_contact_email_primary(
     make_lti11_success_authentication_request_args,
 ):
@@ -101,7 +98,6 @@ async def test_authenticator_returns_correct_username_when_using_lis_person_cont
         assert result["name"] == expected["name"]
 
 
-@pytest.mark.asyncio
 async def test_empty_username_raises_http_error(
     make_lti11_success_authentication_request_args,
 ):
