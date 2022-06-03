@@ -1,14 +1,11 @@
-black
 bump2version
 codecov
-flake8
 github-activity
 notebook
 pre-commit
 pytest
 pytest-asyncio
 pytest-cov
-pytest-flakes
 pytest-html
 pytest-metadata
 pytest-mock
