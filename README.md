@@ -104,7 +104,7 @@ hub:
     # https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/authentication.html
     JupyterHub:
       authenticator_class: ltiauthenticator.LTIAuthenticator # LTI 1.1
-    LTI11Authenticator:
+    LTIAuthenticator:
       consumers: { "client-key": "client-secret" }
       username_key: "lis_person_contact_email_primary"
       config_icon: "https://my.static.assets/img/icon.jpg"
