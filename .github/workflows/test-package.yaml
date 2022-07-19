@@ -46,7 +46,7 @@ jobs:
       - name: Install Python ${{ matrix.python }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "${{ matrix.python }}"
 
       # preserve pip cache to speed up installation
       - name: Cache pip
