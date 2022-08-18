@@ -103,7 +103,7 @@ hub:
     # Additional documentation related to authentication and authorization available at
     # https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/authentication.html
     JupyterHub:
-      authenticator_class: ltiauthenticator.LTIAuthenticator # LTI 1.1
+      authenticator_class: ltiauthenticator.LTI11Authenticator # LTI 1.1
     LTIAuthenticator:
       consumers: { "client-key": "client-secret" }
       username_key: "lis_person_contact_email_primary"
