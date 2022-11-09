@@ -24,7 +24,4 @@ setup(
         "PyJWT>=2.4.0",
         "pyjwkest>=1.4.2",
     ],
-    package_data={
-        "": ["*.html"],
-    },  # noqa: E231
 )
