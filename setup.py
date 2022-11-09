@@ -10,7 +10,7 @@ setup(
     author="Yuvi Panda",
     author_email="yuvipanda@gmail.com",
     license="3 Clause BSD",
-    packages=find_packages(exclude="./tests"),
+    packages=find_packages(),
     python_requires=">=3.7",
     install_requires=[
         "escapism>=1.0",
