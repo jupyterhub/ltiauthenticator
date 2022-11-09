@@ -11,7 +11,7 @@ setup(
     author_email="yuvipanda@gmail.com",
     license="3 Clause BSD",
     packages=find_packages(exclude="./tests"),
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires=[
         "escapism>=1.0",
         "josepy>=1.4.0",

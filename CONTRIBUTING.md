@@ -6,7 +6,7 @@ Make sure to also follow [Project Jupyter's Code of Conduct](https://github.com/
 
 ## Setting up a development environment
 
-LTIAuthenticator requires Python >= 3.6.
+LTIAuthenticator requires Python >= 3.7.
 
 1. Clone the repo:
 
