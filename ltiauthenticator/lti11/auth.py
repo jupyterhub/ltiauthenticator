@@ -35,7 +35,6 @@ class LTI11Authenticator(Authenticator):
     )
 
     config_icon = Unicode(
-        default_value="",
         config=True,
         help="""
         The icon is both optional and indicates a URL to be used for an icon to the tool. This icon is
@@ -55,7 +54,6 @@ class LTI11Authenticator(Authenticator):
     )
 
     consumers = Dict(
-        default={},
         config=True,
         help="""
         A dict of consumer keys mapped to consumer secrets for those keys.
@@ -65,7 +63,7 @@ class LTI11Authenticator(Authenticator):
     )
 
     username_key = Unicode(
-        default="custom_canvas_user_id",
+        default_value="custom_canvas_user_id",
         allow_none=True,
         config=True,
         help="""
