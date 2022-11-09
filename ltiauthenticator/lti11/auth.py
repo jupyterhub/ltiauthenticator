@@ -98,9 +98,7 @@ class LTI11Authenticator(Authenticator):
             ("/lti11/config", LTI11ConfigHandler),
         ]
 
-    async def authenticate(  # noqa: C901
-        self, handler: BaseHandler, data: dict = None
-    ) -> dict:  # noqa: C901
+    async def authenticate(self, handler: BaseHandler, data: dict = None) -> dict:
         """
         LTI 1.1 Authenticator. One or more consumer keys/values must be set in the jupyterhub config with the
         LTI11Authenticator.consumers dict.
