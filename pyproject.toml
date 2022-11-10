@@ -60,7 +60,6 @@ Issues = "https://github.com/jupyterhub/ltiauthenticator/issues"
 # ref: https://black.readthedocs.io/en/stable/
 #
 [tool.black]
-skip-string-normalization = true
 # target-version should be all supported versions, see
 # https://github.com/psf/black/issues/751#issuecomment-473066811
 target_version = [

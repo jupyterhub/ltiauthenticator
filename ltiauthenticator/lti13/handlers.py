@@ -236,7 +236,7 @@ class LTI13LoginHandler(OAuthLoginHandler):
                 nonce=nonce,
                 redirect_uri=redirect_uri,
                 state=state,
-                extra_params={'state': state},
+                extra_params={"state": state},
             )
 
 
