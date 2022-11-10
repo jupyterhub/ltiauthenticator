@@ -77,6 +77,34 @@ target_version = [
 [tool.hatch.version]
 path = "ltiauthenticator/_version.py"
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".flake8",
+    ".pre-commit-config.yaml",
+    ".readthedocs.yaml",
+    "/.github",
+    "/docs",
+    "/examples",
+    "/tests",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "RELEASE.md",
+]
+
+[tool.hatch.build.targets.wheel]
+exclude = [
+    ".flake8",
+    ".pre-commit-config.yaml",
+    ".readthedocs.yaml",
+    "/.github",
+    "/docs",
+    "/examples",
+    "/tests",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "RELEASE.md",
+]
+
 
 # isort is used for autoformatting Python code
 #
