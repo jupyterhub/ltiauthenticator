@@ -14,7 +14,7 @@ build-backend = "hatchling.build"
 name = "jupyterhub-ltiauthenticator"
 description = "JupyterHub authenticator implementing LTI v1.1 and LTI v1.3"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = {file = "LICENSE"}
 keywords = ["jupyterhub", "authenticator"]
 authors = [
@@ -63,7 +63,6 @@ Issues = "https://github.com/jupyterhub/ltiauthenticator/issues"
 # target-version should be all supported versions, see
 # https://github.com/psf/black/issues/751#issuecomment-473066811
 target_version = [
-    "py37",
     "py38",
     "py39",
     "py310",
