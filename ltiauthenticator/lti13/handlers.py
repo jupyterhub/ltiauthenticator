@@ -81,7 +81,7 @@ class LTI13ConfigHandler(BaseHandler):
                                 "custom_fields": {
                                     "email": "$Person.email.primary",
                                     "lms_user_id": "$User.id",
-                                },  # noqa: E231
+                                },
                             },
                             {
                                 "placement": "assignment_selection",
@@ -97,7 +97,7 @@ class LTI13ConfigHandler(BaseHandler):
             "custom_fields": {
                 "email": "$Person.email.primary",
                 "lms_user_id": "$User.id",
-            },  # noqa: E231
+            },
             "public_jwk_url": f"{target_link_url}{self.base_url}hub/lti13/jwks",
             "target_link_uri": target_link_url,
             "oidc_initiation_url": f"{target_link_url}{self.base_url}hub/oauth_login",
@@ -236,7 +236,7 @@ class LTI13LoginHandler(OAuthLoginHandler):
                 nonce=nonce,
                 redirect_uri=redirect_uri,
                 state=state,
-                extra_params={'state': state},
+                extra_params={"state": state},
             )
 
 

@@ -107,7 +107,7 @@ class LTI13Authenticator(OAuthenticator):
             ("/lti13/config", LTI13ConfigHandler),
         ]
 
-    async def authenticate(  # noqa: C901
+    async def authenticate(
         self, handler: LTI13LoginHandler, data: Dict[str, str] = None
     ) -> Dict[str, str]:
         """
@@ -148,7 +148,7 @@ class LTI13Authenticator(OAuthenticator):
 
             return {
                 "name": username,
-                "auth_state": {k: v for k, v in jwt_decoded.items()},  # noqa: E231
+                "auth_state": {k: v for k, v in jwt_decoded.items()},
             }
 
 

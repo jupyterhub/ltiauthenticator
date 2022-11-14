@@ -14,7 +14,7 @@ from jwcrypto.jwk import JWK
 from tornado.httpclient import AsyncHTTPClient, HTTPClientError
 from tornado.web import RequestHandler
 
-from ltiauthenticator.lti13.constants import (
+from .lti13.constants import (
     DEFAULT_ROLE_NAMES_FOR_INSTRUCTOR,
     DEFAULT_ROLE_NAMES_FOR_STUDENT,
 )

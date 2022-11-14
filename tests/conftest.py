@@ -396,10 +396,10 @@ def make_lti13_resource_link_request() -> Dict[str, str]:
             "context_memberships_url": "https://illumidesk.instructure.com/api/lti/courses/147/names_and_roles",
             "service_versions": [
                 "2.0",
-            ],  # noqa: E231
+            ],
             "validation_context": None,
             "errors": {"errors": {}},
-        },  # noqa: E231
+        },
     }
     return jws
 

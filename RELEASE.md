@@ -1,68 +1,46 @@
 # How to make a release
 
-`jupyterhub-ltiauthenticator` is a package [available on PyPI](https://pypi.org/project/jupyterhub-ltiauthenticator/). These are instructions on how to make a release on PyPI. The PyPI release is packaged and published automatically by GitHub Actions when a git tag is pushed.
+`jupyterhub-ltiauthenticator` is a package available on [PyPI][]. These are
+instructions on how to make a release.
 
-For you to follow along according to these instructions, you need:
+## Pre-requisites
 
-- To have push rights to the [ltiauthenticator GitHub repository](https://github.com/jupyterhub/ltiauthenticator).
+- Push rights to [github.com/jupyterhub/ltiauthenticator][]
 
 ## Steps to make a release
 
-1. Update `CHANGELOG.md`
+1. Create a PR updating `docs/source/changelog.md` with [github-activity][] and
+   continue only when its merged. Some guidance is available in a
+   [jupyterhub/team-compass issue][].
 
-   - Generate a list of PRs using [executablebooks/github-activity](https://github.com/executablebooks/github-activity)
+1. Checkout main and make sure it is up to date.
 
-     ```bash
-     github-activity --output=github-activity-output.md --heading-level=3 jupyterhub/ltiauthenticator
-     ```
-
-   - Visit and label all uncategorized PRs appropriately with: `maintenance`, `enhancement`, `breaking`, `bug`, or `documentation`.
-   - Generate a list of PRs again and add it to the changelog.
-   - Manually highlight the breaking changes and summarize the release.
-
-1. Once the changelog is up to date, checkout main and make sure it is up to date and clean.
-
-   ```bash
-   ORIGIN=${ORIGIN:-origin} # set to the canonical remote, e.g. 'upstream' if 'origin' is not the official repo
+   ```shell
    git checkout main
-   git fetch $ORIGIN main
-   git reset --hard $ORIGIN/main
-   # WARNING! This next command deletes any untracked files in the repo
-   git clean -xfd
+   git fetch origin main
+   git reset --hard origin/main
    ```
 
-1. Update the version with `bump2version` (can be installed with `pip install -r dev-requirements.txt`)
+1. Update the version, make commits, and push a git tag with `tbump`.
 
-   ```bash
-   VERSION=...  # e.g. 1.2.3
-   bump2version --tag --new-version $VERSION -
+   ```shell
+   pip install tbump
+   tbump --dry-run ${VERSION}
+
+   # run
+   tbump ${VERSION}
    ```
 
-1. Reset the version to the next development version with `bump2version`
+   Following this, the [CI system][] will build and publish a release.
 
-   ```bash
-   bump2version --no-tag patch
+1. Reset the version back to dev, e.g. `2.0.1.dev0` after releasing `2.0.0`.
+
+   ```shell
+   tbump --no-tag ${NEXT_VERSION}.dev0
    ```
 
-1. Push your two commits to main along with the annotated tags referencing
-   commits on main.
-
-   ```
-   git push --follow-tags $ORIGIN main
-   ```
-
-## Manually uploading to PyPI
-
-We are using CD with GitHub Actions to automatically update PyPI, but if you want to do it manually when you are on a tagged commit in a otherwise cleaned repository, you can do this.
-
-1. Package the release
-
-   ```bash
-   python3 setup.py sdist bdist_wheel
-   ```
-
-1. Upload it to PyPI
-
-   ```bash
-   twine upload dist/*
-   ```
+[jupyterhub/team-compass issue]: https://github.com/jupyterhub/team-compass/issues/563
+[github-activity]: https://github.com/executablebooks/github-activity
+[github.com/jupyterhub/ltiauthenticator]: https://github.com/jupyterhub/ltiauthenticator
+[pypi]: https://pypi.org/project/jupyterhub-ltiauthenticator/
+[ci system]: https://github.com/jupyterhub/ltiauthenticator/actions/workflows/publish.yaml

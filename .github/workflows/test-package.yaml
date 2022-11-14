@@ -26,7 +26,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
 
     strategy:
@@ -34,11 +34,10 @@ jobs:
       fail-fast: false
       matrix:
         python:
-          - "3.6"
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
 
     steps:
       - uses: actions/checkout@v3
@@ -48,22 +47,13 @@ jobs:
         with:
           python-version: "${{ matrix.python }}"
 
-      # preserve pip cache to speed up installation
-      - name: Cache pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          # Look to see if there is a cache hit for the corresponding requirements file
-          key: ${{ runner.os }}-pip-${{ hashFiles('*requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
       - name: Install
         run: |
-          pip install --upgrade pip
-          pip install .
-          pip install --upgrade --pre -r dev-requirements.txt .
+          pip install ".[test]"
           pip freeze
 
       - name: Run tests
-        run: pytest -v --color=yes --cov=ltiauthenticator ltiauthenticator/tests
+        run: pytest --cov=ltiauthenticator ./tests
+
+      # ref: https://github.com/codecov/codecov-action
+      - uses: codecov/codecov-action@v3

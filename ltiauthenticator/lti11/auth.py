@@ -7,9 +7,9 @@ from jupyterhub.utils import url_path_join
 from tornado.web import HTTPError
 from traitlets.config import Dict, Unicode
 
-from ltiauthenticator.lti11.handlers import LTI11AuthenticateHandler, LTI11ConfigHandler
-from ltiauthenticator.lti11.validator import LTI11LaunchValidator
-from ltiauthenticator.utils import convert_request_to_dict, get_client_protocol
+from ..utils import convert_request_to_dict, get_client_protocol
+from .handlers import LTI11AuthenticateHandler, LTI11ConfigHandler
+from .validator import LTI11LaunchValidator
 
 
 class LTI11Authenticator(Authenticator):
@@ -35,7 +35,6 @@ class LTI11Authenticator(Authenticator):
     )
 
     config_icon = Unicode(
-        default_value="",
         config=True,
         help="""
         The icon is both optional and indicates a URL to be used for an icon to the tool. This icon is
@@ -55,7 +54,6 @@ class LTI11Authenticator(Authenticator):
     )
 
     consumers = Dict(
-        default={},
         config=True,
         help="""
         A dict of consumer keys mapped to consumer secrets for those keys.
@@ -65,7 +63,7 @@ class LTI11Authenticator(Authenticator):
     )
 
     username_key = Unicode(
-        default="custom_canvas_user_id",
+        default_value="custom_canvas_user_id",
         allow_none=True,
         config=True,
         help="""
@@ -98,9 +96,7 @@ class LTI11Authenticator(Authenticator):
             ("/lti11/config", LTI11ConfigHandler),
         ]
 
-    async def authenticate(  # noqa: C901
-        self, handler: BaseHandler, data: dict = None
-    ) -> dict:  # noqa: C901
+    async def authenticate(self, handler: BaseHandler, data: dict = None) -> dict:
         """
         LTI 1.1 Authenticator. One or more consumer keys/values must be set in the jupyterhub config with the
         LTI11Authenticator.consumers dict.
