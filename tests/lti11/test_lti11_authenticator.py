@@ -12,7 +12,7 @@ from .mocking import MockLTI11Authenticator
 
 
 async def test_authenticator_uses_lti11validator(
-    make_lti11_success_authentication_request_args,
+    auth_args,
 ):
     """
     Ensure that we call the LTI11Validator from the LTI11Authenticator.
@@ -30,24 +30,20 @@ async def test_authenticator_uses_lti11validator(
         )
         handler.request = request
 
-        handler.request.arguments = make_lti11_success_authentication_request_args()
-        handler.request.get_argument = (
-            lambda x, strip=True: make_lti11_success_authentication_request_args()[x][
-                0
-            ].decode()
-        )
+        handler.request.arguments = auth_args
+        handler.request.get_argument = lambda x, strip=True: auth_args[x][0].decode()
 
         _ = await authenticator.authenticate(handler, None)
         assert mock_validator.called
 
 
 async def test_authenticator_returns_auth_dict_when_custom_canvas_user_id_is_empty(
-    make_lti11_success_authentication_request_args,
+    auth_args,
 ):
     """
     Do we get a valid username when the custom_canvas_user_id is empty?
     """
-    local_args = make_lti11_success_authentication_request_args()
+    local_args = auth_args
     local_args["custom_canvas_user_id"] = [b""]
     with patch.object(
         LTI11LaunchValidator, "validate_launch_request", return_value=True
@@ -70,12 +66,11 @@ async def test_authenticator_returns_auth_dict_when_custom_canvas_user_id_is_emp
 
 
 async def test_authenticator_returns_correct_username_when_using_lis_person_contact_email_primary(
-    make_lti11_success_authentication_request_args,
+    auth_args,
 ):
     """
     Do we get a valid username with lms vendors other than canvas?
     """
-    local_args = make_lti11_success_authentication_request_args()
     local_authenticator = MockLTI11Authenticator()
     local_authenticator.username_key = "lis_person_contact_email_primary"
     with patch.object(
@@ -86,7 +81,7 @@ async def test_authenticator_returns_correct_username_when_using_lis_person_cont
             spec=RequestHandler,
             get_secure_cookie=Mock(return_value=json.dumps(["key", "secret"])),
             request=Mock(
-                arguments=local_args,
+                arguments=auth_args,
                 headers={},
                 items=[],
             ),
@@ -99,13 +94,12 @@ async def test_authenticator_returns_correct_username_when_using_lis_person_cont
 
 
 async def test_empty_username_raises_http_error(
-    make_lti11_success_authentication_request_args,
+    auth_args,
 ):
     """Does an empty username value raise the correct 400 HTTPError?"""
-    local_args = make_lti11_success_authentication_request_args()
     local_authenticator = LTI11Authenticator()
-    local_args["custom_canvas_user_id"] = [b""]
-    local_args["user_id"] = [b""]
+    auth_args["custom_canvas_user_id"] = [b""]
+    auth_args["user_id"] = [b""]
 
     with patch.object(
         LTI11LaunchValidator, "validate_launch_request", return_value=True
@@ -115,7 +109,7 @@ async def test_empty_username_raises_http_error(
             spec=RequestHandler,
             get_secure_cookie=Mock(return_value=json.dumps(["key", "secret"])),
             request=Mock(
-                arguments=local_args,
+                arguments=auth_args,
                 headers={},
                 items=[],
             ),
