@@ -7,7 +7,7 @@ from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers import BaseHandler
 from oauthenticator.oauth2 import OAuthenticator
 from tornado.web import HTTPError
-from traitlets.config import Unicode
+from traitlets.config import Unicode, List as TraitletsList
 
 from .handlers import (
     LTI13CallbackHandler,
@@ -48,6 +48,18 @@ class LTI13Authenticator(OAuthenticator):
     login_handler = LTI13LoginHandler
     callback_handler = LTI13CallbackHandler
 
+    jwks_algorithms = TraitletsList(
+        default_value=["RS256"],
+        config=True,
+        help="""
+        The platform's base endpoint used when redirecting requests to the platform
+        after receiving the initial login request.
+        """,
+    )
+
+    # FIXME: This name and description is incorrect. It is practically used as
+    #        reference to a platforms JWKS endpoint.
+    #
     endpoint = Unicode(
         os.getenv("LTI13_ENDPOINT", ""),
         allow_none=False,
@@ -111,7 +123,10 @@ class LTI13Authenticator(OAuthenticator):
         self, handler: LTI13LoginHandler, data: Dict[str, str] = None
     ) -> Dict[str, str]:
         """
-        Overrides authenticate from base class to handle LTI 1.3 authentication requests.
+        Overrides authenticate from the OAuthenticator base class to handle LTI
+        1.3 authentication requests based on a passed JWT. The JWT is verified
+        to be signed by the LTI 1.3 platform via a JWKs endpoint it should
+        expose.
 
         Args:
           handler: handler object
@@ -120,36 +135,31 @@ class LTI13Authenticator(OAuthenticator):
         Returns:
           Authentication dictionary
         """
-        validator = LTI13LaunchValidator()
-
-        # get jwks endpoint and token to use as args to decode jwt.
-        self.log.debug(f"JWKS platform endpoint is {self.endpoint}")
         id_token = handler.get_argument("id_token")
 
-        # extract claims from jwt (id_token) sent by the platform. as tool use the jwks (public key)
-        # to verify the jwt's signature.
-        jwt_decoded = await validator.jwt_verify_and_decode(
-            id_token, self.endpoint, False, audience=self.client_id
+        validator = LTI13LaunchValidator()
+        jwt_decoded = validator.verify_and_decode_jwt(
+            id_token,
+            audience=self.client_id,
+            jwks_endpoint=self.endpoint,
+            jwks_algorithms=self.jwks_algorithms,
         )
-        self.log.debug(f"Decoded JWT: {jwt_decoded}")
+        validator.validate_launch_request(jwt_decoded)
 
-        if validator.validate_launch_request(jwt_decoded):
-            username = jwt_decoded.get(self.username_key)
-            self.log.debug(
-                f"Username_key is {self.username_key} and value fetched from JWT is {username}"
-            )
-            if not username:
-                if "sub" in jwt_decoded and jwt_decoded["sub"]:
-                    username = jwt_decoded["sub"]
-                else:
-                    raise HTTPError(400, "Unable to set the username")
+        username = jwt_decoded.get(self.username_key)
+        if not username:
+            if jwt_decoded.get("sub"):
+                username = jwt_decoded["sub"]
+            else:
+                raise HTTPError(
+                    400,
+                    f"Unable to set the username with username_key {self.username_key}",
+                )
 
-            self.log.debug(f"username is {username}")
-
-            return {
-                "name": username,
-                "auth_state": {k: v for k, v in jwt_decoded.items()},
-            }
+        return {
+            "name": username,
+            "auth_state": jwt_decoded,
+        }
 
 
 class LocalLTI13Authenticator(LocalAuthenticator, OAuthenticator):

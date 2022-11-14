@@ -27,7 +27,6 @@ classifiers = [
 ]
 dependencies = [
     "escapism>=1.0",
-    "josepy>=1.4.0",
     "jupyterhub>=1.2",
     "jwcrypto>=0.8",
     "oauthenticator>=0.13.0",
