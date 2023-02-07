@@ -20,7 +20,6 @@ async def test_authenticator_uses_lti11validator(
     with patch.object(
         LTI11LaunchValidator, "validate_launch_request", return_value=True
     ) as mock_validator:
-
         authenticator = MockLTI11Authenticator()
         authenticator.username_key = "custom_canvas_user_id"
         handler = Mock(spec=RequestHandler)
