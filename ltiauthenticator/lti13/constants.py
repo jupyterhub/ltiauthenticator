@@ -124,10 +124,10 @@ LTI13_LIS_CLAIMS = {
 
 # Required claims for ResourceLinkRequest
 # For this setup to work properly, some optional claims are required.
-LTI13_RESOURCE_LINK_REQUIRED_CLAIMS = {
-    **LTI13_RESOURCE_LINK_REQUIRED_CLAIMS,
-    **LTI13_RESOURCE_LINK_OPTIONAL_CLAIMS,
-}
+# LTI13_RESOURCE_LINK_REQUIRED_CLAIMS = {
+#     **LTI13_RESOURCE_LINK_REQUIRED_CLAIMS,
+#     **LTI13_RESOURCE_LINK_OPTIONAL_CLAIMS,
+# }
 
 # Required and optional resource link claims
 LTI13_RESOURCE_LINKS = {
@@ -140,9 +140,9 @@ LTI13_RESOURCE_LINKS = {
 }
 
 # Updates required claims with optional claims
-LTI13_RESOURCE_LINK_REQUIRED_CLAIMS[
-    "https://purl.imsglobal.org/spec/lti/claim/resource_link"
-].update(LTI13_RESOURCE_LINKS)
+# LTI13_RESOURCE_LINK_REQUIRED_CLAIMS[
+#     "https://purl.imsglobal.org/spec/lti/claim/resource_link"
+# ].update(LTI13_RESOURCE_LINKS)
 
 # Required claims for DeepLinkingRequest
 LTI13_DEEP_LINKING_REQUIRED_CLAIMS = {

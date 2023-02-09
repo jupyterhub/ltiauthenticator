@@ -34,6 +34,18 @@ def test_validate_verify_and_decode_jwt(launch_req_jwt, launch_req_jwt_decoded):
 
 # Tests of validate_launch_request()
 # -------------------------------------------------------------------------------
+def test_validate_minimal_launch_request(minimal_launch_req_jwt_decoded):
+    """
+    Is the JWT valid if it contains only the claims required by the LTI 1.3 specs?
+
+    Ref: https://www.imsglobal.org/spec/lti/v1p3#required-message-claims
+    """
+    validator = LTI13LaunchValidator()
+    validator.validate_launch_request(minimal_launch_req_jwt_decoded)
+
+
+# Tests of validate_launch_request()
+# -------------------------------------------------------------------------------
 def test_validate_launch_request_empty_roles(launch_req_jwt_decoded):
     validator = LTI13LaunchValidator()
     launch_req_jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/roles"] = ""
