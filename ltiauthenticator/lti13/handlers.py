@@ -211,33 +211,38 @@ class LTI13LoginHandler(OAuthLoginHandler):
         validator = LTI13LaunchValidator()
         args = convert_request_to_dict(self.request.arguments)
         self.log.debug(f"Initial login request args are {args}")
-        if validator.validate_login_request(args):
-            login_hint = args["login_hint"]
-            self.log.debug(f"login_hint is {login_hint}")
-            lti_message_hint = args["lti_message_hint"]
-            self.log.debug(f"lti_message_hint is {lti_message_hint}")
-            client_id = args["client_id"]
-            self.log.debug(f"client_id is {client_id}")
-            redirect_uri = guess_callback_uri(
-                "https", self.request.host, self.hub.server.base_url
-            )
-            self.log.info(f"redirect_uri: {redirect_uri}")
-            state = self.get_state()
-            self.set_state_cookie(state)
-            # TODO: validate that received nonces haven't been received before
-            # and that they are within the time-based tolerance window
-            nonce_raw = hashlib.sha256(state.encode())
-            nonce = nonce_raw.hexdigest()
-            self.log.debug(f"nonce value: {nonce}")
-            self.authorize_redirect(
-                client_id=client_id,
-                login_hint=login_hint,
-                lti_message_hint=lti_message_hint,
-                nonce=nonce,
-                redirect_uri=redirect_uri,
-                state=state,
-                extra_params={"state": state},
-            )
+
+        # Raises HTTP 400 if login request arguments are not valid
+        validator.validate_login_request(args)
+
+        login_hint = args["login_hint"]
+        self.log.debug(f"login_hint is {login_hint}")
+
+        lti_message_hint = args["lti_message_hint"]
+        self.log.debug(f"lti_message_hint is {lti_message_hint}")
+
+        client_id = args["client_id"]
+        self.log.debug(f"client_id is {client_id}")
+        redirect_uri = guess_callback_uri(
+            "https", self.request.host, self.hub.server.base_url
+        )
+        self.log.info(f"redirect_uri: {redirect_uri}")
+        state = self.get_state()
+        self.set_state_cookie(state)
+        # TODO: validate that received nonces haven't been received before
+        # and that they are within the time-based tolerance window
+        nonce_raw = hashlib.sha256(state.encode())
+        nonce = nonce_raw.hexdigest()
+        self.log.debug(f"nonce value: {nonce}")
+        self.authorize_redirect(
+            client_id=client_id,
+            login_hint=login_hint,
+            lti_message_hint=lti_message_hint,
+            nonce=nonce,
+            redirect_uri=redirect_uri,
+            state=state,
+            extra_params={"state": state},
+        )
 
 
 class LTI13CallbackHandler(OAuthCallbackHandler):
