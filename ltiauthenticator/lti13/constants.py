@@ -49,6 +49,14 @@ LTI13_DEEP_LINKING_REQUIRED_CLAIMS = {
 # Optional message claims
 # We don't need the role_scope_mentor claim and some platforms don't send this claim by default.
 # http://www.imsglobal.org/spec/lti/v1p3/#optional-message-claims
+#
+# FIXME: This dictionary of claims are used both as required and optional
+#        claims, but the name indicates they are optional.
+#
+#        Our mocked launch_req_jwt_decoded fixture has the "sub" but not "azp"
+#        claim, so we have for now commented out "azp" from this list - it is
+#        optional - but the issue is that we have made it required.
+#
 LTI13_GENERAL_OPTIONAL_CLAIMS = {
     "https://purl.imsglobal.org/spec/lti/claim/context": {
         "id": "",
@@ -64,7 +72,7 @@ LTI13_GENERAL_OPTIONAL_CLAIMS = {
     # user identity claims. sub (subject) is added to optional list to support anonymous
     # launches.
     "aud": "",
-    "azp": "",
+    # "azp": "",
     "exp": None,
     "iat": None,
     "iss": "",

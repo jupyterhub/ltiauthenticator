@@ -6,12 +6,12 @@ from .mocking import MockLTI11Authenticator
 
 
 async def test_lti_11_authenticate_handler_invokes_redirect_method(
-    make_lti11_mock_request_handler,
+    req_handler,
 ):
     """
     Does the LTI11AuthenticateHandler call the redirect function?
     """
-    local_handler = make_lti11_mock_request_handler(LTI11AuthenticateHandler)
+    local_handler = req_handler(LTI11AuthenticateHandler)
     with patch.object(
         LTI11AuthenticateHandler, "redirect", return_value=None
     ) as mock_redirect:
@@ -23,12 +23,12 @@ async def test_lti_11_authenticate_handler_invokes_redirect_method(
 
 
 async def test_lti_11_authenticate_handler_invokes_login_user_method(
-    make_lti11_mock_request_handler,
+    req_handler,
 ):
     """
     Does the LTI11AuthenticateHandler call the login_user function?
     """
-    local_handler = make_lti11_mock_request_handler(LTI11AuthenticateHandler)
+    local_handler = req_handler(LTI11AuthenticateHandler)
     with patch.object(LTI11AuthenticateHandler, "redirect", return_value=None):
         with patch.object(
             LTI11AuthenticateHandler, "login_user", return_value=None

@@ -4,7 +4,7 @@ from tornado.web import HTTPError
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 
 
-def test_basic_lti11_launch_request(make_lti11_basic_launch_request_args):
+def test_basic_lti11_launch_request(get_launch_args):
     """
     Does a standard launch request work?
     """
@@ -13,7 +13,7 @@ def test_basic_lti11_launch_request(make_lti11_basic_launch_request_args):
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -23,7 +23,7 @@ def test_basic_lti11_launch_request(make_lti11_basic_launch_request_args):
     assert validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_missing_oauth_nonce_key(make_lti11_basic_launch_request_args):
+def test_launch_with_missing_oauth_nonce_key(get_launch_args):
     """
     Does the launch request work with a missing oauth_nonce key?
     """
@@ -32,7 +32,7 @@ def test_launch_with_missing_oauth_nonce_key(make_lti11_basic_launch_request_arg
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -46,7 +46,7 @@ def test_launch_with_missing_oauth_nonce_key(make_lti11_basic_launch_request_arg
 
 
 def test_launch_with_empty_oauth_nonce_value(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with an empty oauth_nonce value?
@@ -56,7 +56,7 @@ def test_launch_with_empty_oauth_nonce_value(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -68,7 +68,7 @@ def test_launch_with_empty_oauth_nonce_value(
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_missing_oauth_timestamp_key(make_lti11_basic_launch_request_args):
+def test_launch_with_missing_oauth_timestamp_key(get_launch_args):
     """
     Does the launch request work with a missing oauth_timestamp key?
     """
@@ -77,7 +77,7 @@ def test_launch_with_missing_oauth_timestamp_key(make_lti11_basic_launch_request
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -91,7 +91,7 @@ def test_launch_with_missing_oauth_timestamp_key(make_lti11_basic_launch_request
 
 
 def test_launch_with_missing_oauth_consumer_key_key(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with a missing oauth_consumer_key key?
@@ -101,7 +101,7 @@ def test_launch_with_missing_oauth_consumer_key_key(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -115,7 +115,7 @@ def test_launch_with_missing_oauth_consumer_key_key(
 
 
 def test_launch_with_empty_oauth_consumer_key_value(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with an empty oauth_consumer_key value?
@@ -125,7 +125,7 @@ def test_launch_with_empty_oauth_consumer_key_value(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -138,7 +138,7 @@ def test_launch_with_empty_oauth_consumer_key_value(
 
 
 def test_launch_with_fake_oauth_consumer_key_value(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work when the consumer_key isn't correct?
@@ -148,7 +148,7 @@ def test_launch_with_fake_oauth_consumer_key_value(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -161,7 +161,7 @@ def test_launch_with_fake_oauth_consumer_key_value(
 
 
 def test_launch_with_missing_oauth_signature_method_key(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with a missing oauth_signature_method key?
@@ -171,9 +171,7 @@ def test_launch_with_missing_oauth_signature_method_key(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key, oauth_consumer_secret
-    )
+    args = get_launch_args(oauth_consumer_key, oauth_consumer_secret)
 
     del args["oauth_signature_method"]
 
@@ -184,7 +182,7 @@ def test_launch_with_missing_oauth_signature_method_key(
 
 
 def test_launch_with_empty_oauth_signature_method_value(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with an empty oauth_signature_method value?
@@ -194,7 +192,7 @@ def test_launch_with_empty_oauth_signature_method_value(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -206,7 +204,7 @@ def test_launch_with_empty_oauth_signature_method_value(
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_missing_oauth_callback_key(make_lti11_basic_launch_request_args):
+def test_launch_with_missing_oauth_callback_key(get_launch_args):
     """
     Does the launch request work with a missing oauth_callback key?
     """
@@ -215,7 +213,7 @@ def test_launch_with_missing_oauth_callback_key(make_lti11_basic_launch_request_
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -229,7 +227,7 @@ def test_launch_with_missing_oauth_callback_key(make_lti11_basic_launch_request_
 
 
 def test_launch_with_empty_oauth_callback_value(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with an empty oauth_callback value?
@@ -239,7 +237,7 @@ def test_launch_with_empty_oauth_callback_value(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -251,7 +249,7 @@ def test_launch_with_empty_oauth_callback_value(
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_missing_oauth_version_key(make_lti11_basic_launch_request_args):
+def test_launch_with_missing_oauth_version_key(get_launch_args):
     """
     Does the launch request work with a missing oauth_version key?
     """
@@ -260,7 +258,7 @@ def test_launch_with_missing_oauth_version_key(make_lti11_basic_launch_request_a
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -274,7 +272,7 @@ def test_launch_with_missing_oauth_version_key(make_lti11_basic_launch_request_a
 
 
 def test_launch_with_empty_oauth_version_value(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with an empty oauth_version value?
@@ -284,7 +282,7 @@ def test_launch_with_empty_oauth_version_value(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -296,7 +294,7 @@ def test_launch_with_empty_oauth_version_value(
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_missing_oauth_signature_key(make_lti11_basic_launch_request_args):
+def test_launch_with_missing_oauth_signature_key(get_launch_args):
     """
     Does the launch request work with a missing oauth_signature key?
     """
@@ -305,7 +303,7 @@ def test_launch_with_missing_oauth_signature_key(make_lti11_basic_launch_request
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -319,7 +317,7 @@ def test_launch_with_missing_oauth_signature_key(make_lti11_basic_launch_request
 
 
 def test_launch_with_empty_oauth_signature_value(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with an empty oauth_signature value?
@@ -329,7 +327,7 @@ def test_launch_with_empty_oauth_signature_value(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -341,7 +339,7 @@ def test_launch_with_empty_oauth_signature_value(
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_unregistered_consumer_key(make_lti11_basic_launch_request_args):
+def test_unregistered_consumer_key(get_launch_args):
     """
     Does the launch request work with a consumer key that does not match?
     """
@@ -350,7 +348,7 @@ def test_unregistered_consumer_key(make_lti11_basic_launch_request_args):
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -363,7 +361,7 @@ def test_unregistered_consumer_key(make_lti11_basic_launch_request_args):
         assert validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_unregistered_shared_secret(make_lti11_basic_launch_request_args):
+def test_unregistered_shared_secret(get_launch_args):
     """
     Does the launch request work with a shared secret that does not match?
     """
@@ -372,7 +370,7 @@ def test_unregistered_shared_secret(make_lti11_basic_launch_request_args):
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -383,7 +381,7 @@ def test_unregistered_shared_secret(make_lti11_basic_launch_request_args):
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_missing_lti_message_type(make_lti11_basic_launch_request_args):
+def test_launch_with_missing_lti_message_type(get_launch_args):
     """
     Does the launch request work with a missing lti_message_type argument?
     """
@@ -392,7 +390,7 @@ def test_launch_with_missing_lti_message_type(make_lti11_basic_launch_request_ar
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -406,7 +404,7 @@ def test_launch_with_missing_lti_message_type(make_lti11_basic_launch_request_ar
 
 
 def test_launch_with_empty_lti_message_type(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with an empty lti_message_type value?
@@ -416,7 +414,7 @@ def test_launch_with_empty_lti_message_type(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -428,7 +426,7 @@ def test_launch_with_empty_lti_message_type(
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_missing_lti_version(make_lti11_basic_launch_request_args):
+def test_launch_with_missing_lti_version(get_launch_args):
     """
     Does the launch request work with a missing oauth_signature key?
     """
@@ -437,7 +435,7 @@ def test_launch_with_missing_lti_version(make_lti11_basic_launch_request_args):
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -450,7 +448,7 @@ def test_launch_with_missing_lti_version(make_lti11_basic_launch_request_args):
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_empty_lti_version(make_lti11_basic_launch_request_args):
+def test_launch_with_empty_lti_version(get_launch_args):
     """
     Does the launch request work with an empty oauth_signature value?
     """
@@ -459,7 +457,7 @@ def test_launch_with_empty_lti_version(make_lti11_basic_launch_request_args):
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -471,7 +469,7 @@ def test_launch_with_empty_lti_version(make_lti11_basic_launch_request_args):
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_missing_resource_link_id(make_lti11_basic_launch_request_args):
+def test_launch_with_missing_resource_link_id(get_launch_args):
     """
     Does the launch request work with a missing resource_link_id key?
     """
@@ -480,7 +478,7 @@ def test_launch_with_missing_resource_link_id(make_lti11_basic_launch_request_ar
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -494,7 +492,7 @@ def test_launch_with_missing_resource_link_id(make_lti11_basic_launch_request_ar
 
 
 def test_launch_with_empty_resource_link_id(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request work with an empty resource_link_id value?
@@ -504,7 +502,7 @@ def test_launch_with_empty_resource_link_id(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -516,7 +514,7 @@ def test_launch_with_empty_resource_link_id(
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_missing_user_id_key(make_lti11_basic_launch_request_args):
+def test_launch_with_missing_user_id_key(get_launch_args):
     """
     Does the launch request work with a missing user_id key?
     """
@@ -525,7 +523,7 @@ def test_launch_with_missing_user_id_key(make_lti11_basic_launch_request_args):
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -538,7 +536,7 @@ def test_launch_with_missing_user_id_key(make_lti11_basic_launch_request_args):
         validator.validate_launch_request(launch_url, headers, args)
 
 
-def test_launch_with_empty_user_id_value(make_lti11_basic_launch_request_args):
+def test_launch_with_empty_user_id_value(get_launch_args):
     """
     Does the launch request work with an empty user_id value?
     """
@@ -547,7 +545,7 @@ def test_launch_with_empty_user_id_value(make_lti11_basic_launch_request_args):
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -560,7 +558,7 @@ def test_launch_with_empty_user_id_value(make_lti11_basic_launch_request_args):
 
 
 def test_launch_with_same_oauth_timestamp_different_oauth_nonce(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request pass with when using a different nonce with the
@@ -571,7 +569,7 @@ def test_launch_with_same_oauth_timestamp_different_oauth_nonce(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
+    args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
     )
@@ -584,7 +582,7 @@ def test_launch_with_same_oauth_timestamp_different_oauth_nonce(
 
 
 def test_launch_with_same_oauth_nonce_different_oauth_timestamp(
-    make_lti11_basic_launch_request_args,
+    get_launch_args,
 ):
     """
     Does the launch request pass with when using a different timestamp with the
@@ -595,9 +593,7 @@ def test_launch_with_same_oauth_nonce_different_oauth_timestamp(
     launch_url = "http://jupyterhub/hub/lti/launch"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    args = make_lti11_basic_launch_request_args(
-        oauth_consumer_key, oauth_consumer_secret
-    )
+    args = get_launch_args(oauth_consumer_key, oauth_consumer_secret)
 
     validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
 
