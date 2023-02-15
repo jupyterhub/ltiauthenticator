@@ -100,7 +100,9 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 "https://purl.imsglobal.org/spec/lti/claim/message_type"
             ]
         ):
-            raise HTTPError(400, f"Incorrect value {message_type} for version claim")
+            raise HTTPError(
+                400, f"Incorrect value {message_type} for message_type claim"
+            )
 
     def validate_launch_request(self, jwt_decoded: Dict[str, Any]) -> None:
         """

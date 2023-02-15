@@ -57,7 +57,34 @@ def launch_req_jwt():
 
 
 @pytest.fixture
-def launch_req_jwt_decoded() -> Dict[str, str]:
+def minimal_launch_req_jwt_decoded() -> Dict[str, object]:
+    """
+    Returns valid json after decoding JSON Web Token (JWT) for resource link launch (core).
+
+    Only contains message claims flagged as required by the LTI 1.3 specs.
+    https://www.imsglobal.org/spec/lti/v1p3#required-message-claims
+    """
+    jwt_decoded = {
+        "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
+        "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
+        "https://purl.imsglobal.org/spec/lti/claim/deployment_id": "deployment1",
+        "https://purl.imsglobal.org/spec/lti/claim/target_link_uri": "https://lti-ri.imsglobal.org/lti/tools/3356/launches",
+        "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
+            "id": "74256",
+        },
+        "https://purl.imsglobal.org/spec/lti/claim/roles": [],
+        # Required OAuth2 claims
+        # https://www.imsglobal.org/spec/security/v1p0/#using-oauth-2-0-client-credentials-grant
+        "iss": "https://github.com/jupyterhub/ltiauthenticator",
+        "aud": "client1",
+        "iat": 1668266555,
+        "exp": 1668266855,
+    }
+    return jwt_decoded
+
+
+@pytest.fixture
+def launch_req_jwt_decoded(minimal_launch_req_jwt_decoded) -> Dict[str, str]:
     """
     Returns a decoded JSON Web Token (JWT) for the authenticate request
     (resource link launch).
@@ -69,76 +96,69 @@ def launch_req_jwt_decoded() -> Dict[str, str]:
     # This example data is provided via:
     # https://lti-ri.imsglobal.org/platforms/3691/resource_links/74256?nonce=ebc9ab705d0bab3e9dc6&redirect_uri=https%3A%2F%2Flti-ri.imsglobal.org%2Flti%2Ftools%2F3356%2Flaunches&tool_state=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjNyNlRqNW9JbWw2cW9VcnBIcWh1NjJsY0N1OW9qTzNKYXAyTFpuTnIybWsiLCJ0eXAiOiJKV1QifQ.eyJ0b29sX2lkIjozMzU2LCJzdGF0ZV9ub25jZSI6ImViYzlhYjcwNWQwYmFiM2U5ZGM2IiwicGFyYW1zIjp7InV0ZjgiOiLinJMiLCJpc3MiOiJodHRwczovL2dpdGh1Yi5jb20vanVweXRlcmh1Yi9sdGlhdXRoZW50aWNhdG9yIiwibG9naW5faGludCI6IjU0NDU2NCIsInRhcmdldF9saW5rX3VyaSI6Imh0dHBzOi8vbHRpLXJpLmltc2dsb2JhbC5vcmcvbHRpL3Rvb2xzLzMzNTYvbGF1bmNoZXMiLCJsdGlfbWVzc2FnZV9oaW50IjoiNzQyNTYiLCJsdGlfZGVwbG95bWVudF9pZCI6ImRlcGxveW1lbnQxIiwiY2xpZW50X2lkIjoiY2xpZW50MSIsImNvbW1pdCI6IlBvc3QgcmVxdWVzdCIsImNvbnRyb2xsZXIiOiJsdGkvbG9naW5faW5pdGlhdGlvbnMiLCJhY3Rpb24iOiJjcmVhdGUiLCJ0b29sX2lkIjoiMzM1NiJ9LCJpc3MiOiJqdXB5dGVyaHViLWx0aWF1dGhlbnRpY2F0b3ItdGVzdC10b29sIiwic3ViIjoiY2xpZW50MSIsImF1ZCI6Imh0dHBzOi8vbHRpLXJpLmltc2dsb2JhbC5vcmcvcGxhdGZvcm1zLzM2OTEvYWNjZXNzX3Rva2VucyIsImlhdCI6MTY2ODI2NjU1MCwiZXhwIjoxNjY4MjY2ODUwLCJqdGkiOiIyMmM1NjU1ZTNiMjFjNjdjOWYwNyJ9.VJa5KQEjekM7vmmgCLVUN1c6XBv-B-2nkvKzki-8m6XpZ4F2eBiwG2518wXKAEsttHDmWRnjd_d5DU1sOG3RP8XcybGe578o7bY2iSHkwrqlykBw5pvlg3MPpdY9VsdVL_SUTY5HMq8M8A2krfR82giI1Iy0a475d9d4rtZ7VLTCCxMadYIMo0SDZCmhHsF2QtfbYT3bsFh2LmrhsPEun80eLNYxwkrRLS633sAkNWmekhRqAUsPMmqocDUwxRxsDbbvmHpBRUO3cl8Dqbaxz52TVQtLl6rEi9gux4D83IHehC0Q5HKFU04WhXNo_XdHU_0IK7tXYw9uMw6CvKKhWg&user_id=544564
     #
-    jwt_decoded = {
-        "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
-        "https://purl.imsglobal.org/spec/lti/claim/roles": [
-            "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner",
-            "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student",
-            "http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor",
-        ],
-        "https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor": [
-            "a62c52c02ba262003f5e"
-        ],
-        "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
-            "id": "74256",
-            "title": "link1",
-            "description": "",
-        },
-        "https://purl.imsglobal.org/spec/lti/claim/context": {
-            "id": "54536",
-            "label": "course1",
-            "title": "course1",
-            "type": [""],
-        },
-        "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
-            "name": "jupyterhub-ltiauthenticator-test-platform",
-            "contact_email": "",
-            "description": "",
-            "url": "",
-            "product_family_code": "",
-            "version": "1.0",
-            "guid": "3691",
-        },
-        "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
-            "scope": [
-                "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
-                "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-                "https://purl.imsglobal.org/spec/lti-ags/scope/score",
+    jwt_decoded = minimal_launch_req_jwt_decoded
+    jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/roles"] = [
+        "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner",
+        "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student",
+        "http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor",
+    ]
+    jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/resource_link"].update(
+        {"title": "link1", "description": ""}
+    )
+    jwt_decoded.update(
+        {
+            "https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor": [
+                "a62c52c02ba262003f5e"
             ],
-            "lineitems": "https://lti-ri.imsglobal.org/platforms/3691/contexts/54536/line_items",
-        },
-        "https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice": {
-            "context_memberships_url": "https://lti-ri.imsglobal.org/platforms/3691/contexts/54536/memberships",
-            "service_versions": ["2.0"],
-        },
-        "https://purl.imsglobal.org/spec/lti-ces/claim/caliper-endpoint-service": {
-            "scopes": ["https://purl.imsglobal.org/spec/lti-ces/v1p0/scope/send"],
-            "caliper_endpoint_url": "https://lti-ri.imsglobal.org/platforms/3691/sensors",
-            "caliper_federated_session_id": "urn:uuid:94c3a94ca70647d08e7c",
-        },
-        "iss": "https://github.com/jupyterhub/ltiauthenticator",
-        "aud": "client1",
-        "iat": 1668266555,
-        "exp": 1668266855,
-        "sub": "1ace7501877e6a429fca",
-        "nonce": "ebc9ab705d0bab3e9dc6",
-        "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
-        "locale": "en-US",
-        "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
-            "document_target": "iframe",
-            "height": 320,
-            "width": 240,
-            "return_url": "https://lti-ri.imsglobal.org/platforms/3691/returns",
-        },
-        "https://www.example.com/extension": {
-            "color": "violet",
-        },
-        "https://purl.imsglobal.org/spec/lti/claim/custom": {
-            "myCustomValue": "123",
-        },
-        "https://purl.imsglobal.org/spec/lti/claim/deployment_id": "deployment1",
-        "https://purl.imsglobal.org/spec/lti/claim/target_link_uri": "https://lti-ri.imsglobal.org/lti/tools/3356/launches",
-    }
+            "https://purl.imsglobal.org/spec/lti/claim/context": {
+                "id": "54536",
+                "label": "course1",
+                "title": "course1",
+                "type": [""],
+            },
+            "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
+                "name": "jupyterhub-ltiauthenticator-test-platform",
+                "contact_email": "",
+                "description": "",
+                "url": "",
+                "product_family_code": "",
+                "version": "1.0",
+                "guid": "3691",
+            },
+            "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
+                "scope": [
+                    "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
+                    "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
+                    "https://purl.imsglobal.org/spec/lti-ags/scope/score",
+                ],
+                "lineitems": "https://lti-ri.imsglobal.org/platforms/3691/contexts/54536/line_items",
+            },
+            "https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice": {
+                "context_memberships_url": "https://lti-ri.imsglobal.org/platforms/3691/contexts/54536/memberships",
+                "service_versions": ["2.0"],
+            },
+            "https://purl.imsglobal.org/spec/lti-ces/claim/caliper-endpoint-service": {
+                "scopes": ["https://purl.imsglobal.org/spec/lti-ces/v1p0/scope/send"],
+                "caliper_endpoint_url": "https://lti-ri.imsglobal.org/platforms/3691/sensors",
+                "caliper_federated_session_id": "urn:uuid:94c3a94ca70647d08e7c",
+            },
+            "sub": "1ace7501877e6a429fca",
+            "nonce": "ebc9ab705d0bab3e9dc6",
+            "locale": "en-US",
+            "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
+                "document_target": "iframe",
+                "height": 320,
+                "width": 240,
+                "return_url": "https://lti-ri.imsglobal.org/platforms/3691/returns",
+            },
+            "https://www.example.com/extension": {
+                "color": "violet",
+            },
+            "https://purl.imsglobal.org/spec/lti/claim/custom": {
+                "myCustomValue": "123",
+            },
+        }
+    )
     return jwt_decoded
 
 

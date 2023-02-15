@@ -7,7 +7,8 @@ from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers import BaseHandler
 from oauthenticator.oauth2 import OAuthenticator
 from tornado.web import HTTPError
-from traitlets.config import Unicode, List as TraitletsList
+from traitlets.config import List as TraitletsList
+from traitlets.config import Unicode
 
 from .handlers import (
     LTI13CallbackHandler,
