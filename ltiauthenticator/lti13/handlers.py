@@ -9,17 +9,25 @@ from urllib.parse import quote, unquote, urlparse
 import pem
 from Crypto.PublicKey import RSA
 from jupyterhub.handlers import BaseHandler
+from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import (
     OAuthCallbackHandler,
     OAuthLoginHandler,
     _serialize_state,
-    guess_callback_uri,
 )
 from tornado.httputil import url_concat
 from tornado.web import HTTPError, RequestHandler
 
 from ..utils import convert_request_to_dict, get_client_protocol, get_jwk
 from .validator import LTI13LaunchValidator
+
+
+def guess_callback_uri(protocol, host, hub_server_url):
+    return "{proto}://{host}{path}".format(
+        proto=protocol,
+        host=host,
+        path=url_path_join(hub_server_url, "/lti13/oauth_callback"),
+    )
 
 
 class LTI13ConfigHandler(BaseHandler):
@@ -224,7 +232,7 @@ class LTI13LoginHandler(OAuthLoginHandler):
         client_id = args["client_id"]
         self.log.debug(f"client_id is {client_id}")
         redirect_uri = guess_callback_uri(
-            "https", self.request.host, self.hub.server.base_url
+            self.request.protocol, self.request.host, self.hub.server.base_url
         )
         self.log.info(f"redirect_uri: {redirect_uri}")
         state = self.get_state()
