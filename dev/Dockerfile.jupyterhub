@@ -1,0 +1,14 @@
+ARG JUPYTERHUB_VERSION
+FROM jupyterhub/jupyterhub:$JUPYTERHUB_VERSION
+
+RUN python3 -m pip install --no-cache-dir \
+        dockerspawner==12.*
+
+COPY . /ltiauthenticator
+
+# Install ltiauthenticator
+RUN python3 -m pip install --no-cache-dir \
+        /ltiauthenticator
+# 'jupyterhub-ltiauthenticator @ git+https://github.com/martinclaus/ltiauthenticator@test-add-handler'
+
+CMD ["jupyterhub", "-f", "/srv/jupyterhub/jupyterhub_config.py"]

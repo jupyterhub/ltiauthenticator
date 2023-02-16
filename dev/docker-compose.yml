@@ -1,0 +1,67 @@
+# Copyright (c) Jupyter Development Team.
+# Distributed under the terms of the Modified BSD License.
+
+# JupyterHub docker-compose configuration file
+version: "3"
+
+services:
+  hub:
+    build:
+      context: ../
+      dockerfile: dev/Dockerfile.jupyterhub
+      args:
+        JUPYTERHUB_VERSION: 3.1.0
+    restart: always
+    image: jupyterhub
+    container_name: jupyterhub
+    networks:
+      jupyterhub-network:
+        aliases:
+          - dev-jh-lti.localhost
+    volumes:
+      # The JupyterHub configuration file
+      - "./jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
+      # Bind Docker socket on the host so we can connect to the daemon from
+      # within the container
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
+      # Bind Docker volume on host for JupyterHub database and cookie secrets
+      - "jupyterhub-data:/data"
+    ports:
+      - "8000:8000"
+    environment:
+      # User name claim containing a string which will be used by Jupyterhub as user name.
+      # Must be a unique identifyer of the user on the LTI Platform (LMS).
+      LTI13_USERNAME_KEY: sub
+      # The LTI 1.3 authorization url. The url of the platforms (LMS) endpoint for OAuth2
+      # authentication
+      LTI13_AUTHORIZE_URL: http://devkit-lti1p3.localhost/lti/auth
+      # The external tool's client id as represented within the platform (LMS)
+      # Note: the client id is not required by some LMS's for authentication.
+      # Only required, if the JupyterHub is suppose to send back information to the LMS
+      LTI13_CLIENT_ID: 2t1ZSR8uvaoVH8T
+      # The JWKS endpoint of the platform (LMS).
+      # Currently not used since JWK verification is off (hard coded).
+      LTI13_ENDPOINT: http://devkit-lti1p3.localhost/lti/keys
+      # The LTI 1.3 token url used to validate JWT signatures
+      LTI13_TOKEN_URL: http://devkit-lti1p3.localhost/lti/token
+
+      # This username will be a JupyterHub admin
+      JUPYTERHUB_ADMIN: admin
+      # All containers will join this network
+      DOCKER_NETWORK_NAME: jupyterhub-network
+      # JupyterHub will spawn this Notebook image for users
+      DOCKER_NOTEBOOK_IMAGE: jupyter/minimal-notebook:latest
+      # Notebook directory inside user image
+      DOCKER_NOTEBOOK_DIR: /home/jovyan/work
+      # Using this run command
+      DOCKER_SPAWN_CMD: start-singleuser.sh
+    command: >
+      jupyterhub -f /srv/jupyterhub/jupyterhub_config.py
+
+volumes:
+  jupyterhub-data:
+
+
+networks:
+  jupyterhub-network:
+    name: jupyterhub-network
