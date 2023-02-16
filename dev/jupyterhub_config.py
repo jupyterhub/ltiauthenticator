@@ -30,7 +30,6 @@ c.LTI13Authenticator.authorize_url = os.environ["LTI13_AUTHORIZE_URL"]
 c.LTI13Authenticator.client_id = os.environ.get("LTI13_CLIENT_ID", "")
 
 # The JWKS endpoint of the platform (LMS).
-# Currently not used since JWK verification is off (hard coded).
 c.LTI13Authenticator.endpoint = os.environ["LTI13_ENDPOINT"]
 
 # The LTI 1.3 token url used to validate JWT signatures

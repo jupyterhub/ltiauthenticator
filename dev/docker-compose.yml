@@ -34,16 +34,15 @@ services:
       LTI13_USERNAME_KEY: sub
       # The LTI 1.3 authorization url. The url of the platforms (LMS) endpoint for OAuth2
       # authentication
-      LTI13_AUTHORIZE_URL: http://devkit-lti1p3.localhost/lti/auth
+      LTI13_AUTHORIZE_URL: http://devkit-lti1p3.localhost/lti1p3/oidc/authentication
       # The external tool's client id as represented within the platform (LMS)
       # Note: the client id is not required by some LMS's for authentication.
       # Only required, if the JupyterHub is suppose to send back information to the LMS
-      LTI13_CLIENT_ID: 2t1ZSR8uvaoVH8T
+      LTI13_CLIENT_ID: lti13authenticator-dev
       # The JWKS endpoint of the platform (LMS).
-      # Currently not used since JWK verification is off (hard coded).
-      LTI13_ENDPOINT: http://devkit-lti1p3.localhost/lti/keys
+      LTI13_ENDPOINT: http://devkit-lti1p3.localhost/lti1p3/.well-known/jwks/platformSet.json
       # The LTI 1.3 token url used to validate JWT signatures
-      LTI13_TOKEN_URL: http://devkit-lti1p3.localhost/lti/token
+      LTI13_TOKEN_URL: http://devkit-lti1p3.localhost/lti1p3/auth/platformKey/token
 
       # This username will be a JupyterHub admin
       JUPYTERHUB_ADMIN: admin

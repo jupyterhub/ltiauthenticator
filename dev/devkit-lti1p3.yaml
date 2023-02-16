@@ -1,0 +1,46 @@
+lti1p3:
+    scopes:
+        - 'https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly'
+        - 'https://purl.imsglobal.org/spec/lti-bo/scope/basicoutcome'
+        - 'https://purl.imsglobal.org/spec/lti-ap/scope/control.all'
+        - 'https://purl.imsglobal.org/spec/lti-ags/scope/lineitem'
+        - 'https://purl.imsglobal.org/spec/lti-ags/scope/lineitem.readonly'
+        - 'https://purl.imsglobal.org/spec/lti-ags/scope/score'
+        - 'https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly'
+    key_chains:
+        platformKey:
+            key_set_name: "platformSet"
+            public_key: "file://%kernel.project_dir%/config/keys/public.key"
+            private_key: "file://%kernel.project_dir%/config/keys/private.key"
+            private_key_passphrase: ~
+        toolKey:
+            key_set_name: "toolSet"
+            public_key: "file://%kernel.project_dir%/config/keys/public.key"
+            private_key: "file://%kernel.project_dir%/config/keys/private.key"
+            private_key_passphrase: ~
+    platforms:
+        devkitPlatform:
+            name: "LTI 1.3 DevKit (as platform)"
+            audience: "%application_host%/platform"
+            oidc_authentication_url: "%application_host%/lti1p3/oidc/authentication"
+            oauth2_access_token_url: "%application_host%/lti1p3/auth/platformKey/token"
+    tools:
+        jupyterHub:
+            name: "JupyterHub LTI 1.3 Authenticator"
+            audience: "http://dev-jh-lti.localhost:8000/"
+            oidc_initiation_url: "http://dev-jh-lti.localhost:8000/hub/lti13/oauth_login"
+            launch_url: "http://dev-jh-lti.localhost:8000/hub/lti13/oauth_login"
+            deep_linking_url: "%application_host%/tool/launch"
+    registrations:
+        devkit:
+            client_id: "lti13authenticator-dev"
+            platform: "devkitPlatform"
+            tool: "jupyterHub"
+            deployment_ids:
+                - "deploymentId1"
+                - "deploymentId2"
+            platform_key_chain: "platformKey"
+            tool_key_chain: "toolKey"
+            platform_jwks_url: "%application_host%/lti1p3/.well-known/jwks/platformSet.json"
+            tool_jwks_url: "%application_host%/lti1p3/.well-known/jwks/toolSet.json"
+            order: 1
