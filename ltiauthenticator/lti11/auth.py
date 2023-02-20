@@ -140,7 +140,6 @@ class LTI11Authenticator(Authenticator):
         self.log.debug(f"Launch url is: {launch_url}")
 
         if validator.validate_launch_request(launch_url, handler.request.headers, args):
-
             # raise an http error if the username_key is not in the request's arguments.
             if self.username_key not in args.keys():
                 self.log.warning(

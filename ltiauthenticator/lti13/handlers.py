@@ -9,11 +9,11 @@ from urllib.parse import quote, unquote, urlparse
 import pem
 from Crypto.PublicKey import RSA
 from jupyterhub.handlers import BaseHandler
+from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import (
     OAuthCallbackHandler,
     OAuthLoginHandler,
     _serialize_state,
-    guess_callback_uri,
 )
 from tornado.httputil import url_concat
 from tornado.web import HTTPError, RequestHandler
@@ -98,9 +98,13 @@ class LTI13ConfigHandler(BaseHandler):
                 "email": "$Person.email.primary",
                 "lms_user_id": "$User.id",
             },
-            "public_jwk_url": f"{target_link_url}{self.base_url}hub/lti13/jwks",
+            "public_jwk_url": self.authenticator.jwks_url(
+                url_path_join(target_link_url, self.hub.server.base_url)
+            ),
             "target_link_uri": target_link_url,
-            "oidc_initiation_url": f"{target_link_url}{self.base_url}hub/oauth_login",
+            "oidc_initiation_url": self.authenticator.login_url(
+                url_path_join(target_link_url, self.hub.server.base_url)
+            ),
         }
         self.write(json.dumps(keys))
 
@@ -223,17 +227,23 @@ class LTI13LoginHandler(OAuthLoginHandler):
 
         client_id = args["client_id"]
         self.log.debug(f"client_id is {client_id}")
-        redirect_uri = guess_callback_uri(
-            "https", self.request.host, self.hub.server.base_url
+
+        redirect_uri = "{proto}://{host}{path}".format(
+            proto=self.request.protocol,
+            host=self.request.host,
+            path=self.authenticator.callback_url(self.hub.server.base_url),
         )
-        self.log.info(f"redirect_uri: {redirect_uri}")
+        self.log.debug(f"redirect_uri is: {redirect_uri}")
+
         state = self.get_state()
         self.set_state_cookie(state)
+
         # TODO: validate that received nonces haven't been received before
         # and that they are within the time-based tolerance window
         nonce_raw = hashlib.sha256(state.encode())
         nonce = nonce_raw.hexdigest()
         self.log.debug(f"nonce value: {nonce}")
+
         self.authorize_redirect(
             client_id=client_id,
             login_hint=login_hint,
@@ -243,6 +253,11 @@ class LTI13LoginHandler(OAuthLoginHandler):
             state=state,
             extra_params={"state": state},
         )
+
+    # GET requests are also allowed by the OpenID Conect launch flow:
+    # https://www.imsglobal.org/spec/security/v1p0/#fig_oidcflow
+    #
+    get = post
 
 
 class LTI13CallbackHandler(OAuthCallbackHandler):

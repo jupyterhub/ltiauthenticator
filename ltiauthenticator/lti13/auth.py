@@ -5,6 +5,7 @@ from typing import Dict, List
 from jupyterhub.app import JupyterHub
 from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers import BaseHandler
+from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import OAuthenticator
 from tornado.web import HTTPError
 from traitlets.config import List as TraitletsList
@@ -115,9 +116,23 @@ class LTI13Authenticator(OAuthenticator):
         """,
     )
 
+    def login_url(self, base_url):
+        return url_path_join(base_url, "lti13", "oauth_login")
+
+    def callback_url(self, base_url):
+        return url_path_join(base_url, "lti13", "oauth_callback")
+
+    def config_json_url(self, base_url):
+        return url_path_join(base_url, "lti13", "config")
+
+    def jwks_url(self, base_url):
+        return url_path_join(base_url, "lti13", "jwks")
+
     def get_handlers(self, app: JupyterHub) -> List[BaseHandler]:
         return [
-            ("/lti13/config", LTI13ConfigHandler),
+            (self.login_url(""), self.login_handler),
+            (self.callback_url(""), self.callback_handler),
+            (self.config_json_url(""), LTI13ConfigHandler),
         ]
 
     async def authenticate(

@@ -1,8 +1,4 @@
-from jupyterhub.app import JupyterHub
-from jupyterhub.handlers import BaseHandler
-
 from ltiauthenticator.lti13.auth import LTI13Authenticator
-from ltiauthenticator.lti13.handlers import LTI13ConfigHandler
 
 
 class MockLTI13Authenticator(LTI13Authenticator):
@@ -20,8 +16,3 @@ class MockLTI13Authenticator(LTI13Authenticator):
     authorize_url = "https://my.platform.domain/api/lti/authorize_redirect"
     endpoint = "https://my.platform.domain"
     token_url = "https://my.platform.domain/login/oauth2/token"
-
-    def get_handlers(self, app: JupyterHub) -> BaseHandler:
-        return [
-            (f"{self.config_url}", LTI13ConfigHandler),
-        ]
