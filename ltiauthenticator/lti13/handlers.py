@@ -254,6 +254,9 @@ class LTI13LoginHandler(OAuthLoginHandler):
             extra_params={"state": state},
         )
 
+    # GET requests are also allowed by the OpenID Conect launch flow:
+    # https://www.imsglobal.org/spec/security/v1p0/#fig_oidcflow
+    #
     get = post
 
 
