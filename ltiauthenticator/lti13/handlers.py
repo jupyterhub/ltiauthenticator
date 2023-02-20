@@ -224,11 +224,7 @@ class LTI13LoginHandler(OAuthLoginHandler):
         client_id = args["client_id"]
         self.log.debug(f"client_id is {client_id}")
 
-        redirect_uri = "{proto}://{host}{path}".format(
-            proto=self.request.protocol,
-            host=self.request.host,
-            path=url_path_join(self.hub.server.base_url, "/lti13/oauth_callback"),
-        )
+        redirect_uri = self.authenticator.get_callback_url()
         self.log.debug(f"redirect_uri is: {redirect_uri}")
 
         state = self.get_state()
