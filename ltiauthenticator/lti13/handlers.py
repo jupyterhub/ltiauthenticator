@@ -98,9 +98,13 @@ class LTI13ConfigHandler(BaseHandler):
                 "email": "$Person.email.primary",
                 "lms_user_id": "$User.id",
             },
-            "public_jwk_url": f"{target_link_url}{self.base_url}hub/lti13/jwks",
+            "public_jwk_url": self.authenticator.jwks_url(
+                url_path_join(target_link_url, self.hub.server.base_url)
+            ),
             "target_link_uri": target_link_url,
-            "oidc_initiation_url": f"{target_link_url}{self.base_url}hub/oauth_login",
+            "oidc_initiation_url": self.authenticator.login_url(
+                url_path_join(target_link_url, self.hub.server.base_url)
+            ),
         }
         self.write(json.dumps(keys))
 

@@ -125,6 +125,9 @@ class LTI13Authenticator(OAuthenticator):
     def config_url(self, base_url):
         return url_path_join(base_url, "lti13", "config")
 
+    def jwks_url(self, base_url):
+        return url_path_join(base_url, "lti13", "jwks")
+
     def get_handlers(self, app: JupyterHub) -> List[BaseHandler]:
         return [
             (self.login_url(""), self.login_handler),
