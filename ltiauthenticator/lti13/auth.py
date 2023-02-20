@@ -122,7 +122,7 @@ class LTI13Authenticator(OAuthenticator):
     def callback_url(self, base_url):
         return url_path_join(base_url, "lti13", "oauth_callback")
 
-    def config_url(self, base_url):
+    def config_json_url(self, base_url):
         return url_path_join(base_url, "lti13", "config")
 
     def jwks_url(self, base_url):
@@ -132,7 +132,7 @@ class LTI13Authenticator(OAuthenticator):
         return [
             (self.login_url(""), self.login_handler),
             (self.callback_url(""), self.callback_handler),
-            (self.config_url(""), LTI13ConfigHandler),
+            (self.config_json_url(""), LTI13ConfigHandler),
         ]
 
     async def authenticate(
