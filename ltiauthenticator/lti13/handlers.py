@@ -22,14 +22,6 @@ from ..utils import convert_request_to_dict, get_client_protocol, get_jwk
 from .validator import LTI13LaunchValidator
 
 
-def guess_callback_uri(protocol, host, hub_server_url):
-    return "{proto}://{host}{path}".format(
-        proto=protocol,
-        host=host,
-        path=url_path_join(hub_server_url, "/lti13/oauth_callback"),
-    )
-
-
 class LTI13ConfigHandler(BaseHandler):
     """
     Handles JSON configuration file for LTI 1.3.
@@ -231,17 +223,23 @@ class LTI13LoginHandler(OAuthLoginHandler):
 
         client_id = args["client_id"]
         self.log.debug(f"client_id is {client_id}")
-        redirect_uri = guess_callback_uri(
-            self.request.protocol, self.request.host, self.hub.server.base_url
+
+        redirect_uri = "{proto}://{host}{path}".format(
+            proto=self.request.protocol,
+            host=self.request.host,
+            path=url_path_join(self.hub.server.base_url, "/lti13/oauth_callback"),
         )
-        self.log.info(f"redirect_uri: {redirect_uri}")
+        self.log.debug(f"redirect_uri is: {redirect_uri}")
+
         state = self.get_state()
         self.set_state_cookie(state)
+
         # TODO: validate that received nonces haven't been received before
         # and that they are within the time-based tolerance window
         nonce_raw = hashlib.sha256(state.encode())
         nonce = nonce_raw.hexdigest()
         self.log.debug(f"nonce value: {nonce}")
+
         self.authorize_redirect(
             client_id=client_id,
             login_hint=login_hint,
