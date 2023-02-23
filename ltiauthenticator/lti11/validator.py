@@ -2,7 +2,7 @@ import time
 from collections import OrderedDict
 from typing import Any, Dict
 
-from oauthlib.oauth1.rfc5849 import signature
+from oauthlib.oauth1.rfc5849 import Client, signature
 from tornado.web import HTTPError
 from traitlets.config import LoggingConfigurable
 
@@ -117,7 +117,12 @@ class LTI11LaunchValidator(LoggingConfigurable):
             ),
         )
         consumer_secret = self.consumers[args["oauth_consumer_key"]]
-        sign = signature.sign_hmac_sha1(base_string, consumer_secret, None)
+        sign = signature.sign_hmac_sha1_with_client(
+            base_string,
+            Client(
+                client_key=args["oauth_consumer_key"], client_secret=consumer_secret
+            ),
+        )
         is_valid = signature.safe_string_equals(sign, args["oauth_signature"])
         self.log.debug(f"signature in request: {args['oauth_signature']}")
         self.log.debug(f"calculated signature: {sign}")
