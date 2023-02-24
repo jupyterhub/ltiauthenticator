@@ -5,7 +5,7 @@ from typing import Dict
 from unittest.mock import Mock
 
 import pytest
-from oauthlib.oauth1.rfc5849 import signature
+from oauthlib.oauth1.rfc5849 import Client, signature
 from tornado.httputil import HTTPServerRequest
 from tornado.web import Application, RequestHandler
 
@@ -115,8 +115,12 @@ def get_launch_args():
             ),
         )
 
-        args["oauth_signature"] = signature.sign_hmac_sha1(
-            base_string, oauth_consumer_secret, None
+        client = Client(
+            client_key=oauth_consumer_key, client_secret=oauth_consumer_secret
+        )
+
+        args["oauth_signature"] = signature.sign_hmac_sha1_with_client(
+            base_string, client
         )
         return args
 
