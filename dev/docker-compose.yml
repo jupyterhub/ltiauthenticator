@@ -15,7 +15,7 @@ services:
     image: jupyterhub
     container_name: jupyterhub
     networks:
-      jupyterhub-network:
+      devkit_lti1p3_network:
         aliases:
           - dev-jh-lti.localhost
     volumes:
@@ -60,7 +60,7 @@ services:
 volumes:
   jupyterhub-data:
 
-
 networks:
-  jupyterhub-network:
-    name: jupyterhub-network
+  devkit_lti1p3_network:
+    name: devkit-lti1p3_devkit_lti1p3_network
+    external: true
