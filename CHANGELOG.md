@@ -1,5 +1,53 @@
 # Changelog
 
+## [1.4]
+
+### [1.4.0] - 2023-03-01
+
+The main purpose of this release is to remove the broken implementation of LTI 1.3 introduced in the previous release.
+Any merged PRs related to LTI 1.3 which were later removed are still kept in this changelog to give credit to the contributors.
+
+#### New features added
+
+- feat(lti13): Make tool name & description configurable [#103](https://github.com/jupyterhub/ltiauthenticator/pull/103) ([@yuvipanda](https://github.com/yuvipanda))
+
+#### Bugs fixed
+
+- fix(lti13): Completely remove non-functional LTI1.3 implementation [#128](https://github.com/jupyterhub/ltiauthenticator/pull/128) ([@martinclaus](https://github.com/martinclaus))
+- fix(lti13): Fix login request validation [#126](https://github.com/jupyterhub/ltiauthenticator/pull/126) ([@martinclaus](https://github.com/martinclaus))
+- fix(lti13): Relax resource link launch request message requirements [#125](https://github.com/jupyterhub/ltiauthenticator/pull/125) ([@martinclaus](https://github.com/martinclaus))
+- fix(lti13): Add missing oauth handler [#124](https://github.com/jupyterhub/ltiauthenticator/pull/124) ([@martinclaus](https://github.com/martinclaus))
+
+#### Maintenance and upkeep improvements
+
+- maint(lti11): Silence OAuthlib deprication warnings [#129](https://github.com/jupyterhub/ltiauthenticator/pull/129) ([@martinclaus](https://github.com/martinclaus))
+- maint: drop py36 and py37, test py311, use tbump, refactor away setup.py, and misc [#116](https://github.com/jupyterhub/ltiauthenticator/pull/116) ([@consideRatio](https://github.com/consideRatio))
+- chore(lti13): Make LTI1.3 tool name be a bit more generic [#102](https://github.com/jupyterhub/ltiauthenticator/pull/102) ([@yuvipanda](https://github.com/yuvipanda))
+- maint: configure pytest asyncio_mode = auto [#99](https://github.com/jupyterhub/ltiauthenticator/pull/99) ([@consideRatio](https://github.com/consideRatio))
+- breaking, maint(lti13): switch to using pyjwt v2 [#91](https://github.com/jupyterhub/ltiauthenticator/pull/91) ([@consideRatio](https://github.com/consideRatio))
+- refactor: use f-strings instead of %s [#90](https://github.com/jupyterhub/ltiauthenticator/pull/90) ([@consideRatio](https://github.com/consideRatio))
+- chore(pre-commit): replace reorder-python-imports with isort [#89](https://github.com/jupyterhub/ltiauthenticator/pull/89) ([@consideRatio](https://github.com/consideRatio))
+
+#### Documentation improvements
+
+- docs: Fix documentation for LTI1.1 [#104](https://github.com/jupyterhub/ltiauthenticator/pull/104) ([@martinclaus](https://github.com/martinclaus))
+- docs: update config to use fresh ubuntu:20.04 as base [#88](https://github.com/jupyterhub/ltiauthenticator/pull/88) ([@consideRatio](https://github.com/consideRatio))
+- docs: fix multiple typos in README [#82](https://github.com/jupyterhub/ltiauthenticator/pull/82) ([@regisb](https://github.com/regisb))
+- docs: Linkify and fix typo in URL (lit -> lti) [#81](https://github.com/jupyterhub/ltiauthenticator/pull/81) ([@krassowski](https://github.com/krassowski))
+- docs: Update helm chart examples [#78](https://github.com/jupyterhub/ltiauthenticator/pull/78) ([@jgwerner](https://github.com/jgwerner))
+
+#### Other merged PRs
+
+- ci: remove deps managed by pre-commit [#100](https://github.com/jupyterhub/ltiauthenticator/pull/100) ([@consideRatio](https://github.com/consideRatio))
+- ci: avoid running workflows twice and test against py310 [#98](https://github.com/jupyterhub/ltiauthenticator/pull/98) ([@consideRatio](https://github.com/consideRatio))
+- ci: add dependabot.yml to keep gha updated [#93](https://github.com/jupyterhub/ltiauthenticator/pull/93) ([@consideRatio](https://github.com/consideRatio))
+
+#### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/ltiauthenticator/graphs/contributors?from=2021-11-15&to=2023-02-28&type=c))
+
+[@consideRatio](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AconsideRatio+updated%3A2021-11-15..2023-02-28&type=Issues) | [@isaacpod](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aisaacpod+updated%3A2021-11-15..2023-02-28&type=Issues) | [@jgwerner](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ajgwerner+updated%3A2021-11-15..2023-02-28&type=Issues) | [@krassowski](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Akrassowski+updated%3A2021-11-15..2023-02-28&type=Issues) | [@martinclaus](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amartinclaus+updated%3A2021-11-15..2023-02-28&type=Issues) | [@minrk](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aminrk+updated%3A2021-11-15..2023-02-28&type=Issues) | [@ptcane](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aptcane+updated%3A2021-11-15..2023-02-28&type=Issues) | [@regisb](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aregisb+updated%3A2021-11-15..2023-02-28&type=Issues) | [@yuvipanda](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ayuvipanda+updated%3A2021-11-15..2023-02-28&type=Issues)
+
 ## [1.3]
 
 ### [1.3.0] - 2021-11-15
