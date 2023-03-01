@@ -1,13 +1,13 @@
 # LTI 1.3
-# Initial authentication request arguments
+# Login initiation request arguments
 # https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login
-LTI13_LOGIN_REQUEST_ARGS = [
+LTI13_INIT_LOGIN_REQUEST_ARGS = [
     "iss",
     "login_hint",
     "target_link_uri",
 ]
 
-# Initial authentication request arguments
+# Authentication request arguments
 # https://www.imsglobal.org/spec/security/v1p0/#step-2-authentication-request
 LTI13_AUTH_REQUEST_ARGS = [
     "client_id",
@@ -32,7 +32,7 @@ LTI13_GENERAL_REQUIRED_CLAIMS = {
 }
 
 # Required claims with LtiResourceLinkRequest login flows
-LTI13_RESOURCE_LINK_REQUIRED_CLAIMS = {
+LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS = {
     "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
     "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
         "id": "",
@@ -124,7 +124,7 @@ LTI13_LIS_CLAIMS = {
 
 # Required and optional resource link claims
 LTI13_RESOURCE_LINKS = {
-    **LTI13_RESOURCE_LINK_REQUIRED_CLAIMS[
+    **LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS[
         "https://purl.imsglobal.org/spec/lti/claim/resource_link"
     ],
     **LTI13_RESOURCE_LINK_OPTIONAL_CLAIMS[

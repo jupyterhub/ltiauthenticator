@@ -7,8 +7,8 @@ from traitlets.config import LoggingConfigurable
 from ltiauthenticator.lti13.constants import (
     LTI13_DEEP_LINKING_REQUIRED_CLAIMS,
     LTI13_GENERAL_REQUIRED_CLAIMS,
-    LTI13_LOGIN_REQUEST_ARGS,
-    LTI13_RESOURCE_LINK_REQUIRED_CLAIMS,
+    LTI13_INIT_LOGIN_REQUEST_ARGS,
+    LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS,
 )
 
 
@@ -29,7 +29,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
         Raises:
           HTTPError if validation fails.
         """
-        for a in LTI13_LOGIN_REQUEST_ARGS:
+        for a in LTI13_INIT_LOGIN_REQUEST_ARGS:
             if a not in args:
                 raise HTTPError(400, f"Required LTI 1.3 arg {a} not in request")
             if not args.get(a):
@@ -92,7 +92,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
         )
         if (
             message_type
-            != LTI13_RESOURCE_LINK_REQUIRED_CLAIMS[
+            != LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS[
                 "https://purl.imsglobal.org/spec/lti/claim/message_type"
             ]
             and message_type
@@ -129,7 +129,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
         if is_deep_linking:
             required_claims = LTI13_DEEP_LINKING_REQUIRED_CLAIMS
         else:
-            required_claims = LTI13_RESOURCE_LINK_REQUIRED_CLAIMS
+            required_claims = LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS
 
         for k, _ in required_claims.items():
             if k not in jwt_decoded:
