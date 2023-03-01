@@ -4,7 +4,7 @@
 
 ### [1.4.0] - 2023-03-01
 
-The main purpose of this release is to remove the broken implementation of LTI 1.3 introduced in the previous release.
+The main purpose of this release is to remove the non-functional `LTI13OAuthenticator` class introduced in 1.3.0 while its being worked on towards a functional state.
 Any merged PRs related to LTI 1.3 which were later removed are still kept in this changelog to give credit to the contributors.
 
 #### New features added
