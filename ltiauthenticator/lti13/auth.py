@@ -160,7 +160,7 @@ class LTI13Authenticator(OAuthenticator):
             jwks_endpoint=self.endpoint,
             jwks_algorithms=self.jwks_algorithms,
         )
-        validator.validate_launch_request(jwt_decoded)
+        validator.validate_id_token(jwt_decoded)
 
         username = jwt_decoded.get(self.username_key)
         if not username:

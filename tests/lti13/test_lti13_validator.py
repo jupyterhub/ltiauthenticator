@@ -41,7 +41,7 @@ def test_validate_minimal_launch_request(minimal_launch_req_jwt_decoded):
     Ref: https://www.imsglobal.org/spec/lti/v1p3#required-message-claims
     """
     validator = LTI13LaunchValidator()
-    validator.validate_launch_request(minimal_launch_req_jwt_decoded)
+    validator.validate_id_token(minimal_launch_req_jwt_decoded)
 
 
 # Tests of validate_launch_request()
@@ -50,7 +50,7 @@ def test_validate_launch_request_empty_roles(launch_req_jwt_decoded):
     validator = LTI13LaunchValidator()
     launch_req_jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/roles"] = ""
 
-    validator.validate_launch_request(launch_req_jwt_decoded)
+    validator.validate_id_token(launch_req_jwt_decoded)
 
 
 def test_validate_launch_request_invalid_message_type(launch_req_jwt_decoded):
@@ -60,7 +60,7 @@ def test_validate_launch_request_invalid_message_type(launch_req_jwt_decoded):
     ] = "???"
 
     with pytest.raises(HTTPError):
-        validator.validate_launch_request(launch_req_jwt_decoded)
+        validator.validate_id_token(launch_req_jwt_decoded)
 
 
 def test_validate_launch_request_invalid_version(launch_req_jwt_decoded):
@@ -70,7 +70,7 @@ def test_validate_launch_request_invalid_version(launch_req_jwt_decoded):
     ] = "1.0.0"
 
     with pytest.raises(HTTPError):
-        validator.validate_launch_request(launch_req_jwt_decoded)
+        validator.validate_id_token(launch_req_jwt_decoded)
 
 
 def test_validate_launch_request_empty_deployment_id(
@@ -81,7 +81,7 @@ def test_validate_launch_request_empty_deployment_id(
         "https://purl.imsglobal.org/spec/lti/claim/deployment_id"
     ] = ""
 
-    validator.validate_launch_request(launch_req_jwt_decoded)
+    validator.validate_id_token(launch_req_jwt_decoded)
 
 
 def test_validate_launch_request_empty_target_link_uri(
@@ -92,7 +92,7 @@ def test_validate_launch_request_empty_target_link_uri(
         "https://purl.imsglobal.org/spec/lti/claim/target_link_uri"
     ] = ""
 
-    validator.validate_launch_request(launch_req_jwt_decoded)
+    validator.validate_id_token(launch_req_jwt_decoded)
 
 
 def test_validate_launch_request_empty_resource_link_id(
@@ -104,7 +104,7 @@ def test_validate_launch_request_empty_resource_link_id(
     ] = ""
 
     with pytest.raises(HTTPError):
-        validator.validate_launch_request(launch_req_jwt_decoded)
+        validator.validate_id_token(launch_req_jwt_decoded)
 
 
 def test_validate_launch_request_with_priv(
@@ -112,4 +112,4 @@ def test_validate_launch_request_with_priv(
 ):
     validator = LTI13LaunchValidator()
 
-    validator.validate_launch_request(launch_req_jwt_decoded_priv)
+    validator.validate_id_token(launch_req_jwt_decoded_priv)

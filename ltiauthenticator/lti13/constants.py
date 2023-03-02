@@ -22,6 +22,11 @@ LTI13_AUTH_REQUEST_ARGS = [
     "state",
 ]
 
+LTI13_AUTH_RESPONSE_ARGS = [
+    "id_token",
+    "state",
+]
+
 # Required message claims
 # http://www.imsglobal.org/spec/lti/v1p3/#required-message-claims
 LTI13_GENERAL_REQUIRED_CLAIMS = {

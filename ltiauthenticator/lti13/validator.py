@@ -5,6 +5,7 @@ from tornado.web import HTTPError
 from traitlets.config import LoggingConfigurable
 
 from ltiauthenticator.lti13.constants import (
+    LTI13_AUTH_RESPONSE_ARGS,
     LTI13_DEEP_LINKING_REQUIRED_CLAIMS,
     LTI13_GENERAL_REQUIRED_CLAIMS,
     LTI13_INIT_LOGIN_REQUEST_ARGS,
@@ -30,6 +31,23 @@ class LTI13LaunchValidator(LoggingConfigurable):
           HTTPError if validation fails.
         """
         for a in LTI13_INIT_LOGIN_REQUEST_ARGS:
+            if a not in args:
+                raise HTTPError(400, f"Required LTI 1.3 arg {a} not in request")
+            if not args.get(a):
+                raise HTTPError(400, f"Required LTI 1.3 arg {a} needs a value")
+
+    def validate_auth_response(self, args: Dict[str, Any]) -> None:
+        """
+        Validate the reponse from the authorization server and ensures that the required
+        parameters are present.
+
+        Args:
+          args: dictionary that represents keys/values sent in authentication response
+
+        Raises:
+          HTTPError if validation fails.
+        """
+        for a in LTI13_AUTH_RESPONSE_ARGS:
             if a not in args:
                 raise HTTPError(400, f"Required LTI 1.3 arg {a} not in request")
             if not args.get(a):
@@ -104,7 +122,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 400, f"Incorrect value {message_type} for message_type claim"
             )
 
-    def validate_launch_request(self, jwt_decoded: Dict[str, Any]) -> None:
+    def validate_id_token(self, jwt_decoded: Dict[str, Any]) -> None:
         """
         Validates that a LTI 1.3 launch request's decoded JWT has required
         claims (dictionary keys of jwt_decoded).

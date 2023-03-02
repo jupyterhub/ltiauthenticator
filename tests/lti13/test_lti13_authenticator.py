@@ -18,7 +18,7 @@ async def test_authenticator_invokations(req_handler):
     Does the authenticator invoke the following methods?
     - the provided RequestHandler's get_argument
     - the LTI13LaunchValidator's verify_and_decode_jwt
-    - the LTI13LaunchValidator's validate_launch_request
+    - the LTI13LaunchValidator's validate_id_token
     """
     authenticator = LTI13Authenticator()
     request_handler = req_handler(RequestHandler, authenticator=authenticator)
@@ -28,12 +28,12 @@ async def test_authenticator_invokations(req_handler):
     ) as mock_get_argument, patch.object(
         LTI13LaunchValidator, "verify_and_decode_jwt"
     ) as mock_verify_and_decode_jwt, patch.object(
-        LTI13LaunchValidator, "validate_launch_request"
-    ) as mock_validate_launch_request:
+        LTI13LaunchValidator, "validate_id_token"
+    ) as mock_validate_id_token:
         await authenticator.authenticate(request_handler, None)
         assert mock_get_argument.called
         assert mock_verify_and_decode_jwt.called
-        assert mock_validate_launch_request.called
+        assert mock_validate_id_token.called
 
 
 async def test_authenticator_returned_name_with_sub(
@@ -58,7 +58,7 @@ async def test_authenticator_returned_name_with_sub(
         LTI13LaunchValidator,
         "verify_and_decode_jwt",
         return_value=launch_req_jwt_decoded,
-    ), patch.object(LTI13LaunchValidator, "validate_launch_request"):
+    ), patch.object(LTI13LaunchValidator, "validate_id_token"):
         result = await authenticator.authenticate(request_handler, None)
         assert result["name"] == "1ace7501877e6a429fca"
 
@@ -83,7 +83,7 @@ async def test_authenticator_returned_name_with_sub_and_email(
         LTI13LaunchValidator,
         "verify_and_decode_jwt",
         return_value=launch_req_jwt_decoded,
-    ), patch.object(LTI13LaunchValidator, "validate_launch_request"):
+    ), patch.object(LTI13LaunchValidator, "validate_id_token"):
         result = await authenticator.authenticate(request_handler, None)
         assert result["name"] == "usertest@example.com"
 
@@ -108,6 +108,6 @@ async def test_authenticator_returned_name_with_sub_email_name(
         LTI13LaunchValidator,
         "verify_and_decode_jwt",
         return_value=launch_req_jwt_decoded,
-    ), patch.object(LTI13LaunchValidator, "validate_launch_request"):
+    ), patch.object(LTI13LaunchValidator, "validate_id_token"):
         result = await authenticator.authenticate(request_handler, None)
         assert result["name"] == "usertest@example.com"

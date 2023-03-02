@@ -285,6 +285,11 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         """
         # TODO: validate that received nonces haven't been received before
         # and that they are within the time-based tolerance window
+        validator = LTI13LaunchValidator()
+
+        args = convert_request_to_dict(self.request.arguments)
+        self.log.debug(f"Initial launch request args are {args}")
+        validator.validate_auth_response(args)
 
         self.check_state()
         user = await self.login_user()
