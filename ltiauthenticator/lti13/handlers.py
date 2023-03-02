@@ -1,13 +1,10 @@
 import hashlib
 import json
-import os
 import re
 import uuid
 from typing import Any, Dict, List, Optional, cast
 from urllib.parse import quote, unquote, urlparse
 
-import pem
-from Crypto.PublicKey import RSA
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import (
@@ -18,7 +15,7 @@ from oauthenticator.oauth2 import (
 from tornado.httputil import url_concat
 from tornado.web import HTTPError, RequestHandler
 
-from ..utils import convert_request_to_dict, get_client_protocol, get_jwk
+from ..utils import convert_request_to_dict, get_client_protocol
 from .validator import LTI13LaunchValidator
 
 
@@ -276,34 +273,3 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
             raise HTTPError(403, "User missing or null")
         self.redirect(self.get_next_url(user))
         self.log.debug(f"Redirecting user {user.id} to {self.get_next_url(user)}")
-
-
-class LTI13JWKSHandler(BaseHandler):
-    """
-    Handler to serve the JSON Web Key Set (JWKS) used to verify the JSON Web Token (JWT)
-    issued by the authorization server (a.k.a Platform, such as an LMS).
-    """
-
-    def get(self) -> None:
-        """
-        This method requires that the LTI13_PRIVATE_KEY environment variable
-        is set with the full path to the RSA private key in PEM format.
-        """
-        if not os.environ.get("LTI13_PRIVATE_KEY"):
-            raise OSError("LTI13_PRIVATE_KEY environment variable not set")
-        key_path = os.environ.get("LTI13_PRIVATE_KEY")
-        # ensure pem permissions are correctly set
-        if not os.access(key_path, os.R_OK):
-            self.log.error(f"Unable to access {key_path}")
-            raise PermissionError()
-        private_key = pem.parse_file(key_path)
-        public_key = RSA.import_key(private_key[0].as_text()).publickey().exportKey()
-        self.log.debug(f"public_key is {public_key}")
-
-        jwk = get_jwk(public_key)
-        self.log.debug(f"The jwks is {jwk}")
-        keys_obj = {"keys": []}
-        keys_obj["keys"].append(jwk)
-        # we do not need to use json.dumps because tornado is converting our dict automatically and adding the content-type as json
-        # https://www.tornadoweb.org/en/stable/web.html#tornado.web.RequestHandler.write
-        self.write(keys_obj)
