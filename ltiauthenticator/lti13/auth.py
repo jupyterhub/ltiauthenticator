@@ -15,7 +15,7 @@ from .handlers import (
     LTI13CallbackHandler,
     LTI13ConfigHandler,
     LTI13LaunchValidator,
-    LTI13LoginHandler,
+    LTI13LoginInitHandler,
 )
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class LTI13Authenticator(OAuthenticator):
     login_service = "LTI 1.3"
 
     # handlers used for login, callback, and jwks endpoints
-    login_handler = LTI13LoginHandler
+    login_handler = LTI13LoginInitHandler
     callback_handler = LTI13CallbackHandler
 
     jwks_algorithms = TraitletsList(
@@ -136,7 +136,7 @@ class LTI13Authenticator(OAuthenticator):
         ]
 
     async def authenticate(
-        self, handler: LTI13LoginHandler, data: Dict[str, str] = None
+        self, handler: LTI13LoginInitHandler, data: Dict[str, str] = None
     ) -> Dict[str, str]:
         """
         Overrides authenticate from the OAuthenticator base class to handle LTI

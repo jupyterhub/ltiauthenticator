@@ -2,7 +2,7 @@ import hashlib
 import json
 import re
 import uuid
-from typing import Any, Dict, List, Optional, cast
+from typing import Optional, cast
 from urllib.parse import quote, unquote, urlparse
 
 from jupyterhub.handlers import BaseHandler
@@ -17,6 +17,17 @@ from tornado.web import HTTPError, RequestHandler
 
 from ..utils import convert_request_to_dict, get_client_protocol
 from .validator import LTI13LaunchValidator
+
+
+def get_nonce(state: str) -> str:
+    """
+    Create a nonce by hashing state.
+
+    SHA 256 is used to create the hash. The nonce is its hexdigest.
+    """
+    hash = hashlib.sha256(state.encode())
+    nonce = hash.hexdigest()
+    return nonce
 
 
 class LTI13ConfigHandler(BaseHandler):
@@ -103,7 +114,7 @@ class LTI13ConfigHandler(BaseHandler):
         self.write(json.dumps(keys))
 
 
-class LTI13LoginHandler(OAuthLoginHandler):
+class LTI13LoginInitHandler(OAuthLoginHandler):
     """
     Handles JupyterHub authentication requests according to the
     LTI 1.3 standard.
@@ -111,21 +122,18 @@ class LTI13LoginHandler(OAuthLoginHandler):
 
     def authorize_redirect(
         self,
-        redirect_uri: Optional[str] = None,
-        client_id: Optional[str] = None,
-        login_hint: Optional[str] = None,
+        redirect_uri: str,
+        login_hint: str,
+        nonce: str,
+        client_id: str,
+        state: str,
         lti_message_hint: Optional[str] = None,
-        nonce: Optional[str] = None,
-        state: Optional[str] = None,
-        extra_params: Optional[Dict[str, Any]] = None,
-        response_type: Optional[str] = "id_token",
-        scope: Optional[List[str]] = ["openid"],
     ) -> None:
         """
         Overrides the OAuth2Mixin.authorize_redirect method to to initiate the LTI 1.3 / OIDC
-        login flow with the required `login_hint` and optional `lti_message_hint` arguments.
+        login flow with the required and optional arguments.
 
-        Arguments are redirected to the platform's authorization url for further
+        User Agent (browser) is redirected to the platform's authorization url for further
         processing.
 
         References:
@@ -133,36 +141,36 @@ class LTI13LoginHandler(OAuthLoginHandler):
         http://www.imsglobal.org/spec/lti/v1p3/#additional-login-parameters-0
 
         Args:
-          client_id: used to identify the tool's installation with a platform
-          redirect_uri: redirect url specified during tool installation (callback url)
+          redirect_uri: redirect url specified during tool installation (callback url) to
+            which the user will be redirected from the platform after attempting authorization.
           login_hint: opaque value used by the platform for user identity
-          lti_message_hint: signed JWT which contains information needed to perform the
-            launch including issuer, user and context information
           nonce: unique value sent to allow recipients to protect themselves against replay attacks
+          client_id: used to identify the tool's installation with a platform
           state: opaque value for the platform to maintain state between the request and
             callback and provide Cross-Site Request Forgery (CSRF) mitigation.
+          lti_message_hint: similarly to the login_hint parameter, lti_message_hint value is opaque to the tool.
+            If present in the login initiation request, the tool MUST include it back in
+            the authentication request unaltered.
         """
         handler = cast(RequestHandler, self)
-        args = {"response_type": response_type}
-        args["scope"] = " ".join(scope)
-        if client_id is not None:
-            args["client_id"] = client_id
-        if redirect_uri is not None:
-            args["redirect_uri"] = redirect_uri
-        if response_type is not None:
-            args["response_type"] = response_type
-        if login_hint is not None:
-            extra_params["login_hint"] = login_hint
+        # Required parameter with values specified by LTI 1.3
+        # https://www.imsglobal.org/spec/security/v1p0/#step-2-authentication-request
+        args = {
+            "response_type": "id_token",
+            "scope": "openid",
+            "response_mode": "form_post",
+            "prompt": "none",
+        }
+        # Dynamically computed required parameter values
+        args["client_id"] = client_id
+        args["redirect_uri"] = redirect_uri
+        args["login_hint"] = login_hint
+        args["nonce"] = nonce
+        args["state"] = state
+
         if lti_message_hint is not None:
-            extra_params["lti_message_hint"] = lti_message_hint
-        if nonce is not None:
-            extra_params["nonce"] = nonce
-        if state is not None:
-            extra_params["state"] = state
-        extra_params["response_mode"] = "form_post"
-        extra_params["prompt"] = "none"
-        if extra_params:
-            args.update(extra_params)
+            args["lti_message_hint"] = lti_message_hint
+
         url = self.authenticator.authorize_url
         handler.redirect(url_concat(url, args))
 
@@ -216,11 +224,13 @@ class LTI13LoginHandler(OAuthLoginHandler):
         login_hint = args["login_hint"]
         self.log.debug(f"login_hint is {login_hint}")
 
-        lti_message_hint = args["lti_message_hint"]
-        self.log.debug(f"lti_message_hint is {lti_message_hint}")
+        lti_message_hint = self._get_optional_arg(args, "lti_message_hint")
+        client_id = self._get_optional_arg(args, "client_id")
 
-        client_id = args["client_id"]
-        self.log.debug(f"client_id is {client_id}")
+        # lti_deployment_id is not used anywhere. It may be used in the future to influence the
+        # login flow depending on the deployment settings. A configurable hook, similar to `Authenticator`'s `post_auth_hook`
+        # would be a good way to implement this.
+        # lti_deployment_id = self._get_optional_arg(args, "lti_deployment_id")
 
         redirect_uri = "{proto}://{host}{path}".format(
             proto=self.request.protocol,
@@ -232,10 +242,10 @@ class LTI13LoginHandler(OAuthLoginHandler):
         state = self.get_state()
         self.set_state_cookie(state)
 
-        # TODO: validate that received nonces haven't been received before
-        # and that they are within the time-based tolerance window
-        nonce_raw = hashlib.sha256(state.encode())
-        nonce = nonce_raw.hexdigest()
+        # TODO: make sure that state contains unguessable (random) data.
+        # It would be better to use a dedicated cookie for nonces
+        # See https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes
+        nonce = get_nonce(state)
         self.log.debug(f"nonce value: {nonce}")
 
         self.authorize_redirect(
@@ -245,13 +255,23 @@ class LTI13LoginHandler(OAuthLoginHandler):
             nonce=nonce,
             redirect_uri=redirect_uri,
             state=state,
-            extra_params={"state": state},
         )
 
     # GET requests are also allowed by the OpenID Conect launch flow:
     # https://www.imsglobal.org/spec/security/v1p0/#fig_oidcflow
     #
     get = post
+
+    def _get_optional_arg(self, args: dict[str, str], arg: str) -> Optional[str]:
+        """
+        Return value of optional argument or None if not present.
+        """
+        value = args.get(arg)
+        if value:
+            self.log.debug(f"{arg} is {value}")
+        else:
+            self.log.debug(f"{arg} not present in login initiation request")
+        return value
 
 
 class LTI13CallbackHandler(OAuthCallbackHandler):
@@ -263,6 +283,9 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         """
         Overrides the upstream get handler with it's standard implementation.
         """
+        # TODO: validate that received nonces haven't been received before
+        # and that they are within the time-based tolerance window
+
         self.check_state()
         user = await self.login_user()
         self.log.debug(f"user logged in: {user}")
