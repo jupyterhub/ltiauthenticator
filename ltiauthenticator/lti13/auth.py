@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from jupyterhub.app import JupyterHub
 from jupyterhub.auth import LocalAuthenticator
@@ -11,12 +11,7 @@ from tornado.web import HTTPError
 from traitlets.config import List as TraitletsList
 from traitlets.config import Unicode
 
-from .handlers import (
-    LTI13CallbackHandler,
-    LTI13ConfigHandler,
-    LTI13LaunchValidator,
-    LTI13LoginInitHandler,
-)
+from .handlers import LTI13CallbackHandler, LTI13ConfigHandler, LTI13LoginInitHandler
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -137,7 +132,7 @@ class LTI13Authenticator(OAuthenticator):
 
     async def authenticate(
         self, handler: LTI13LoginInitHandler, data: Dict[str, str] = None
-    ) -> Dict[str, str]:
+    ) -> Dict[str, Any]:
         """
         Overrides authenticate from the OAuthenticator base class to handle LTI
         1.3 authentication requests based on a passed JWT. The JWT is verified
@@ -151,22 +146,12 @@ class LTI13Authenticator(OAuthenticator):
         Returns:
           Authentication dictionary
         """
-        id_token = handler.get_argument("id_token")
-
-        validator = LTI13LaunchValidator()
-        jwt_decoded = validator.verify_and_decode_jwt(
-            id_token,
-            audience=self.client_id,
-            jwks_endpoint=self.endpoint,
-            jwks_algorithms=self.jwks_algorithms,
-        )
-        validator.validate_id_token(jwt_decoded)
-
-        username = jwt_decoded.get(self.username_key)
+        if data is None:
+            data = {}
+        username = data.get(self.username_key)
         if not username:
-            if jwt_decoded.get("sub"):
-                username = jwt_decoded["sub"]
-            else:
+            username = data.get("sub")
+            if not username:
                 raise HTTPError(
                     400,
                     f"Unable to set the username with username_key {self.username_key}",
@@ -174,7 +159,7 @@ class LTI13Authenticator(OAuthenticator):
 
         return {
             "name": username,
-            "auth_state": jwt_decoded,
+            "auth_state": data,
         }
 
 

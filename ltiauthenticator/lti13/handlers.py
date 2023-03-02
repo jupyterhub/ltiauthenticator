@@ -239,6 +239,7 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
         )
         self.log.debug(f"redirect_uri is: {redirect_uri}")
 
+        # to prevent CSRF
         state = self.get_state()
         self.set_state_cookie(state)
 
@@ -276,7 +277,12 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
 
 class LTI13CallbackHandler(OAuthCallbackHandler):
     """
-    LTI 1.3 call back handler
+    Handles JupyterHub authentication requests responses according to the
+    LTI 1.3 standard.
+
+    References:
+    https://www.imsglobal.org/spec/security/v1p0/#step-3-authentication-response
+    https://www.imsglobal.org/spec/security/v1p0/#step-4-resource-is-displayed
     """
 
     async def post(self):
@@ -291,8 +297,23 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         self.log.debug(f"Initial launch request args are {args}")
         validator.validate_auth_response(args)
 
+        # Check is state is the same as in the authorization request issued
+        # constructed in `LTI13LoginInitHandler.post`, prevents CSRF
         self.check_state()
-        user = await self.login_user()
+
+        # decrypt and verify id_token
+        # https://openid.net/specs/openid-connect-core-1_0.html#IDToken
+        # https://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
+        id_token = args.get("id_token")
+        jwt_decoded = validator.verify_and_decode_jwt(
+            id_token,
+            audience=self.client_id,
+            jwks_endpoint=self.endpoint,
+            jwks_algorithms=self.jwks_algorithms,
+        )
+        validator.validate_id_token(jwt_decoded)
+
+        user = await self.login_user(jwt_decoded)
         self.log.debug(f"user logged in: {user}")
         if user is None:
             raise HTTPError(403, "User missing or null")
