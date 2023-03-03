@@ -54,6 +54,17 @@ class LTI13Authenticator(OAuthenticator):
         """,
     )
 
+    issuer = Unicode(
+        os.getenv("LTI13_ISSUER", ""),
+        allow_none=False,
+        config=True,
+        help="""
+        The platform's issuer identifier. It is a case-sensitive URL, using the HTTPS
+        scheme, that contains scheme, host, and optionally, port number, and path components,
+        and no query or fragment components. It is provided by the platform.
+        """,
+    )
+
     # FIXME: This name and description is incorrect. It is practically used as
     #        reference to a platforms JWKS endpoint.
     #

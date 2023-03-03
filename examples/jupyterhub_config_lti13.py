@@ -24,6 +24,10 @@ c.JupyterHub.authenticator_class = "ltiauthenticator.lti13.auth.LTI13Authenticat
 # Use an LTI 1.3 claim to set the username.
 c.LTI13Authenticator.username_key = "given_name"
 
+# Define issuer identifier of the LMS platform
+c.LTI13Authenticator.issuer = (
+    os.getenv("LTI13_ISSUER") or "https://canvas.instructure.com"
+)
 # Add the LTI 1.3 configuration options
 c.LTI13Authenticator.authorize_url = (
     os.getenv("OAUTH2_AUTHORIZE_URL")

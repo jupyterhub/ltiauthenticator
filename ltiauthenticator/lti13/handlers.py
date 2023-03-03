@@ -310,6 +310,7 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         # https://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
         jwt_decoded = validator.verify_and_decode_jwt(
             args.get("id_token"),
+            issuer=self.authenticator.issuer,
             audience=self.client_id,
             jwks_endpoint=self.endpoint,
             jwks_algorithms=self.jwks_algorithms,

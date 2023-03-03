@@ -54,22 +54,28 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 raise HTTPError(400, f"Required LTI 1.3 arg {a} needs a value")
 
     def verify_and_decode_jwt(
-        self, encoded_jwt, audience, jwks_endpoint, jwks_algorithms, **kwargs
+        self, encoded_jwt, issuer, audience, jwks_endpoint, jwks_algorithms, **kwargs
     ):
         """
         Verify the JWT against the public keys provided in a JSON Web Key Set
         endpoint provided by the platform, and then return the payload in the
         jwt.
         """
+        if not issuer:
+            self.log.warning("No issuer identifyer configured")
+
         jwks_client = jwt.PyJWKClient(jwks_endpoint)
         signing_key = jwks_client.get_signing_key_from_jwt(encoded_jwt)
+
         jwt_decoded = jwt.decode(
             encoded_jwt,
             signing_key.key,
             algorithms=jwks_algorithms,
             audience=audience,
+            issuer=issuer,
             **kwargs,
         )
+
         return jwt_decoded
 
     def _check_general_required_keys(self, jwt_decoded: Dict[str, Any]) -> None:

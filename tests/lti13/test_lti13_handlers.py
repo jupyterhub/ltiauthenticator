@@ -140,6 +140,7 @@ async def test_lti13_callback_handler_invocation(req_handler):
         mock_validate_auth_response.assert_called_once()
         mock_verify_and_decode_jwt.assert_called_once_with(
             id_token,
+            issuer=authenticator.issuer,
             audience=authenticator.client_id,
             jwks_endpoint=authenticator.endpoint,
             jwks_algorithms=authenticator.jwks_algorithms,

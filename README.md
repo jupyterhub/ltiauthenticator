@@ -320,6 +320,8 @@ hub:
       # Use an LTI 1.3 claim to set the username. You can use and LTI 1.3 claim that
       # identifies the user, such as email, last_name, etc.
       username_key: "given_name"
+      # The issuer identifyer of the platform
+      issuer: "https://canvas.instructure.com"
       # The LTI 1.3 authorization url
       authorize_url: "https://canvas.instructure.com/api/lti/authorize_redirect"
       # The external tool's client id as represented within the platform (LMS)

@@ -17,3 +17,4 @@ class MockLTI13Authenticator(LTI13Authenticator):
     endpoint = "https://my.platform.domain"
     token_url = "https://my.platform.domain/login/oauth2/token"
     jwks_algorithms = ["RS256"]
+    issuer = "https://my.platform.domain"
