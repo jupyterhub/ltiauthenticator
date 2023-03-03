@@ -232,11 +232,7 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
         # would be a good way to implement this.
         # lti_deployment_id = self._get_optional_arg(args, "lti_deployment_id")
 
-        redirect_uri = "{proto}://{host}{path}".format(
-            proto=self.request.protocol,
-            host=self.request.host,
-            path=self.authenticator.callback_url(self.hub.server.base_url),
-        )
+        redirect_uri = self.get_redirect_uri()
         self.log.debug(f"redirect_uri is: {redirect_uri}")
 
         # to prevent CSRF
@@ -262,6 +258,14 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
     # https://www.imsglobal.org/spec/security/v1p0/#fig_oidcflow
     #
     get = post
+
+    def get_redirect_uri(self) -> str:
+        """Create uri to redirect user agent to after successful authorization by the LMS platform."""
+        return "{proto}://{host}{path}".format(
+            proto=self.request.protocol,
+            host=self.request.host,
+            path=self.authenticator.callback_url(self.hub.server.base_url),
+        )
 
     def _get_optional_arg(self, args: Dict[str, str], arg: str) -> Optional[str]:
         """

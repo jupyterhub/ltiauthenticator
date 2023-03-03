@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pytest
 from tornado.httputil import HTTPServerRequest
 
+import ltiauthenticator.lti13.handlers
 from ltiauthenticator.lti13.handlers import LTI13CallbackHandler, LTI13LoginInitHandler
 from ltiauthenticator.lti13.validator import LTI13LaunchValidator
 from ltiauthenticator.utils import convert_request_to_dict
@@ -23,27 +24,50 @@ async def test_lti_13_handler_paths(app):
 @pytest.mark.parametrize("method", ["GET", "POST"])
 async def test_lti13_login_init_handler_invocation(method, req_handler):
     """Test invokation of parameter validation, setting of state cookie and authorization redirection."""
+    args = {
+        "login_hint": "something",
+        "lti_message_hint": "some_lti_message_hint",
+        "client_id": "itsme",
+    }
+    hub_uri = "https://hub.example.com"
+    state = "my_state"
+    nonce = "some_nonce"
+    redirect_uri = "https://launch-from-here.com"
     handler = req_handler(
         LTI13LoginInitHandler,
-        uri="https://hub.example.com/?login_hint=something",
+        uri=f"{hub_uri}/?{'&'.join(f'{k}={v}' for k, v in args.items())}",
         method=method,
         authenticator=MockLTI13Authenticator(),
     )
+
+    # mock nonce creation
+    ltiauthenticator.lti13.handlers.get_nonce = lambda x: nonce
 
     with patch.object(
         LTI13LaunchValidator, "validate_login_request"
     ) as mock_validate_login_request, patch.object(
         handler, "authorize_redirect"
     ) as mock_authorize_redirect, patch.object(
+        handler, "get_state", return_value=state
+    ) as mock_get_state, patch.object(
         handler, "set_state_cookie"
-    ) as mock_set_state_cookie:
+    ) as mock_set_state_cookie, patch.object(
+        handler, "get_redirect_uri", return_value=redirect_uri
+    ) as mock_get_redicerect_uri:
         if method == "GET":
             handler.get()
         elif method == "POST":
             handler.post()
         mock_validate_login_request.assert_called_once()
-        mock_authorize_redirect.assert_called_once()
+        mock_get_state.assert_called_once()
         mock_set_state_cookie.assert_called_once()
+        mock_get_redicerect_uri.assert_called_once()
+        mock_authorize_redirect.assert_called_once_with(
+            **args,
+            nonce=nonce,
+            state=state,
+            redirect_uri=redirect_uri,
+        )
 
 
 async def test_lti13_login_init_handler_auth_request_contains_required_arguments(
@@ -84,21 +108,19 @@ async def test_lti13_login_init_handler_auth_request_contains_required_arguments
 
 async def test_lti13_callback_handler_invocation(req_handler):
     """Test invokation of parameter, token and state validation."""
+    authenticator = MockLTI13Authenticator()
     id_token = "abc"
     decoded_jwt = "decoded_abc"
-    aud = "its_me"
-    endpoint = "https://some-url.com/jwk"
-    jwks_algorithms = ["RS256"]
     username = "somebody"
     handler = req_handler(
         LTI13CallbackHandler,
         uri=f"https://hub.example.com/?id_token={id_token}",
-        authenticator=MockLTI13Authenticator(),
+        authenticator=authenticator,
     )
 
-    handler.client_id = aud
-    handler.endpoint = endpoint
-    handler.jwks_algorithms = jwks_algorithms
+    handler.client_id = authenticator.client_id
+    handler.endpoint = authenticator.endpoint
+    handler.jwks_algorithms = authenticator.jwks_algorithms
 
     with patch.object(
         LTI13LaunchValidator, "validate_auth_response"
@@ -117,9 +139,9 @@ async def test_lti13_callback_handler_invocation(req_handler):
         mock_validate_auth_response.assert_called_once()
         mock_verify_and_decode_jwt.assert_called_once_with(
             id_token,
-            audience=aud,
-            jwks_endpoint=endpoint,
-            jwks_algorithms=jwks_algorithms,
+            audience=authenticator.client_id,
+            jwks_endpoint=authenticator.endpoint,
+            jwks_algorithms=authenticator.jwks_algorithms,
         )
         mock_validate_id_token.assert_called_once_with(decoded_jwt)
         mock_check_state.assert_called_once()
