@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from tornado.httputil import HTTPServerRequest
+from tornado.web import HTTPError
 
 import ltiauthenticator.lti13.handlers
 from ltiauthenticator.lti13.handlers import LTI13CallbackHandler, LTI13LoginInitHandler
@@ -147,3 +148,27 @@ async def test_lti13_callback_handler_invocation(req_handler):
         mock_check_state.assert_called_once()
         mock_login_user.assert_called_once_with(decoded_jwt)
         mock_redirect_to_next_url.assert_called_once_with(username)
+
+
+async def test_lti13_callback_handler_raises_403_on_non_user(req_handler):
+    """Test invokation of parameter, token and state validation."""
+    authenticator = MockLTI13Authenticator()
+    id_token = "abc"
+    handler = req_handler(
+        LTI13CallbackHandler,
+        uri=f"https://hub.example.com/?id_token={id_token}",
+        authenticator=authenticator,
+    )
+    handler.client_id = authenticator.client_id
+    handler.endpoint = authenticator.endpoint
+    handler.jwks_algorithms = authenticator.jwks_algorithms
+    with patch.object(LTI13LaunchValidator, "validate_auth_response"), patch.object(
+        LTI13LaunchValidator, "verify_and_decode_jwt"
+    ), patch.object(LTI13LaunchValidator, "validate_id_token"), patch.object(
+        handler, "check_state"
+    ), patch.object(
+        handler, "login_user", return_value=None
+    ):
+        with pytest.raises(HTTPError) as e_info:
+            await handler.post()
+        assert str(e_info.value) == "HTTP 403: Forbidden (User missing or null)"
