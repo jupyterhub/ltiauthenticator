@@ -304,9 +304,8 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         # decrypt and verify id_token
         # https://openid.net/specs/openid-connect-core-1_0.html#IDToken
         # https://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
-        id_token = args.get("id_token")
         jwt_decoded = validator.verify_and_decode_jwt(
-            id_token,
+            args.get("id_token"),
             audience=self.client_id,
             jwks_endpoint=self.endpoint,
             jwks_algorithms=self.jwks_algorithms,
@@ -317,5 +316,10 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         self.log.debug(f"user logged in: {user}")
         if user is None:
             raise HTTPError(403, "User missing or null")
-        self.redirect(self.get_next_url(user))
-        self.log.debug(f"Redirecting user {user.id} to {self.get_next_url(user)}")
+        await self.redirect_to_next_url(user)
+
+    async def redirect_to_next_url(self, user):
+        """Redirect user agent to next url that has been received in the login initiation request."""
+        next_url = self.get_next_url(user)
+        self.redirect(next_url)
+        self.log.debug(f"Redirecting user {user.id} to {next_url}")

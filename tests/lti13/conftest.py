@@ -15,7 +15,7 @@ def req_handler() -> RequestHandler:
     """
 
     def _req_handler(
-        handler: RequestHandler,
+        Handler,
         uri: str = "https://hub.example.com",
         method: str = "GET",
         **settings: dict,
@@ -30,12 +30,8 @@ def req_handler() -> RequestHandler:
             db=Mock(rollback=Mock(return_value=None)),
             **settings,
         )
-        request = HTTPServerRequest(
-            method=method,
-            uri=uri,
-            connection=Mock(),
-        )
-        handler = RequestHandler(
+        request = HTTPServerRequest(method=method, uri=uri, connection=Mock())
+        handler = Handler(
             application=application,
             request=request,
         )
