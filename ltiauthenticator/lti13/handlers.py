@@ -2,7 +2,7 @@ import hashlib
 import json
 import re
 import uuid
-from typing import Optional, cast
+from typing import Dict, Optional, cast
 from urllib.parse import quote, unquote, urlparse
 
 from jupyterhub.handlers import BaseHandler
@@ -263,7 +263,7 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
     #
     get = post
 
-    def _get_optional_arg(self, args: dict[str, str], arg: str) -> Optional[str]:
+    def _get_optional_arg(self, args: Dict[str, str], arg: str) -> Optional[str]:
         """
         Return value of optional argument or None if not present.
         """
