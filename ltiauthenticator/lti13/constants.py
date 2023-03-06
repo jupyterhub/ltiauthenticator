@@ -1,6 +1,8 @@
 # LTI 1.3
 # Login initiation request arguments
 # https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login
+from typing import Any, Dict
+
 LTI13_INIT_LOGIN_REQUEST_ARGS = [
     "iss",
     "login_hint",
@@ -29,15 +31,21 @@ LTI13_AUTH_RESPONSE_ARGS = [
 
 # Required message claims
 # http://www.imsglobal.org/spec/lti/v1p3/#required-message-claims
-LTI13_GENERAL_REQUIRED_CLAIMS = {
+# https://openid.net/specs/openid-connect-core-1_0.html#IDToken
+LTI13_GENERAL_REQUIRED_CLAIMS: Dict[str, Any] = {
     "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
     "https://purl.imsglobal.org/spec/lti/claim/deployment_id": "",
     "https://purl.imsglobal.org/spec/lti/claim/target_link_uri": "",
     "https://purl.imsglobal.org/spec/lti/claim/roles": "",
+    "aud": "",
+    "exp": None,
+    "iat": None,
+    "iss": "",
+    "nonce": "",
 }
 
 # Required claims with LtiResourceLinkRequest login flows
-LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS = {
+LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS: Dict[str, Any] = {
     "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
     "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
         "id": "",
@@ -54,15 +62,7 @@ LTI13_DEEP_LINKING_REQUIRED_CLAIMS = {
 # Optional message claims
 # We don't need the role_scope_mentor claim and some platforms don't send this claim by default.
 # http://www.imsglobal.org/spec/lti/v1p3/#optional-message-claims
-#
-# FIXME: This dictionary of claims are used both as required and optional
-#        claims, but the name indicates they are optional.
-#
-#        Our mocked launch_req_jwt_decoded fixture has the "sub" but not "azp"
-#        claim, so we have for now commented out "azp" from this list - it is
-#        optional - but the issue is that we have made it required.
-#
-LTI13_GENERAL_OPTIONAL_CLAIMS = {
+LTI13_GENERAL_OPTIONAL_CLAIMS: Dict[str, Any] = {
     "https://purl.imsglobal.org/spec/lti/claim/context": {
         "id": "",
         "label": "",
@@ -77,12 +77,7 @@ LTI13_GENERAL_OPTIONAL_CLAIMS = {
     # user identity claims. sub (subject) is added to optional list to support anonymous
     # launches.
     "sub": "",
-    "aud": "",
-    # "azp": "",
-    "exp": None,
-    "iat": None,
-    "iss": "",
-    "nonce": "",
+    "azp": "",
     "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
         "guid": "",
         "name": "",

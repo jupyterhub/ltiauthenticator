@@ -84,6 +84,7 @@ def minimal_launch_req_jwt_decoded() -> Dict[str, object]:
         "aud": "client1",
         "iat": 1668266555,
         "exp": 1668266855,
+        "nonce": "ebc9ab705d0bab3e9dc6",
     }
     return jwt_decoded
 
@@ -148,7 +149,6 @@ def launch_req_jwt_decoded(minimal_launch_req_jwt_decoded) -> Dict[str, str]:
                 "caliper_federated_session_id": "urn:uuid:94c3a94ca70647d08e7c",
             },
             "sub": "1ace7501877e6a429fca",
-            "nonce": "ebc9ab705d0bab3e9dc6",
             "locale": "en-US",
             "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
                 "document_target": "iframe",
