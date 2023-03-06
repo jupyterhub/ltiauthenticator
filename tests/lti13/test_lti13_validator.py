@@ -8,6 +8,8 @@ from ltiauthenticator.lti13.validator import (
     TokenError,
 )
 
+from .mocking import patched_jwk_client
+
 
 # Tests of validate_login_request()
 # -------------------------------------------------------------------------------
@@ -20,99 +22,82 @@ def test_validate_login_request_with_invalid_data():
 
 # Tests of verify_and_decode_jwt()
 # -------------------------------------------------------------------------------
-def test_validate_verify_and_decode_jwt(launch_req_jwt, launch_req_jwt_decoded):
-    # FIXME: We make a request to an external website that could go down. If it
-    #        does, there is a currently unused fixture called
-    #        jwks_endpoint_response that could be used.
-    #
+def test_validate_verify_and_decode_jwt(
+    launch_req_jwt, launch_req_jwt_decoded, jwks_endpoint_response
+):
     validator = LTI13LaunchValidator()
-    result = validator.verify_and_decode_jwt(
-        encoded_jwt=launch_req_jwt,
-        issuer=launch_req_jwt_decoded["iss"],
-        audience="client1",
-        jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
-        jwks_algorithms=["RS256"],
-        # mocked launch_req_jwt has expired and we ignore that here
-        options={"verify_exp": False},
-    )
+    with patched_jwk_client(jwks_endpoint_response):
+        result = validator.verify_and_decode_jwt(
+            encoded_jwt=launch_req_jwt,
+            issuer=launch_req_jwt_decoded["iss"],
+            audience="client1",
+            jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
+            jwks_algorithms=["RS256"],
+        )
     assert result == launch_req_jwt_decoded
 
 
 def test_validate_verify_and_decode_jwt_rejects_unsigned_jwt(
-    unsecured_launch_req_jwt, launch_req_jwt_decoded
+    unsecured_launch_req_jwt, launch_req_jwt_decoded, jwks_endpoint_response
 ):
     validator = LTI13LaunchValidator()
 
-    with pytest.raises(TokenError) as e:
+    with patched_jwk_client(jwks_endpoint_response), pytest.raises(TokenError) as e:
         validator.verify_and_decode_jwt(
             encoded_jwt=unsecured_launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
             audience="client1",
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
-            # mocked launch_req_jwt has expired and we ignore that here
-            # verify_signature set to true in `validator.verify_and_decode_jwt`
-            options={"verify_exp": False, "verify_signature": False},
         )
     assert str(e.value) == "Signature verification failed"
 
 
 def test_validate_verify_and_decode_jwt_accept_unsigned_jwt_with_no_endpoint(
-    unsecured_launch_req_jwt, launch_req_jwt_decoded
+    unsecured_launch_req_jwt, launch_req_jwt_decoded, jwks_endpoint_response
 ):
     validator = LTI13LaunchValidator()
 
-    result = validator.verify_and_decode_jwt(
-        encoded_jwt=unsecured_launch_req_jwt,
-        issuer=launch_req_jwt_decoded["iss"],
-        audience="client1",
-        jwks_endpoint="",
-        jwks_algorithms=["RS256"],
-        # mocked launch_req_jwt has expired and we ignore that here
-        # verify_signature set to true in `validator.verify_and_decode_jwt`
-        options={"verify_exp": False, "verify_signature": False},
-    )
+    with patched_jwk_client(jwks_endpoint_response):
+        result = validator.verify_and_decode_jwt(
+            encoded_jwt=unsecured_launch_req_jwt,
+            issuer=launch_req_jwt_decoded["iss"],
+            audience="client1",
+            jwks_endpoint="",
+            jwks_algorithms=["RS256"],
+            options={"verify_signature": False},
+        )
     assert result == launch_req_jwt_decoded
 
 
 def test_verify_and_decode_jwt_fails_on_incorrect_iss(
-    launch_req_jwt, launch_req_jwt_decoded
+    launch_req_jwt, launch_req_jwt_decoded, jwks_endpoint_response
 ):
-    # FIXME: We make a request to an external website that could go down. If it
-    #        does, there is a currently unused fixture called
-    #        jwks_endpoint_response that could be used.
-    #
     validator = LTI13LaunchValidator()
-    with pytest.raises(TokenError) as e:
+    with patched_jwk_client(jwks_endpoint_response), pytest.raises(TokenError) as e:
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"] + "/something_wrong",
             audience="client1",
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
-            # mocked launch_req_jwt has expired and we ignore that here
-            options={"verify_exp": False},
         )
     assert str(e.value) == "Invalid issuer"
 
 
 def test_verify_and_decode_jwt_fails_on_incorrect_aud(
-    launch_req_jwt, launch_req_jwt_decoded
+    launch_req_jwt, launch_req_jwt_decoded, jwks_endpoint_response
 ):
-    # FIXME: We make a request to an external website that could go down. If it
-    #        does, there is a currently unused fixture called
-    #        jwks_endpoint_response that could be used.
-    #
     validator = LTI13LaunchValidator()
-    with pytest.raises(InvalidAudienceError) as e:
+    with patched_jwk_client(jwks_endpoint_response), pytest.raises(
+        InvalidAudienceError
+    ) as e:
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
             audience="client1" + "_something_wrong",
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
-            # mocked launch_req_jwt has expired and we ignore that here
-            options={"verify_exp": False},
         )
     assert str(e.value) == "Invalid audience"
 

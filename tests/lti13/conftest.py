@@ -1,11 +1,19 @@
 import os
-from typing import Dict
+import textwrap
+from calendar import timegm
+from datetime import datetime, timezone
+from typing import Dict, List
 from unittest.mock import Mock
 
 import jwt
 import pytest
 from tornado.httputil import HTTPServerRequest
 from tornado.web import Application, RequestHandler
+
+
+@pytest.fixture
+def now() -> int:
+    return timegm(datetime.now(tz=timezone.utc).utctimetuple())
 
 
 @pytest.fixture
@@ -42,14 +50,25 @@ def req_handler() -> RequestHandler:
 
 
 @pytest.fixture
-def launch_req_jwt():
+def launch_req_jwt(
+    launch_req_jwt_decoded, jwks_endpoint_private_key, jwks_endpoint_response
+):
     """
     Returns an encoded JSON Web Token (JWT) for the authenticate request
     (resource link launch). This decodes into the launch_req_jwt_decoded
-    fixture, but if jwt.decode is used, you need to use options={"verify_exp":
-    False} at this point as the expiry time has since long passed.
+    fixture.
     """
-    return b"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IlVpNVpkcDlNcUVZQ2VyQ3E4ejhRUVQ4MWpna24zeDNKWWMwNk9vckY4TW8ifQ.eyJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9tZXNzYWdlX3R5cGUiOiJMdGlSZXNvdXJjZUxpbmtSZXF1ZXN0IiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vcm9sZXMiOlsiaHR0cDovL3B1cmwuaW1zZ2xvYmFsLm9yZy92b2NhYi9saXMvdjIvbWVtYmVyc2hpcCNMZWFybmVyIiwiaHR0cDovL3B1cmwuaW1zZ2xvYmFsLm9yZy92b2NhYi9saXMvdjIvaW5zdGl0dXRpb24vcGVyc29uI1N0dWRlbnQiLCJodHRwOi8vcHVybC5pbXNnbG9iYWwub3JnL3ZvY2FiL2xpcy92Mi9tZW1iZXJzaGlwI01lbnRvciJdLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9yb2xlX3Njb3BlX21lbnRvciI6WyJhNjJjNTJjMDJiYTI2MjAwM2Y1ZSJdLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9yZXNvdXJjZV9saW5rIjp7ImlkIjoiNzQyNTYiLCJ0aXRsZSI6ImxpbmsxIiwiZGVzY3JpcHRpb24iOiIifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vY29udGV4dCI6eyJpZCI6IjU0NTM2IiwibGFiZWwiOiJjb3Vyc2UxIiwidGl0bGUiOiJjb3Vyc2UxIiwidHlwZSI6WyIiXX0sImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3Rvb2xfcGxhdGZvcm0iOnsibmFtZSI6Imp1cHl0ZXJodWItbHRpYXV0aGVudGljYXRvci10ZXN0LXBsYXRmb3JtIiwiY29udGFjdF9lbWFpbCI6IiIsImRlc2NyaXB0aW9uIjoiIiwidXJsIjoiIiwicHJvZHVjdF9mYW1pbHlfY29kZSI6IiIsInZlcnNpb24iOiIxLjAiLCJndWlkIjoiMzY5MSJ9LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS1hZ3MvY2xhaW0vZW5kcG9pbnQiOnsic2NvcGUiOlsiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGktYWdzL3Njb3BlL2xpbmVpdGVtIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGktYWdzL3Njb3BlL3Jlc3VsdC5yZWFkb25seSIsImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpLWFncy9zY29wZS9zY29yZSJdLCJsaW5laXRlbXMiOiJodHRwczovL2x0aS1yaS5pbXNnbG9iYWwub3JnL3BsYXRmb3Jtcy8zNjkxL2NvbnRleHRzLzU0NTM2L2xpbmVfaXRlbXMifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGktbnJwcy9jbGFpbS9uYW1lc3JvbGVzZXJ2aWNlIjp7ImNvbnRleHRfbWVtYmVyc2hpcHNfdXJsIjoiaHR0cHM6Ly9sdGktcmkuaW1zZ2xvYmFsLm9yZy9wbGF0Zm9ybXMvMzY5MS9jb250ZXh0cy81NDUzNi9tZW1iZXJzaGlwcyIsInNlcnZpY2VfdmVyc2lvbnMiOlsiMi4wIl19LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS1jZXMvY2xhaW0vY2FsaXBlci1lbmRwb2ludC1zZXJ2aWNlIjp7InNjb3BlcyI6WyJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS1jZXMvdjFwMC9zY29wZS9zZW5kIl0sImNhbGlwZXJfZW5kcG9pbnRfdXJsIjoiaHR0cHM6Ly9sdGktcmkuaW1zZ2xvYmFsLm9yZy9wbGF0Zm9ybXMvMzY5MS9zZW5zb3JzIiwiY2FsaXBlcl9mZWRlcmF0ZWRfc2Vzc2lvbl9pZCI6InVybjp1dWlkOjk0YzNhOTRjYTcwNjQ3ZDA4ZTdjIn0sImlzcyI6Imh0dHBzOi8vZ2l0aHViLmNvbS9qdXB5dGVyaHViL2x0aWF1dGhlbnRpY2F0b3IiLCJhdWQiOiJjbGllbnQxIiwiaWF0IjoxNjY4MjY2NTU1LCJleHAiOjE2NjgyNjY4NTUsInN1YiI6IjFhY2U3NTAxODc3ZTZhNDI5ZmNhIiwibm9uY2UiOiJlYmM5YWI3MDVkMGJhYjNlOWRjNiIsImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3ZlcnNpb24iOiIxLjMuMCIsImxvY2FsZSI6ImVuLVVTIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vbGF1bmNoX3ByZXNlbnRhdGlvbiI6eyJkb2N1bWVudF90YXJnZXQiOiJpZnJhbWUiLCJoZWlnaHQiOjMyMCwid2lkdGgiOjI0MCwicmV0dXJuX3VybCI6Imh0dHBzOi8vbHRpLXJpLmltc2dsb2JhbC5vcmcvcGxhdGZvcm1zLzM2OTEvcmV0dXJucyJ9LCJodHRwczovL3d3dy5leGFtcGxlLmNvbS9leHRlbnNpb24iOnsiY29sb3IiOiJ2aW9sZXQifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vY3VzdG9tIjp7Im15Q3VzdG9tVmFsdWUiOiIxMjMifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vZGVwbG95bWVudF9pZCI6ImRlcGxveW1lbnQxIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vdGFyZ2V0X2xpbmtfdXJpIjoiaHR0cHM6Ly9sdGktcmkuaW1zZ2xvYmFsLm9yZy9sdGkvdG9vbHMvMzM1Ni9sYXVuY2hlcyJ9.fTmEDNdk3RICex0fdpFVHvActISqURZiYWc-JmV7CTBQ1D9bcB7ovK-Nf2qDz6cfGCCOWv-3QJzJliEvmgBeYclGgnX39IXQQ49TiWrkoQJsPCpnrxqheWlvK0Aceca0zxnncc2yV8IyXe0UiwzZFyExwcbNUhgeLFyPBvIH5zl7LzMwlywhl8qKGcOxW__yTQ9dRID6y5KFOMzkXzHKzuJW4D0RpqkAkpX2QD4KraIGJkEb_qQSwjA5BbtgsCi2fF3wBxBNUDLaKpr2iYoENSXvO4yoQ20US5BC2E8mOf4RpkPlC1AyqXV9gqOWzw07x3NDXQgsfsqFcVTC6G4Z5Q"
+    encoded = jwt.encode(
+        launch_req_jwt_decoded,
+        jwks_endpoint_private_key,
+        algorithm="RS256",
+        headers={
+            "alg": jwks_endpoint_response["keys"][0]["alg"],
+            "kid": jwks_endpoint_response["keys"][0]["kid"],
+        },
+    )
+    return encoded.encode("utf-8")
+    # return b"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IlVpNVpkcDlNcUVZQ2VyQ3E4ejhRUVQ4MWpna24zeDNKWWMwNk9vckY4TW8ifQ.eyJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9tZXNzYWdlX3R5cGUiOiJMdGlSZXNvdXJjZUxpbmtSZXF1ZXN0IiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vcm9sZXMiOlsiaHR0cDovL3B1cmwuaW1zZ2xvYmFsLm9yZy92b2NhYi9saXMvdjIvbWVtYmVyc2hpcCNMZWFybmVyIiwiaHR0cDovL3B1cmwuaW1zZ2xvYmFsLm9yZy92b2NhYi9saXMvdjIvaW5zdGl0dXRpb24vcGVyc29uI1N0dWRlbnQiLCJodHRwOi8vcHVybC5pbXNnbG9iYWwub3JnL3ZvY2FiL2xpcy92Mi9tZW1iZXJzaGlwI01lbnRvciJdLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9yb2xlX3Njb3BlX21lbnRvciI6WyJhNjJjNTJjMDJiYTI2MjAwM2Y1ZSJdLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9yZXNvdXJjZV9saW5rIjp7ImlkIjoiNzQyNTYiLCJ0aXRsZSI6ImxpbmsxIiwiZGVzY3JpcHRpb24iOiIifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vY29udGV4dCI6eyJpZCI6IjU0NTM2IiwibGFiZWwiOiJjb3Vyc2UxIiwidGl0bGUiOiJjb3Vyc2UxIiwidHlwZSI6WyIiXX0sImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3Rvb2xfcGxhdGZvcm0iOnsibmFtZSI6Imp1cHl0ZXJodWItbHRpYXV0aGVudGljYXRvci10ZXN0LXBsYXRmb3JtIiwiY29udGFjdF9lbWFpbCI6IiIsImRlc2NyaXB0aW9uIjoiIiwidXJsIjoiIiwicHJvZHVjdF9mYW1pbHlfY29kZSI6IiIsInZlcnNpb24iOiIxLjAiLCJndWlkIjoiMzY5MSJ9LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS1hZ3MvY2xhaW0vZW5kcG9pbnQiOnsic2NvcGUiOlsiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGktYWdzL3Njb3BlL2xpbmVpdGVtIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGktYWdzL3Njb3BlL3Jlc3VsdC5yZWFkb25seSIsImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpLWFncy9zY29wZS9zY29yZSJdLCJsaW5laXRlbXMiOiJodHRwczovL2x0aS1yaS5pbXNnbG9iYWwub3JnL3BsYXRmb3Jtcy8zNjkxL2NvbnRleHRzLzU0NTM2L2xpbmVfaXRlbXMifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGktbnJwcy9jbGFpbS9uYW1lc3JvbGVzZXJ2aWNlIjp7ImNvbnRleHRfbWVtYmVyc2hpcHNfdXJsIjoiaHR0cHM6Ly9sdGktcmkuaW1zZ2xvYmFsLm9yZy9wbGF0Zm9ybXMvMzY5MS9jb250ZXh0cy81NDUzNi9tZW1iZXJzaGlwcyIsInNlcnZpY2VfdmVyc2lvbnMiOlsiMi4wIl19LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS1jZXMvY2xhaW0vY2FsaXBlci1lbmRwb2ludC1zZXJ2aWNlIjp7InNjb3BlcyI6WyJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS1jZXMvdjFwMC9zY29wZS9zZW5kIl0sImNhbGlwZXJfZW5kcG9pbnRfdXJsIjoiaHR0cHM6Ly9sdGktcmkuaW1zZ2xvYmFsLm9yZy9wbGF0Zm9ybXMvMzY5MS9zZW5zb3JzIiwiY2FsaXBlcl9mZWRlcmF0ZWRfc2Vzc2lvbl9pZCI6InVybjp1dWlkOjk0YzNhOTRjYTcwNjQ3ZDA4ZTdjIn0sImlzcyI6Imh0dHBzOi8vZ2l0aHViLmNvbS9qdXB5dGVyaHViL2x0aWF1dGhlbnRpY2F0b3IiLCJhdWQiOiJjbGllbnQxIiwiaWF0IjoxNjY4MjY2NTU1LCJleHAiOjE2NjgyNjY4NTUsInN1YiI6IjFhY2U3NTAxODc3ZTZhNDI5ZmNhIiwibm9uY2UiOiJlYmM5YWI3MDVkMGJhYjNlOWRjNiIsImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3ZlcnNpb24iOiIxLjMuMCIsImxvY2FsZSI6ImVuLVVTIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vbGF1bmNoX3ByZXNlbnRhdGlvbiI6eyJkb2N1bWVudF90YXJnZXQiOiJpZnJhbWUiLCJoZWlnaHQiOjMyMCwid2lkdGgiOjI0MCwicmV0dXJuX3VybCI6Imh0dHBzOi8vbHRpLXJpLmltc2dsb2JhbC5vcmcvcGxhdGZvcm1zLzM2OTEvcmV0dXJucyJ9LCJodHRwczovL3d3dy5leGFtcGxlLmNvbS9leHRlbnNpb24iOnsiY29sb3IiOiJ2aW9sZXQifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vY3VzdG9tIjp7Im15Q3VzdG9tVmFsdWUiOiIxMjMifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vZGVwbG95bWVudF9pZCI6ImRlcGxveW1lbnQxIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vdGFyZ2V0X2xpbmtfdXJpIjoiaHR0cHM6Ly9sdGktcmkuaW1zZ2xvYmFsLm9yZy9sdGkvdG9vbHMvMzM1Ni9sYXVuY2hlcyJ9.fTmEDNdk3RICex0fdpFVHvActISqURZiYWc-JmV7CTBQ1D9bcB7ovK-Nf2qDz6cfGCCOWv-3QJzJliEvmgBeYclGgnX39IXQQ49TiWrkoQJsPCpnrxqheWlvK0Aceca0zxnncc2yV8IyXe0UiwzZFyExwcbNUhgeLFyPBvIH5zl7LzMwlywhl8qKGcOxW__yTQ9dRID6y5KFOMzkXzHKzuJW4D0RpqkAkpX2QD4KraIGJkEb_qQSwjA5BbtgsCi2fF3wBxBNUDLaKpr2iYoENSXvO4yoQ20US5BC2E8mOf4RpkPlC1AyqXV9gqOWzw07x3NDXQgsfsqFcVTC6G4Z5Q"
 
 
 @pytest.fixture
@@ -62,7 +81,7 @@ def unsecured_launch_req_jwt(launch_req_jwt):
 
 
 @pytest.fixture
-def minimal_launch_req_jwt_decoded() -> Dict[str, object]:
+def minimal_launch_req_jwt_decoded(now) -> Dict[str, object]:
     """
     Returns valid json after decoding JSON Web Token (JWT) for resource link launch (core).
 
@@ -82,8 +101,8 @@ def minimal_launch_req_jwt_decoded() -> Dict[str, object]:
         # https://www.imsglobal.org/spec/security/v1p0/#using-oauth-2-0-client-credentials-grant
         "iss": "https://github.com/jupyterhub/ltiauthenticator",
         "aud": "client1",
-        "iat": 1668266555,
-        "exp": 1668266855,
+        "iat": now - 30,
+        "exp": now + 300,
         "nonce": "ebc9ab705d0bab3e9dc6",
     }
     return jwt_decoded
@@ -182,33 +201,83 @@ def launch_req_jwt_decoded_priv(launch_req_jwt_decoded) -> Dict[str, str]:
 
 
 @pytest.fixture
-def id_token(json_lti13_launch_request: Dict[str, str]) -> jwt:
+def jwks_endpoint_response() -> Dict[str, List[Dict[str, str]]]:
     """
-    Thin wrapper for the jwt.encode() method. Use the `launch_req_jwt_decoded`
-    or `launch_req_jwt_decoded_priv` fixture to create the json and
-    then call this method to get the JWT.
-
-    Args:
-      json_lti13_launch_request (Dict[str, str]): the dictionary with claims/values that represents the
-        decoded JWT payload.
-
-    Returns: A JSON Web Token
+    This is a response from with references to public keys
+    https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json, where
+    the associated private key has been used to sign the launch_request_jwk
+    token.
     """
-    encoded_jwt = jwt.encode(json_lti13_launch_request, "secret", algorithm="HS256")
-    return encoded_jwt
+    return {
+        "keys": [
+            {
+                "kty": "RSA",
+                "e": "AQAB",
+                "n": "nVhjh6rQNuXmbe5t-bacRizy0aE4pdL_MchSvA_m0Wmnp6D7rSGrzwqAOUBN0gcXfj-2ILgZffESJcPugVzEoDPuXgMkywLLcnTt9MVWB8jWrSECOCUO5mLzqaSJRw1tpSnBstlq0A2JCIPL1g62XhM4ilquz-uOLYv4J50R0OUqz1q79vSmK9yjcl16jqntGTHsMAC_1x3HGzmyACjAI-DjR5m0qKLDUsb6PF8x7EK4_d2jBjsHW_ymG7BMP_ZwJ3EA4oo2mUCsjQWpKo8cgDDx4B7OA8Or90hb-gU3qoAcRcou_aUGZ96EWuuYGlxf6mb3z3KQRsJeM7gdMPMgYQ",
+                "kid": "Ui5Zdp9MqEYCerCq8z8QQT81jgkn3x3JYc06OorF8Mo",
+                "alg": "RS256",
+                "use": "sig",
+            }
+        ],
+    }
 
 
 @pytest.fixture
-def get_id_token() -> str:
-    def _get_id_token(json_lti13_launch_request: Dict[str, str]):
+def jwks_endpoint_public_key():
+    """
+    The jwks_endpoint_response fixture provides a single key (public), and this
+    is the same public key.
+    """
+    return textwrap.dedent(
         """
-        Returns a valid jwt lti13 id token from a json
-        We can use the `launch_req_jwt_decoded` or `launch_req_jwt_decoded_priv`
-        fixture to create the json then call this method.
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnVhjh6rQNuXmbe5t+bac
+        Rizy0aE4pdL/MchSvA/m0Wmnp6D7rSGrzwqAOUBN0gcXfj+2ILgZffESJcPugVzE
+        oDPuXgMkywLLcnTt9MVWB8jWrSECOCUO5mLzqaSJRw1tpSnBstlq0A2JCIPL1g62
+        XhM4ilquz+uOLYv4J50R0OUqz1q79vSmK9yjcl16jqntGTHsMAC/1x3HGzmyACjA
+        I+DjR5m0qKLDUsb6PF8x7EK4/d2jBjsHW/ymG7BMP/ZwJ3EA4oo2mUCsjQWpKo8c
+        gDDx4B7OA8Or90hb+gU3qoAcRcou/aUGZ96EWuuYGlxf6mb3z3KQRsJeM7gdMPMg
+        YQIDAQAB
+        -----END PUBLIC KEY-----
         """
-        encoded_jwt = jwt.encode(
-            json_lti13_launch_request, "secret", algorithm="HS256"
-        ).encode()
-        return encoded_jwt
+    ).strip()
 
-    return _get_id_token
+
+@pytest.fixture
+def jwks_endpoint_private_key():
+    """
+    The jwks_endpoint_response fixture provides a single key (public), and this
+    is the private key behind it. This fixture could be used to sign a JWT if
+    needed for our tests.
+    """
+    return textwrap.dedent(
+        """
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEpAIBAAKCAQEAnVhjh6rQNuXmbe5t+bacRizy0aE4pdL/MchSvA/m0Wmnp6D7
+        rSGrzwqAOUBN0gcXfj+2ILgZffESJcPugVzEoDPuXgMkywLLcnTt9MVWB8jWrSEC
+        OCUO5mLzqaSJRw1tpSnBstlq0A2JCIPL1g62XhM4ilquz+uOLYv4J50R0OUqz1q7
+        9vSmK9yjcl16jqntGTHsMAC/1x3HGzmyACjAI+DjR5m0qKLDUsb6PF8x7EK4/d2j
+        BjsHW/ymG7BMP/ZwJ3EA4oo2mUCsjQWpKo8cgDDx4B7OA8Or90hb+gU3qoAcRcou
+        /aUGZ96EWuuYGlxf6mb3z3KQRsJeM7gdMPMgYQIDAQABAoIBAEXU2qd1ed9DfVdA
+        wHJZR1Yl0MaUxO1jjXrsqztn20sJlyzgV5JpJTVINcwy69bQ6u5PHGe9DSNGAIXe
+        RVYIdAOdyKbUwlmPLffoSUue4SWnTw+bXL7KQ6igNgAOVBbCsOzicWMM90jLGQw8
+        YhTohquN4EQXJwqEQp+YRVRfc26/9E7Geo1/47PlcEkPEoiS12etwg1/iLF8x+vQ
+        JLYt0vWd3iIpnYQ+sIuUat3aM4CYe8TmmU7nDYFMV9g84gDwST3aA19mrY2ukWWh
+        3GkEz44jLzZUHCZMLP/LyBBflctlzmZuYstL6fayyGNClYOnLgPPdhCS9tWJAm0a
+        aqq47gECgYEA0IWXbzoVGNWLreJdSkTeV1Vu3fegA04DPzFCk52v446n6Pz41LzY
+        Cn/Le8Fnd21+bmZnlfI1/RSiGeGbt0zQEhpElTuwpJLtkMTD3nJ7CfegQTcsgFjw
+        8E4iYyPPqeaLrp430NHNzcCAJM0ZuWkh6YNIKtkzs97y5M/BReeleTECgYEAwSvL
+        s8kn/s7MbMPz58RjSaCUuhWmnlrmhPOO8I+wfp+H11lvSjoEhe58xC+MEwx4hmT0
+        eUm9o4/zHsi6fNpYQKu/ZQDD8hA3aNim4qa/EAaGifSOphVafkwKEpIowUNZ28JS
+        Q8CCWKaNZhoW3eFmzqxJeKk0tZGncgOLmw56TjECgYEArsKn7lJRiCTBEhSbdzlM
+        1wkFCAcXFm31jqqsT6di2GahF0WdDj7PGc2NLsUjABbGVaSBwEvlL5xxVxucM/2u
+        jN1zCVejbequLBycw/xSXkIpDz88jrz8AYqai1hiHNTZ0JlN0jdkMsLZIv66Roh0
+        IY8jlrW+/Usnatkr9Hh2WKECgYEAp+kw1SNqn6QUsAqYzgK4p3xtK1+8iHPNYw3v
+        Vw4fxcFYLAnyohvSaLUIQORvpvM1JOVGWNOPg0iSdVTYPcTx560i3mIO8S/Fal7A
+        mc2F0SFK+0nYYWe4VIY2TzQ7NtsbldnQ9lG1O+fyiyjsbYwLeGTsLHUwew+T9Jg+
+        Vtb721ECgYAPr9YYRP0P+Bif/T4h8tLMjnSoyv6G8101s63lLzv+CtjbOrYvvemS
+        IrcmoDaFnFXWbWr5iVcyWnj+RI1h5NqDqKgW0TXOOManSBKlTuJdaeOiBFNK47kz
+        RgKGvGteNRDxt0GjIrzdx5xaf4/ve0UjPU0z+fRrRBuij8V0/pscSA==
+        -----END RSA PRIVATE KEY-----
+        """
+    ).strip()
