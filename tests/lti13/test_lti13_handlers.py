@@ -6,7 +6,7 @@ from tornado.web import HTTPError
 
 import ltiauthenticator.lti13.handlers
 from ltiauthenticator.lti13.handlers import LTI13CallbackHandler, LTI13LoginInitHandler
-from ltiauthenticator.lti13.validator import LTI13LaunchValidator
+from ltiauthenticator.lti13.validator import InvalidAudienceError, LTI13LaunchValidator
 from ltiauthenticator.utils import convert_request_to_dict
 
 from .mocking import MockLTI13Authenticator
@@ -147,6 +147,24 @@ async def test_lti13_callback_handler_post_raises_403_on_non_user(req_handler):
         assert str(e_info.value) == "HTTP 403: Forbidden (User missing or null)"
 
 
+async def test_lti13_callback_handler_post_raises_401_on_invalid_audience(req_handler):
+    """Test invokation of parameter, token and state validation."""
+    authenticator = MockLTI13Authenticator()
+    handler = req_handler(
+        LTI13CallbackHandler,
+        uri="https://hub.example.com/",
+        authenticator=authenticator,
+    )
+
+    def raiser():
+        raise InvalidAudienceError("Invalid Audience")
+
+    with patch.object(handler, "decode_and_validate_launch_request", raiser):
+        with pytest.raises(HTTPError) as e_info:
+            await handler.post()
+        assert str(e_info.value) == "HTTP 401: Unauthorized (Invalid Audience)"
+
+
 async def test_lti13_callback_handler_decode_and_validate_launch_request_invocation(
     req_handler,
 ):
@@ -168,7 +186,9 @@ async def test_lti13_callback_handler_decode_and_validate_launch_request_invocat
         LTI13LaunchValidator, "verify_and_decode_jwt", return_value=decoded_jwt
     ) as mock_verify_and_decode_jwt, patch.object(
         LTI13LaunchValidator, "validate_id_token"
-    ) as mock_validate_id_token:
+    ) as mock_validate_id_token, patch.object(
+        LTI13LaunchValidator, "validate_azp_claim"
+    ) as mock_validate_azp_claim:
         handler.decode_and_validate_launch_request()
 
         mock_validate_auth_response.assert_called_once()
@@ -181,3 +201,6 @@ async def test_lti13_callback_handler_decode_and_validate_launch_request_invocat
             jwks_algorithms=authenticator.jwks_algorithms,
         )
         mock_validate_id_token.assert_called_once_with(decoded_jwt)
+        mock_validate_azp_claim.assert_called_once_with(
+            decoded_jwt, authenticator.client_id
+        )

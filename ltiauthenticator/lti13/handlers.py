@@ -16,7 +16,7 @@ from tornado.httputil import url_concat
 from tornado.web import HTTPError, RequestHandler
 
 from ..utils import convert_request_to_dict, get_client_protocol
-from .validator import LTI13LaunchValidator, ValidationError
+from .validator import InvalidAudienceError, LTI13LaunchValidator, ValidationError
 
 
 def get_nonce(state: str) -> str:
@@ -298,6 +298,8 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         """
         try:
             id_token = self.decode_and_validate_launch_request()
+        except InvalidAudienceError as e:
+            raise HTTPError(401, str(e))
         except ValidationError as e:
             raise HTTPError(400, str(e))
 
@@ -344,4 +346,5 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
             jwks_algorithms=self.authenticator.jwks_algorithms,
         )
         validator.validate_id_token(id_token)
+        validator.validate_azp_claim(id_token, self.authenticator.client_id)
         return id_token

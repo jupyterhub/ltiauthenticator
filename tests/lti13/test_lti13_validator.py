@@ -2,6 +2,7 @@ import pytest
 
 from ltiauthenticator.lti13.validator import (
     IncorrectValueError,
+    InvalidAudienceError,
     LTI13LaunchValidator,
     MissingRequiredArgumentError,
     TokenError,
@@ -103,7 +104,7 @@ def test_verify_and_decode_jwt_fails_on_incorrect_aud(
     #        jwks_endpoint_response that could be used.
     #
     validator = LTI13LaunchValidator()
-    with pytest.raises(TokenError) as e:
+    with pytest.raises(InvalidAudienceError) as e:
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
@@ -197,3 +198,47 @@ def test_validate_launch_request_with_priv(
     validator = LTI13LaunchValidator()
 
     validator.validate_id_token(launch_req_jwt_decoded_priv)
+
+
+def test_validate_azp_claim_passes_for_single_aud(minimal_launch_req_jwt_decoded):
+    id_token = minimal_launch_req_jwt_decoded
+    client_id = id_token["aud"]
+    id_token["aud"] = [id_token["aud"]]
+    validator = LTI13LaunchValidator()
+    validator.validate_azp_claim(id_token, client_id)
+
+
+def test_validate_azp_claim_passes_for_multiple_aud(minimal_launch_req_jwt_decoded):
+    id_token = minimal_launch_req_jwt_decoded
+    client_id = id_token["aud"]
+    id_token["aud"] = [id_token["aud"], "some_other_audience"]
+    id_token["azp"] = client_id
+    validator = LTI13LaunchValidator()
+    validator.validate_azp_claim(id_token, client_id)
+
+
+def test_validate_azp_claim_requires_azp_for_multiple_aud(
+    minimal_launch_req_jwt_decoded,
+):
+    id_token = minimal_launch_req_jwt_decoded
+    client_id = id_token["aud"]
+    id_token["aud"] = [id_token["aud"], "some_other_audience"]
+    validator = LTI13LaunchValidator()
+    with pytest.raises(MissingRequiredArgumentError) as e:
+        validator.validate_azp_claim(id_token, client_id)
+        assert (
+            str(e) == "azp claim is missing although multiple values for aud are given."
+        )
+
+
+def test_validate_azp_claim_raises_invalid_audience_error_if_not_matching_client_id(
+    minimal_launch_req_jwt_decoded,
+):
+    id_token = minimal_launch_req_jwt_decoded
+    client_id = id_token["aud"]
+    id_token["aud"] = [id_token["aud"], "some_other_audience"]
+    id_token["azp"] = "some_other_audience"
+    validator = LTI13LaunchValidator()
+    with pytest.raises(InvalidAudienceError) as e:
+        validator.validate_azp_claim(id_token, client_id)
+        assert str(e) == "azp claim does not match client_id."

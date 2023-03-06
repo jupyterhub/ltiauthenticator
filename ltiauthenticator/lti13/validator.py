@@ -96,6 +96,8 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 options=verification_options,
                 **kwargs,
             )
+        except jwt.InvalidAudienceError as e:
+            raise InvalidAudienceError(str(e))
         except jwt.PyJWTError as e:
             raise TokenError(str(e))
 
@@ -149,6 +151,20 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 "resource_link claim's id can't be empty"
             )
 
+    def validate_azp_claim(self, id_token: Dict[str, Any], client_id: str) -> None:
+        """Check if azp claim is present and matches client_id."""
+        aud = id_token["aud"]
+        need_azp = isinstance(id_token["aud"], list) and len(aud) > 1
+        if not need_azp:
+            return
+        azp = id_token.get("azp")
+        if not azp:
+            raise MissingRequiredArgumentError(
+                "azp claim is missing although multiple values for aud are given."
+            )
+        if azp != client_id:
+            raise InvalidAudienceError("azp claim does not match client_id.")
+
     def validate_id_token(self, id_token: Dict[str, Any]) -> None:
         """
         Validates that a LTI 1.3 launch request's decoded JWT has required
@@ -161,8 +177,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
           id_token: decoded JWT payload of a launch request
 
         Raises:
-          HTTPError if a required claim is not included in the dictionary or if
-          the message_type and/or version claims do not have the correct value.
+          Subclass of ValidationError.
         """
         self._check_arg_not_missing(id_token, LTI13_GENERAL_REQUIRED_CLAIMS.keys())
         self._check_lti_version(id_token)
@@ -204,5 +219,11 @@ class IncorrectValueError(ValidationError):
 
 class TokenError(ValidationError):
     """Exception raised for failed JWT decoding or verification."""
+
+    pass
+
+
+class InvalidAudienceError(ValidationError):
+    """Exception raised for invalid audience."""
 
     pass
