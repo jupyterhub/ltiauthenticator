@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable
 
 import jwt
 from traitlets.config import LoggingConfigurable
@@ -44,16 +44,23 @@ class LTI13LaunchValidator(LoggingConfigurable):
         """
         self._validate_required_args(args, LTI13_AUTH_RESPONSE_ARGS)
 
-    def _validate_required_args(self, args: Dict[str, Any], required: List[str]):
+    def _check_arg_not_missing(self, args: Dict[str, Any], required: Iterable[str]):
         for a in required:
             if a not in args:
                 raise MissingRequiredArgumentError(
                     f"Required LTI 1.3 arg {a} not in request"
                 )
+
+    def _check_arg_not_empty(self, args: Dict[str, Any], required: Iterable[str]):
+        for a in required:
             if not args.get(a):
                 raise MissingRequiredArgumentError(
                     f"Required LTI 1.3 arg {a} needs a value"
                 )
+
+    def _validate_required_args(self, args: Dict[str, Any], required: Iterable[str]):
+        self._check_arg_not_missing(args, required)
+        self._check_arg_not_empty(args, required)
 
     def verify_and_decode_jwt(
         self, encoded_jwt, issuer, audience, jwks_endpoint, jwks_algorithms, **kwargs
@@ -94,40 +101,8 @@ class LTI13LaunchValidator(LoggingConfigurable):
 
         return id_token
 
-    def _check_general_required_keys(self, id_token: Dict[str, Any]) -> None:
-        """Validates required LTI 1.3 claims (keys in jwt_decoded)
-
-        Args:
-            jwt_decoded: decoded JWT payload
-
-        Raises:
-            HTTPError: if the required claims is not included or if it has the
-            wrong value
-        """
-        # does all the required keys exist?
-        for k in LTI13_GENERAL_REQUIRED_CLAIMS:
-            if k not in id_token:
-                raise MissingRequiredArgumentError(
-                    f"Required claim {k} not included in request"
-                )
-
-        lti_version = id_token.get("https://purl.imsglobal.org/spec/lti/claim/version")
-        if lti_version != "1.3.0":
-            raise IncorrectValueError(
-                f"Incorrect value {lti_version} for version claim"
-            )
-
-        # validate context label
-        context_claim = id_token.get(
-            "https://purl.imsglobal.org/spec/lti/claim/context"
-        )
-        context_label = context_claim.get("label") if context_claim else None
-        if context_label == "":
-            raise MissingRequiredArgumentError(
-                "Claim https://purl.imsglobal.org/spec/lti/claim/context present, but context label is missing."
-            )
-
-        # validate message type value
+    def _check_message_type(self, id_token: Dict[str, Any]) -> None:
+        """Validate message type value"""
         message_type = id_token.get(
             "https://purl.imsglobal.org/spec/lti/claim/message_type"
         )
@@ -145,6 +120,35 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 f"Incorrect value {message_type} for message_type claim"
             )
 
+    def _check_context_label(self, id_token: Dict[str, Any]) -> None:
+        """Validate context label."""
+        context_claim = id_token.get(
+            "https://purl.imsglobal.org/spec/lti/claim/context"
+        )
+        context_label = context_claim.get("label") if context_claim else None
+        if context_label == "":
+            raise MissingRequiredArgumentError(
+                "Claim https://purl.imsglobal.org/spec/lti/claim/context present, but context label is missing."
+            )
+
+    def _check_lti_version(self, id_token: Dict[str, Any]) -> None:
+        """Check version claim."""
+        lti_version = id_token.get("https://purl.imsglobal.org/spec/lti/claim/version")
+        if lti_version != "1.3.0":
+            raise IncorrectValueError(
+                f"Incorrect value {lti_version} for version claim"
+            )
+
+    def _check_resource_link_id(self, id_token: Dict[str, Any]) -> None:
+        """Check if resource_link claim has id set."""
+        id = id_token.get(
+            "https://purl.imsglobal.org/spec/lti/claim/resource_link", {}
+        ).get("id")
+        if not id:
+            raise MissingRequiredArgumentError(
+                "resource_link claim's id can't be empty"
+            )
+
     def validate_id_token(self, id_token: Dict[str, Any]) -> None:
         """
         Validates that a LTI 1.3 launch request's decoded JWT has required
@@ -160,33 +164,26 @@ class LTI13LaunchValidator(LoggingConfigurable):
           HTTPError if a required claim is not included in the dictionary or if
           the message_type and/or version claims do not have the correct value.
         """
-        self._check_general_required_keys(id_token)
+        self._check_arg_not_missing(id_token, LTI13_GENERAL_REQUIRED_CLAIMS.keys())
+        self._check_lti_version(id_token)
+        self._check_context_label(id_token)
+        self._check_message_type(id_token)
 
         # message_type influences what claims are required
         message_type = id_token[
             "https://purl.imsglobal.org/spec/lti/claim/message_type"
         ]
         is_deep_linking = message_type == "LtiDeepLinkingRequest"
+
         if is_deep_linking:
-            required_claims = LTI13_DEEP_LINKING_REQUIRED_CLAIMS
+            self._check_arg_not_missing(
+                id_token, LTI13_DEEP_LINKING_REQUIRED_CLAIMS.keys()
+            )
         else:
-            required_claims = LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS
-
-        for k, _ in required_claims.items():
-            if k not in id_token:
-                raise MissingRequiredArgumentError(
-                    f"Required claim {k} not included in request"
-                )
-
-        # custom validations with resource launch
-        if not is_deep_linking:
-            id = id_token.get(
-                "https://purl.imsglobal.org/spec/lti/claim/resource_link"
-            ).get("id")
-            if not id:
-                raise MissingRequiredArgumentError(
-                    "resource_link claim's id can't be empty"
-                )
+            self._check_arg_not_missing(
+                id_token, LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS.keys()
+            )
+            self._check_resource_link_id(id_token)
 
 
 class ValidationError(Exception):
