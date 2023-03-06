@@ -292,9 +292,13 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
     https://www.imsglobal.org/spec/security/v1p0/#step-4-resource-is-displayed
     """
 
+    async def get(self):
+        """Overrides the upstream get handler and always raise HTTPError 405."""
+        raise HTTPError(405, "GET method is not allowed for launch requests")
+
     async def post(self):
         """
-        Overrides the upstream get handler with it's standard implementation.
+        Overrides the upstream post handler.
         """
         try:
             id_token = self.decode_and_validate_launch_request()

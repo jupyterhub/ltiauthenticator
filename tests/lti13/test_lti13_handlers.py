@@ -107,6 +107,20 @@ async def test_lti13_login_init_handler_auth_request_contains_required_arguments
             assert expected[k] == args[k]
 
 
+async def test_lti13_callback_handler_raise_405_on_GET(req_handler):
+    """Test invokation of parameter, token and state validation."""
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+    with pytest.raises(HTTPError) as e:
+        await handler.get()
+    assert (
+        str(e.value)
+        == "HTTP 405: Method Not Allowed (GET method is not allowed for launch requests)"
+    )
+
+
 async def test_lti13_callback_handler_post_invocation(req_handler):
     """Test invokation of parameter, token and state validation."""
     authenticator = MockLTI13Authenticator()
