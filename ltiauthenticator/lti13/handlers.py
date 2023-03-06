@@ -2,7 +2,7 @@ import hashlib
 import json
 import re
 import uuid
-from typing import Dict, Optional, cast
+from typing import Any, Dict, Optional, cast
 from urllib.parse import quote, unquote, urlparse
 
 from jupyterhub.handlers import BaseHandler
@@ -293,31 +293,9 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         """
         Overrides the upstream get handler with it's standard implementation.
         """
-        # TODO: validate that received nonces haven't been received before
-        # and that they are within the time-based tolerance window
-        validator = LTI13LaunchValidator()
+        id_token = self.decode_and_validate_launch_request()
 
-        args = convert_request_to_dict(self.request.arguments)
-        self.log.debug(f"Initial launch request args are {args}")
-        validator.validate_auth_response(args)
-
-        # Check is state is the same as in the authorization request issued
-        # constructed in `LTI13LoginInitHandler.post`, prevents CSRF
-        self.check_state()
-
-        # decrypt and verify id_token
-        # https://openid.net/specs/openid-connect-core-1_0.html#IDToken
-        # https://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
-        jwt_decoded = validator.verify_and_decode_jwt(
-            args.get("id_token"),
-            issuer=self.authenticator.issuer,
-            audience=self.client_id,
-            jwks_endpoint=self.endpoint,
-            jwks_algorithms=self.jwks_algorithms,
-        )
-        validator.validate_id_token(jwt_decoded)
-
-        user = await self.login_user(jwt_decoded)
+        user = await self.login_user(id_token)
         self.log.debug(f"user logged in: {user}")
         if user is None:
             raise HTTPError(403, "User missing or null")
@@ -328,3 +306,36 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         next_url = self.get_next_url(user)
         self.redirect(next_url)
         self.log.debug(f"Redirecting user {user.id} to {next_url}")
+
+    def decode_and_validate_launch_request(self) -> Dict[str, Any]:
+        """Decrypt, verify and validate launch request parameters.
+
+        TODO: Convert custom alidation errors to HTTP errors here
+
+        TODO: validate that received nonces haven't been received before
+            and that they are within the time-based tolerance window
+
+        References:
+        https://openid.net/specs/openid-connect-core-1_0.html#IDToken
+        https://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
+        """
+        validator = LTI13LaunchValidator()
+
+        args = convert_request_to_dict(self.request.arguments)
+        self.log.debug(f"Initial launch request args are {args}")
+
+        validator.validate_auth_response(args)
+
+        # Check is state is the same as in the authorization request issued
+        # constructed in `LTI13LoginInitHandler.post`, prevents CSRF
+        self.check_state()
+
+        id_token = validator.verify_and_decode_jwt(
+            encoded_jwt=args.get("id_token"),
+            issuer=self.authenticator.issuer,
+            audience=self.authenticator.client_id,
+            jwks_endpoint=self.authenticator.endpoint,
+            jwks_algorithms=self.authenticator.jwks_algorithms,
+        )
+        validator.validate_id_token(id_token)
+        return id_token

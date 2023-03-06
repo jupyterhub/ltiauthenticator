@@ -67,7 +67,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
         jwks_client = jwt.PyJWKClient(jwks_endpoint)
         signing_key = jwks_client.get_signing_key_from_jwt(encoded_jwt)
 
-        jwt_decoded = jwt.decode(
+        id_token = jwt.decode(
             encoded_jwt,
             signing_key.key,
             algorithms=jwks_algorithms,
@@ -76,7 +76,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
             **kwargs,
         )
 
-        return jwt_decoded
+        return id_token
 
     def _check_general_required_keys(self, jwt_decoded: Dict[str, Any]) -> None:
         """Validates required LTI 1.3 claims (keys in jwt_decoded)
@@ -128,25 +128,25 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 400, f"Incorrect value {message_type} for message_type claim"
             )
 
-    def validate_id_token(self, jwt_decoded: Dict[str, Any]) -> None:
+    def validate_id_token(self, id_token: Dict[str, Any]) -> None:
         """
         Validates that a LTI 1.3 launch request's decoded JWT has required
-        claims (dictionary keys of jwt_decoded).
+        claims (dictionary keys of id_token).
 
         The required claims are defined by the LTI 1.3 standard, see
         https://www.imsglobal.org/spec/lti/v1p3#required-message-claims.
 
         Args:
-          jwt_decoded: decoded JWT payload
+          id_token: decoded JWT payload of a launch request
 
         Raises:
           HTTPError if a required claim is not included in the dictionary or if
           the message_type and/or version claims do not have the correct value.
         """
-        self._check_general_required_keys(jwt_decoded)
+        self._check_general_required_keys(id_token)
 
         # message_type influences what claims are required
-        message_type = jwt_decoded[
+        message_type = id_token[
             "https://purl.imsglobal.org/spec/lti/claim/message_type"
         ]
         is_deep_linking = message_type == "LtiDeepLinkingRequest"
@@ -156,12 +156,12 @@ class LTI13LaunchValidator(LoggingConfigurable):
             required_claims = LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS
 
         for k, _ in required_claims.items():
-            if k not in jwt_decoded:
+            if k not in id_token:
                 raise HTTPError(400, f"Required claim {k} not included in request")
 
         # custom validations with resource launch
         if not is_deep_linking:
-            id = jwt_decoded.get(
+            id = id_token.get(
                 "https://purl.imsglobal.org/spec/lti/claim/resource_link"
             ).get("id")
             if not id:

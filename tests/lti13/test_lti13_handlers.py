@@ -107,69 +107,77 @@ async def test_lti13_login_init_handler_auth_request_contains_required_arguments
             assert expected[k] == args[k]
 
 
-async def test_lti13_callback_handler_invocation(req_handler):
+async def test_lti13_callback_handler_post_invocation(req_handler):
+    """Test invokation of parameter, token and state validation."""
+    authenticator = MockLTI13Authenticator()
+    decoded_jwt = "decoded_abc"
+    username = "somebody"
+    handler = req_handler(
+        LTI13CallbackHandler,
+        uri="https://hub.example.com/",
+        authenticator=authenticator,
+    )
+
+    with patch.object(
+        handler, "decode_and_validate_launch_request", return_value=decoded_jwt
+    ) as mock_validate, patch.object(
+        handler, "login_user", return_value=username
+    ) as mock_login_user, patch.object(
+        handler, "redirect_to_next_url"
+    ) as mock_redirect_to_next_url:
+        await handler.post()
+        mock_validate.assert_called_once()
+        mock_login_user.assert_called_once_with(decoded_jwt)
+        mock_redirect_to_next_url.assert_called_once_with(username)
+
+
+async def test_lti13_callback_handler_post_raises_403_on_non_user(req_handler):
+    """Test invokation of parameter, token and state validation."""
+    authenticator = MockLTI13Authenticator()
+    handler = req_handler(
+        LTI13CallbackHandler,
+        uri="https://hub.example.com/",
+        authenticator=authenticator,
+    )
+    with patch.object(handler, "decode_and_validate_launch_request"), patch.object(
+        handler, "login_user", return_value=None
+    ):
+        with pytest.raises(HTTPError) as e_info:
+            await handler.post()
+        assert str(e_info.value) == "HTTP 403: Forbidden (User missing or null)"
+
+
+async def test_lti13_callback_handler_decode_and_validate_launch_request_invocation(
+    req_handler,
+):
     """Test invokation of parameter, token and state validation."""
     authenticator = MockLTI13Authenticator()
     id_token = "abc"
     decoded_jwt = "decoded_abc"
-    username = "somebody"
     handler = req_handler(
         LTI13CallbackHandler,
         uri=f"https://hub.example.com/?id_token={id_token}",
         authenticator=authenticator,
     )
 
-    handler.client_id = authenticator.client_id
-    handler.endpoint = authenticator.endpoint
-    handler.jwks_algorithms = authenticator.jwks_algorithms
-
     with patch.object(
         LTI13LaunchValidator, "validate_auth_response"
     ) as mock_validate_auth_response, patch.object(
+        handler, "check_state"
+    ) as mock_check_state, patch.object(
         LTI13LaunchValidator, "verify_and_decode_jwt", return_value=decoded_jwt
     ) as mock_verify_and_decode_jwt, patch.object(
         LTI13LaunchValidator, "validate_id_token"
-    ) as mock_validate_id_token, patch.object(
-        handler, "check_state"
-    ) as mock_check_state, patch.object(
-        handler, "login_user", return_value=username
-    ) as mock_login_user, patch.object(
-        handler, "redirect_to_next_url"
-    ) as mock_redirect_to_next_url:
-        await handler.post()
+    ) as mock_validate_id_token:
+        handler.decode_and_validate_launch_request()
+
         mock_validate_auth_response.assert_called_once()
+        mock_check_state.assert_called_once()
         mock_verify_and_decode_jwt.assert_called_once_with(
-            id_token,
+            encoded_jwt=id_token,
             issuer=authenticator.issuer,
             audience=authenticator.client_id,
             jwks_endpoint=authenticator.endpoint,
             jwks_algorithms=authenticator.jwks_algorithms,
         )
         mock_validate_id_token.assert_called_once_with(decoded_jwt)
-        mock_check_state.assert_called_once()
-        mock_login_user.assert_called_once_with(decoded_jwt)
-        mock_redirect_to_next_url.assert_called_once_with(username)
-
-
-async def test_lti13_callback_handler_raises_403_on_non_user(req_handler):
-    """Test invokation of parameter, token and state validation."""
-    authenticator = MockLTI13Authenticator()
-    id_token = "abc"
-    handler = req_handler(
-        LTI13CallbackHandler,
-        uri=f"https://hub.example.com/?id_token={id_token}",
-        authenticator=authenticator,
-    )
-    handler.client_id = authenticator.client_id
-    handler.endpoint = authenticator.endpoint
-    handler.jwks_algorithms = authenticator.jwks_algorithms
-    with patch.object(LTI13LaunchValidator, "validate_auth_response"), patch.object(
-        LTI13LaunchValidator, "verify_and_decode_jwt"
-    ), patch.object(LTI13LaunchValidator, "validate_id_token"), patch.object(
-        handler, "check_state"
-    ), patch.object(
-        handler, "login_user", return_value=None
-    ):
-        with pytest.raises(HTTPError) as e_info:
-            await handler.post()
-        assert str(e_info.value) == "HTTP 403: Forbidden (User missing or null)"
