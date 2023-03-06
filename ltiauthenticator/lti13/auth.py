@@ -26,13 +26,10 @@ class LTI13Authenticator(OAuthenticator):
     the client id is only required if the JupyterHub is configured to send information back to the
     LTI 1.3 Platform, in which case it would require the client credentials grant type.
 
-    This class utilizes the following configurables defined in the `OAuthenticator` base class
-    (all are required unless stated otherwise):
+    This class utilizes the following required configurables defined in the `OAuthenticator` base class:
 
         - authorize_url
-        - oauth_callback_url
-        - token_url
-        - (Optional) client_id
+        - client_id
 
     Ref:
       - https://github.com/jupyterhub/oauthenticator/blob/master/oauthenticator/oauth2.py
@@ -49,8 +46,11 @@ class LTI13Authenticator(OAuthenticator):
         default_value=["RS256"],
         config=True,
         help="""
-        The platform's base endpoint used when redirecting requests to the platform
-        after receiving the initial login request.
+        Supported algorithms for signing JWT. The actual algorithm is declared by the authenticator
+        in the `id_token_signed_response_alg` parameter during out-of-band registration.
+
+        References:
+        https://www.imsglobal.org/spec/security/v1p0/#authentication-response-validation
         """,
     )
 
@@ -65,16 +65,12 @@ class LTI13Authenticator(OAuthenticator):
         """,
     )
 
-    # FIXME: This name and description is incorrect. It is practically used as
-    #        reference to a platforms JWKS endpoint.
-    #
-    endpoint = Unicode(
-        os.getenv("LTI13_ENDPOINT", ""),
+    jwks_endpoint = Unicode(
+        os.getenv("LTI13_JWKS_ENDPOINT", ""),
         allow_none=False,
         config=True,
         help="""
-        The platform's base endpoint used when redirecting requests to the platform
-        after receiving the initial login request.
+        The platform's JWKS endpoint used to obtain it's JSON Web Key Set to validate JWT signatures.
         """,
     )
 
@@ -131,9 +127,6 @@ class LTI13Authenticator(OAuthenticator):
     def config_json_url(self, base_url):
         return url_path_join(base_url, "lti13", "config")
 
-    def jwks_url(self, base_url):
-        return url_path_join(base_url, "lti13", "jwks")
-
     def get_handlers(self, app: JupyterHub) -> List[BaseHandler]:
         return [
             (self.login_url(""), self.login_handler),
@@ -146,13 +139,11 @@ class LTI13Authenticator(OAuthenticator):
     ) -> Dict[str, Any]:
         """
         Overrides authenticate from the OAuthenticator base class to handle LTI
-        1.3 authentication requests based on a passed JWT. The JWT is verified
-        to be signed by the LTI 1.3 platform via a JWKs endpoint it should
-        expose.
+        1.3 launch requests based on a passed JWT.
 
         Args:
           handler: handler object
-          data: authentication dictionary
+          data: authentication dictionary. The decoded, verified and validated id_token send by tehe platform
 
         Returns:
           Authentication dictionary

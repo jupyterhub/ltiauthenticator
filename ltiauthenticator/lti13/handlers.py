@@ -346,7 +346,7 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
             encoded_jwt=args.get("id_token"),
             issuer=self.authenticator.issuer,
             audience=self.authenticator.client_id,
-            jwks_endpoint=self.authenticator.endpoint,
+            jwks_endpoint=self.authenticator.jwks_endpoint,
             jwks_algorithms=self.authenticator.jwks_algorithms,
         )
         validator.validate_id_token(id_token)

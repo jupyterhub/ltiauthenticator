@@ -14,7 +14,7 @@ class MockLTI13Authenticator(LTI13Authenticator):
     client_id = "abc123"
     config_url = "/lti13/config"
     authorize_url = "https://my.platform.domain/api/lti/authorize_redirect"
-    endpoint = "https://my.platform.domain"
+    jwks_endpoint = "https://my.platform.domain"
     token_url = "https://my.platform.domain/login/oauth2/token"
     jwks_algorithms = ["RS256"]
     issuer = "https://my.platform.domain"

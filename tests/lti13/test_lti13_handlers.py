@@ -211,7 +211,7 @@ async def test_lti13_callback_handler_decode_and_validate_launch_request_invocat
             encoded_jwt=id_token,
             issuer=authenticator.issuer,
             audience=authenticator.client_id,
-            jwks_endpoint=authenticator.endpoint,
+            jwks_endpoint=authenticator.jwks_endpoint,
             jwks_algorithms=authenticator.jwks_algorithms,
         )
         mock_validate_id_token.assert_called_once_with(decoded_jwt)

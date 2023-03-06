@@ -34,17 +34,7 @@ c.LTI13Authenticator.authorize_url = (
     or "https://canvas.instructure.com/api/lti/authorize_redirect"
 )
 c.LTI13Authenticator.client_id = os.getenv("OAUTH_CLIENT_ID") or ""
-c.LTI13Authenticator.endpoint = (
-    os.getenv("LTI13_ENDPOINT")
+c.LTI13Authenticator.jwks_endpoint = (
+    os.getenv("LTI13_JWKS_ENDPOINT")
     or "https://canvas.instructure.com/api/lti/security/jwks"
 )
-c.LTI13Authenticator.oauth_callback_url = (
-    os.getenv("OAUTH_CALLBACK_URL") or "http://localhost:8000/hub/oauth_callback"
-)
-c.LTI13Authenticator.token_url = (
-    os.getenv("OAUTH2_TOKEN_URL") or "https://canvas.instructure.com/login/oauth2/token"
-)
-c.JupyterHub.extra_handlers = [
-    (r"/lti13/config$", "ltiauthenticator.lti13.handlers.LTI13ConfigHandler"),
-    (r"/lti13/jwks$", "ltiauthenticator.lti13.handlers.LTI13JWKSHandler"),
-]
