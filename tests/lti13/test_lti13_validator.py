@@ -54,7 +54,7 @@ def test_validate_verify_and_decode_jwt_rejects_unsigned_jwt(
             # verify_signature set to true in `validator.verify_and_decode_jwt`
             options={"verify_exp": False, "verify_signature": False},
         )
-        assert str(e) == "Signature verification failed"
+    assert str(e.value) == "Signature verification failed"
 
 
 def test_validate_verify_and_decode_jwt_accept_unsigned_jwt_with_no_endpoint(
@@ -93,7 +93,7 @@ def test_verify_and_decode_jwt_fails_on_incorrect_iss(
             # mocked launch_req_jwt has expired and we ignore that here
             options={"verify_exp": False},
         )
-        assert str(e) == "Invalid issuer"
+    assert str(e.value) == "Invalid issuer"
 
 
 def test_verify_and_decode_jwt_fails_on_incorrect_aud(
@@ -114,7 +114,7 @@ def test_verify_and_decode_jwt_fails_on_incorrect_aud(
             # mocked launch_req_jwt has expired and we ignore that here
             options={"verify_exp": False},
         )
-        assert str(e) == "Invalid audience"
+    assert str(e.value) == "Invalid audience"
 
 
 # Tests of validate_launch_request()
@@ -226,9 +226,10 @@ def test_validate_azp_claim_requires_azp_for_multiple_aud(
     validator = LTI13LaunchValidator()
     with pytest.raises(MissingRequiredArgumentError) as e:
         validator.validate_azp_claim(id_token, client_id)
-        assert (
-            str(e) == "azp claim is missing although multiple values for aud are given."
-        )
+    assert (
+        str(e.value)
+        == "azp claim is missing although multiple values for aud are given."
+    )
 
 
 def test_validate_azp_claim_raises_invalid_audience_error_if_not_matching_client_id(
@@ -241,4 +242,4 @@ def test_validate_azp_claim_raises_invalid_audience_error_if_not_matching_client
     validator = LTI13LaunchValidator()
     with pytest.raises(InvalidAudienceError) as e:
         validator.validate_azp_claim(id_token, client_id)
-        assert str(e) == "azp claim does not match client_id."
+    assert str(e.value) == "azp claim does not match client_id."
