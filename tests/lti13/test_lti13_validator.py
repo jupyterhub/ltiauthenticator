@@ -37,6 +37,43 @@ def test_validate_verify_and_decode_jwt(launch_req_jwt, launch_req_jwt_decoded):
     assert result == launch_req_jwt_decoded
 
 
+def test_validate_verify_and_decode_jwt_rejects_unsigned_jwt(
+    unsecured_launch_req_jwt, launch_req_jwt_decoded
+):
+    validator = LTI13LaunchValidator()
+
+    with pytest.raises(TokenError) as e:
+        validator.verify_and_decode_jwt(
+            encoded_jwt=unsecured_launch_req_jwt,
+            issuer=launch_req_jwt_decoded["iss"],
+            audience="client1",
+            jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
+            jwks_algorithms=["RS256"],
+            # mocked launch_req_jwt has expired and we ignore that here
+            # verify_signature set to true in `validator.verify_and_decode_jwt`
+            options={"verify_exp": False, "verify_signature": False},
+        )
+        assert str(e) == "Signature verification failed"
+
+
+def test_validate_verify_and_decode_jwt_accept_unsigned_jwt_with_no_endpoint(
+    unsecured_launch_req_jwt, launch_req_jwt_decoded
+):
+    validator = LTI13LaunchValidator()
+
+    result = validator.verify_and_decode_jwt(
+        encoded_jwt=unsecured_launch_req_jwt,
+        issuer=launch_req_jwt_decoded["iss"],
+        audience="client1",
+        jwks_endpoint="",
+        jwks_algorithms=["RS256"],
+        # mocked launch_req_jwt has expired and we ignore that here
+        # verify_signature set to true in `validator.verify_and_decode_jwt`
+        options={"verify_exp": False, "verify_signature": False},
+    )
+    assert result == launch_req_jwt_decoded
+
+
 def test_verify_and_decode_jwt_fails_on_incorrect_iss(
     launch_req_jwt, launch_req_jwt_decoded
 ):

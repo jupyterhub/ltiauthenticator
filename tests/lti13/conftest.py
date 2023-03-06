@@ -53,6 +53,15 @@ def launch_req_jwt():
 
 
 @pytest.fixture
+def unsecured_launch_req_jwt(launch_req_jwt):
+    """Return unsecured launch request."""
+    unsigned_jwt = launch_req_jwt.split(b".")
+    unsigned_jwt[2:] = b""
+    unsigned_jwt = b".".join(unsigned_jwt) + b"."
+    return unsigned_jwt
+
+
+@pytest.fixture
 def minimal_launch_req_jwt_decoded() -> Dict[str, object]:
     """
     Returns valid json after decoding JSON Web Token (JWT) for resource link launch (core).

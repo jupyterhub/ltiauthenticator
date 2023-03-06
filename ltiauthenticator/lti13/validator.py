@@ -66,16 +66,27 @@ class LTI13LaunchValidator(LoggingConfigurable):
         if not issuer:
             self.log.warning("No issuer identifyer configured")
 
+        # reject unsigned id_token if encription is negotiated
+        verification_options = kwargs.pop("options", {})
+        verification_options["verify_signature"] = (
+            verification_options.get("verify_signature", True) or jwks_endpoint != ""
+        )
+
         try:
-            jwks_client = jwt.PyJWKClient(jwks_endpoint)
-            signing_key = jwks_client.get_signing_key_from_jwt(encoded_jwt)
+            if verification_options["verify_signature"]:
+                jwks_client = jwt.PyJWKClient(jwks_endpoint)
+                signing_key = jwks_client.get_signing_key_from_jwt(encoded_jwt)
+                key = signing_key.key
+            else:
+                key = ""
 
             id_token = jwt.decode(
                 encoded_jwt,
-                signing_key.key,
+                key,
                 algorithms=jwks_algorithms,
                 audience=audience,
                 issuer=issuer,
+                options=verification_options,
                 **kwargs,
             )
         except jwt.PyJWTError as e:
