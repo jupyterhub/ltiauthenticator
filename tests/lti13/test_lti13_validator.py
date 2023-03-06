@@ -1,8 +1,11 @@
 import pytest
-from jwt import InvalidAudienceError, InvalidIssuerError
-from tornado.web import HTTPError
 
-from ltiauthenticator.lti13.validator import LTI13LaunchValidator
+from ltiauthenticator.lti13.validator import (
+    IncorrectValueError,
+    LTI13LaunchValidator,
+    MissingRequiredArgumentError,
+    TokenError,
+)
 
 
 # Tests of validate_login_request()
@@ -10,7 +13,7 @@ from ltiauthenticator.lti13.validator import LTI13LaunchValidator
 def test_validate_login_request_with_invalid_data():
     validator = LTI13LaunchValidator()
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(MissingRequiredArgumentError):
         validator.validate_login_request({"key1": "value1"})
 
 
@@ -42,7 +45,7 @@ def test_verify_and_decode_jwt_fails_on_incorrect_iss(
     #        jwks_endpoint_response that could be used.
     #
     validator = LTI13LaunchValidator()
-    with pytest.raises(InvalidIssuerError):
+    with pytest.raises(TokenError) as e:
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"] + "/something_wrong",
@@ -52,6 +55,7 @@ def test_verify_and_decode_jwt_fails_on_incorrect_iss(
             # mocked launch_req_jwt has expired and we ignore that here
             options={"verify_exp": False},
         )
+        assert str(e) == "Invalid issuer"
 
 
 def test_verify_and_decode_jwt_fails_on_incorrect_aud(
@@ -62,7 +66,7 @@ def test_verify_and_decode_jwt_fails_on_incorrect_aud(
     #        jwks_endpoint_response that could be used.
     #
     validator = LTI13LaunchValidator()
-    with pytest.raises(InvalidAudienceError):
+    with pytest.raises(TokenError) as e:
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
@@ -72,6 +76,7 @@ def test_verify_and_decode_jwt_fails_on_incorrect_aud(
             # mocked launch_req_jwt has expired and we ignore that here
             options={"verify_exp": False},
         )
+        assert str(e) == "Invalid audience"
 
 
 # Tests of validate_launch_request()
@@ -101,7 +106,7 @@ def test_validate_launch_request_invalid_message_type(launch_req_jwt_decoded):
         "https://purl.imsglobal.org/spec/lti/claim/message_type"
     ] = "???"
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(IncorrectValueError):
         validator.validate_id_token(launch_req_jwt_decoded)
 
 
@@ -111,7 +116,7 @@ def test_validate_launch_request_invalid_version(launch_req_jwt_decoded):
         "https://purl.imsglobal.org/spec/lti/claim/version"
     ] = "1.0.0"
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(IncorrectValueError):
         validator.validate_id_token(launch_req_jwt_decoded)
 
 
@@ -145,7 +150,7 @@ def test_validate_launch_request_empty_resource_link_id(
         "id"
     ] = ""
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(MissingRequiredArgumentError):
         validator.validate_id_token(launch_req_jwt_decoded)
 
 

@@ -16,7 +16,7 @@ from tornado.httputil import url_concat
 from tornado.web import HTTPError, RequestHandler
 
 from ..utils import convert_request_to_dict, get_client_protocol
-from .validator import LTI13LaunchValidator
+from .validator import LTI13LaunchValidator, ValidationError
 
 
 def get_nonce(state: str) -> str:
@@ -219,7 +219,10 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
         self.log.debug(f"Initial login request args are {args}")
 
         # Raises HTTP 400 if login request arguments are not valid
-        validator.validate_login_request(args)
+        try:
+            validator.validate_login_request(args)
+        except ValidationError as e:
+            raise HTTPError(400, str(e))
 
         login_hint = args["login_hint"]
         self.log.debug(f"login_hint is {login_hint}")
@@ -293,7 +296,10 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         """
         Overrides the upstream get handler with it's standard implementation.
         """
-        id_token = self.decode_and_validate_launch_request()
+        try:
+            id_token = self.decode_and_validate_launch_request()
+        except ValidationError as e:
+            raise HTTPError(400, str(e))
 
         user = await self.login_user(id_token)
         self.log.debug(f"user logged in: {user}")
@@ -310,7 +316,7 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
     def decode_and_validate_launch_request(self) -> Dict[str, Any]:
         """Decrypt, verify and validate launch request parameters.
 
-        TODO: Convert custom alidation errors to HTTP errors here
+        Raises subclasses of `ValidationError` if anything fails.
 
         TODO: validate that received nonces haven't been received before
             and that they are within the time-based tolerance window

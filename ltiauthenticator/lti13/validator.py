@@ -1,7 +1,6 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import jwt
-from tornado.web import HTTPError
 from traitlets.config import LoggingConfigurable
 
 from ltiauthenticator.lti13.constants import (
@@ -28,13 +27,9 @@ class LTI13LaunchValidator(LoggingConfigurable):
           args: dictionary that represents keys/values sent in authentication request
 
         Raises:
-          HTTPError if validation fails.
+          MissingRequiredArgumentError if an argument is missing
         """
-        for a in LTI13_INIT_LOGIN_REQUEST_ARGS:
-            if a not in args:
-                raise HTTPError(400, f"Required LTI 1.3 arg {a} not in request")
-            if not args.get(a):
-                raise HTTPError(400, f"Required LTI 1.3 arg {a} needs a value")
+        self._validate_required_args(args, LTI13_INIT_LOGIN_REQUEST_ARGS)
 
     def validate_auth_response(self, args: Dict[str, Any]) -> None:
         """
@@ -45,13 +40,20 @@ class LTI13LaunchValidator(LoggingConfigurable):
           args: dictionary that represents keys/values sent in authentication response
 
         Raises:
-          HTTPError if validation fails.
+          MissingRequiredArgumentError if an required argument is missing or has no value
         """
-        for a in LTI13_AUTH_RESPONSE_ARGS:
+        self._validate_required_args(args, LTI13_AUTH_RESPONSE_ARGS)
+
+    def _validate_required_args(self, args: Dict[str, Any], required: List[str]):
+        for a in required:
             if a not in args:
-                raise HTTPError(400, f"Required LTI 1.3 arg {a} not in request")
+                raise MissingRequiredArgumentError(
+                    f"Required LTI 1.3 arg {a} not in request"
+                )
             if not args.get(a):
-                raise HTTPError(400, f"Required LTI 1.3 arg {a} needs a value")
+                raise MissingRequiredArgumentError(
+                    f"Required LTI 1.3 arg {a} needs a value"
+                )
 
     def verify_and_decode_jwt(
         self, encoded_jwt, issuer, audience, jwks_endpoint, jwks_algorithms, **kwargs
@@ -64,21 +66,24 @@ class LTI13LaunchValidator(LoggingConfigurable):
         if not issuer:
             self.log.warning("No issuer identifyer configured")
 
-        jwks_client = jwt.PyJWKClient(jwks_endpoint)
-        signing_key = jwks_client.get_signing_key_from_jwt(encoded_jwt)
+        try:
+            jwks_client = jwt.PyJWKClient(jwks_endpoint)
+            signing_key = jwks_client.get_signing_key_from_jwt(encoded_jwt)
 
-        id_token = jwt.decode(
-            encoded_jwt,
-            signing_key.key,
-            algorithms=jwks_algorithms,
-            audience=audience,
-            issuer=issuer,
-            **kwargs,
-        )
+            id_token = jwt.decode(
+                encoded_jwt,
+                signing_key.key,
+                algorithms=jwks_algorithms,
+                audience=audience,
+                issuer=issuer,
+                **kwargs,
+            )
+        except jwt.PyJWTError as e:
+            raise TokenError(str(e))
 
         return id_token
 
-    def _check_general_required_keys(self, jwt_decoded: Dict[str, Any]) -> None:
+    def _check_general_required_keys(self, id_token: Dict[str, Any]) -> None:
         """Validates required LTI 1.3 claims (keys in jwt_decoded)
 
         Args:
@@ -89,29 +94,30 @@ class LTI13LaunchValidator(LoggingConfigurable):
             wrong value
         """
         # does all the required keys exist?
-        for k, v in LTI13_GENERAL_REQUIRED_CLAIMS.items():
-            if k not in jwt_decoded:
-                raise HTTPError(400, f"Required claim {k} not included in request")
+        for k in LTI13_GENERAL_REQUIRED_CLAIMS:
+            if k not in id_token:
+                raise MissingRequiredArgumentError(
+                    f"Required claim {k} not included in request"
+                )
 
-        lti_version = jwt_decoded.get(
-            "https://purl.imsglobal.org/spec/lti/claim/version"
-        )
+        lti_version = id_token.get("https://purl.imsglobal.org/spec/lti/claim/version")
         if lti_version != "1.3.0":
-            raise HTTPError(400, f"Incorrect value {lti_version} for version claim")
+            raise IncorrectValueError(
+                f"Incorrect value {lti_version} for version claim"
+            )
 
         # validate context label
-        context_claim = jwt_decoded.get(
+        context_claim = id_token.get(
             "https://purl.imsglobal.org/spec/lti/claim/context"
         )
         context_label = context_claim.get("label") if context_claim else None
         if context_label == "":
-            raise HTTPError(
-                400,
-                "Missing course context label for claim https://purl.imsglobal.org/spec/lti/claim/context",
+            raise MissingRequiredArgumentError(
+                "Claim https://purl.imsglobal.org/spec/lti/claim/context present, but context label is missing."
             )
 
         # validate message type value
-        message_type = jwt_decoded.get(
+        message_type = id_token.get(
             "https://purl.imsglobal.org/spec/lti/claim/message_type"
         )
         if (
@@ -124,8 +130,8 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 "https://purl.imsglobal.org/spec/lti/claim/message_type"
             ]
         ):
-            raise HTTPError(
-                400, f"Incorrect value {message_type} for message_type claim"
+            raise IncorrectValueError(
+                f"Incorrect value {message_type} for message_type claim"
             )
 
     def validate_id_token(self, id_token: Dict[str, Any]) -> None:
@@ -157,7 +163,9 @@ class LTI13LaunchValidator(LoggingConfigurable):
 
         for k, _ in required_claims.items():
             if k not in id_token:
-                raise HTTPError(400, f"Required claim {k} not included in request")
+                raise MissingRequiredArgumentError(
+                    f"Required claim {k} not included in request"
+                )
 
         # custom validations with resource launch
         if not is_deep_linking:
@@ -165,4 +173,28 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 "https://purl.imsglobal.org/spec/lti/claim/resource_link"
             ).get("id")
             if not id:
-                raise HTTPError(400, "resource_link claim's id can't be empty")
+                raise MissingRequiredArgumentError(
+                    "resource_link claim's id can't be empty"
+                )
+
+
+class ValidationError(Exception):
+    """Base class for validation exceptions."""
+
+
+class MissingRequiredArgumentError(ValidationError):
+    """Exception raised for missing required request arguments."""
+
+    pass
+
+
+class IncorrectValueError(ValidationError):
+    """Exception raised for incorrect values."""
+
+    pass
+
+
+class TokenError(ValidationError):
+    """Exception raised for failed JWT decoding or verification."""
+
+    pass
