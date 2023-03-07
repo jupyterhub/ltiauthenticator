@@ -1,4 +1,6 @@
 import os
+from calendar import timegm
+from datetime import datetime, timezone
 from typing import Any, Dict, Iterable
 
 import jwt
@@ -14,6 +16,10 @@ from ltiauthenticator.lti13.constants import (
 )
 
 
+def now() -> int:
+    return timegm(datetime.now(tz=timezone.utc).utctimetuple())
+
+
 class LTI13LaunchValidator(LoggingConfigurable):
     """
     Allows JupyterHub to verify LTI 1.3 compatible requests as a tool (known as a tool
@@ -27,6 +33,14 @@ class LTI13LaunchValidator(LoggingConfigurable):
         A time margin in seconds for the JWT expiration checks.
 
         It will be added as a grace period to mitigate clock drift issues.
+        """,
+    )
+
+    max_age = Int(
+        int(os.getenv("LTI13_MAX_AGE", "600")),
+        config=True,
+        help="""
+        Maximum age of an id_token to be accepted. Also limits the time, nonces must be stored.
         """,
     )
 
@@ -106,7 +120,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 audience=audience,
                 issuer=issuer,
                 options=verification_options,
-                leeway=self.time_validation_leeway,
+                leeway=self.time_leeway,
                 **kwargs,
             )
         except jwt.InvalidAudienceError as e:
@@ -178,6 +192,12 @@ class LTI13LaunchValidator(LoggingConfigurable):
         if azp != client_id:
             raise InvalidAudienceError("azp claim does not match client_id.")
 
+    def _check_if_iat_is_too_old(self, id_token: Dict[str, Any]) -> None:
+        """Raise TokenError if iat is too old."""
+        iat = id_token["iat"]
+        if iat < now() - self.max_age - self.time_leeway:
+            raise TokenError("id_token issued too long ago.")
+
     def validate_id_token(self, id_token: Dict[str, Any]) -> None:
         """
         Validates that a LTI 1.3 launch request's decoded JWT has required
@@ -196,6 +216,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
         self._check_lti_version(id_token)
         self._check_context_label(id_token)
         self._check_message_type(id_token)
+        self._check_if_iat_is_too_old(id_token)
 
         # message_type influences what claims are required
         message_type = id_token[

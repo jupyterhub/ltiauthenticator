@@ -215,6 +215,16 @@ def test_validate_launch_request_empty_resource_link_id(
         validator.validate_id_token(launch_req_jwt_decoded)
 
 
+def test_alidate_launch_request_fails_on_too_old_iat(launch_req_jwt_decoded):
+    max_age = 200
+    launch_req_jwt_decoded["iat"] = launch_req_jwt_decoded["iat"] - max_age
+
+    validator = LTI13LaunchValidator()
+    validator.max_age = max_age
+    with pytest.raises(TokenError):
+        validator.validate_id_token(launch_req_jwt_decoded)
+
+
 def test_validate_launch_request_with_priv(
     launch_req_jwt_decoded_priv,
 ):
