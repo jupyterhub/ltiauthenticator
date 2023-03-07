@@ -253,9 +253,7 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
         self.set_state_cookie(state)
 
         # to prevent replay attacks
-        nonce_state = make_nonce_state()
-        self.set_nonce_cookie(nonce_state)
-        nonce = get_nonce(nonce_state)
+        nonce = self.generate_nonce()
         self.log.debug(f"nonce value: {nonce}")
 
         self.authorize_redirect(
@@ -271,6 +269,17 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
     # https://www.imsglobal.org/spec/security/v1p0/#fig_oidcflow
     #
     get = post
+
+    def generate_nonce(self):
+        """Produce a nonce.
+
+        The nonce state will be stored as a session cookie to later validate the nonce
+        field of the id_token.
+        """
+        nonce_state = make_nonce_state()
+        self.set_nonce_cookie(nonce_state)
+        nonce = get_nonce(nonce_state)
+        return nonce
 
     def get_redirect_uri(self) -> str:
         """Create uri to redirect user agent to after successful authorization by the LMS platform."""
@@ -343,10 +352,7 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
     def decode_and_validate_launch_request(self) -> Dict[str, Any]:
         """Decrypt, verify and validate launch request parameters.
 
-        Raises subclasses of `ValidationError` if anything fails.
-
-        TODO: validate that received nonces haven't been received before
-            and that they are within the time-based tolerance window
+        Raises subclasses of `ValidationError` of `HTTPError` if anything fails.
 
         References:
         https://openid.net/specs/openid-connect-core-1_0.html#IDToken

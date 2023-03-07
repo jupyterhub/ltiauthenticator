@@ -40,4 +40,4 @@ c.LTI13Authenticator.jwks_endpoint = (
 )
 # Validator setting
 c.LTI13LaunchValidator.time_leeway = int(os.getenv("LTI13_TIME_LEEWAY", "0"))
-c.LTI13LaunchValidator.time_leeway = int(os.getenv("LTI13_MAX_AGE", "600"))
+c.LTI13LaunchValidator.max_age = int(os.getenv("LTI13_MAX_AGE", "600"))

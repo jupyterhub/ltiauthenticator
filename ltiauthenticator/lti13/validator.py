@@ -40,7 +40,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
         int(os.getenv("LTI13_MAX_AGE", "600")),
         config=True,
         help="""
-        Maximum age of an id_token to be accepted. Also limits the time, nonces must be stored.
+        Maximum age of an id_token to be accepted.
         """,
     )
 
