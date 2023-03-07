@@ -12,20 +12,30 @@ from oauthenticator.oauth2 import (
     OAuthLoginHandler,
     _serialize_state,
 )
+from oauthlib.common import generate_token
 from tornado.httputil import url_concat
 from tornado.web import HTTPError, RequestHandler
 
 from ..utils import convert_request_to_dict, get_client_protocol
 from .validator import InvalidAudienceError, LTI13LaunchValidator, ValidationError
 
+NONCE_STATE_COOKIE_NAME = "lti13authenticator-nonce-state"
 
-def get_nonce(state: str) -> str:
+
+def make_nonce_state() -> str:
+    """
+    Create state for nonce calculation.
+    """
+    return generate_token(length=64)
+
+
+def get_nonce(nonce_state: str) -> str:
     """
     Create a nonce by hashing state.
 
     SHA 256 is used to create the hash. The nonce is its hexdigest.
     """
-    hash = hashlib.sha256(state.encode())
+    hash = hashlib.sha256(nonce_state.encode())
     nonce = hash.hexdigest()
     return nonce
 
@@ -242,10 +252,10 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
         state = self.get_state()
         self.set_state_cookie(state)
 
-        # TODO: make sure that state contains unguessable (random) data.
-        # It would be better to use a dedicated cookie for nonces
-        # See https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes
-        nonce = get_nonce(state)
+        # to prevent replay attacks
+        nonce_state = make_nonce_state()
+        self.set_nonce_cookie(nonce_state)
+        nonce = get_nonce(nonce_state)
         self.log.debug(f"nonce value: {nonce}")
 
         self.authorize_redirect(
@@ -281,6 +291,15 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
             self.log.debug(f"{arg} not present in login initiation request")
         return value
 
+    def set_nonce_cookie(self, nonce_state):
+        self._set_cookie(
+            NONCE_STATE_COOKIE_NAME,
+            nonce_state,
+            expires_days=1,
+            httponly=True,
+            encrypted=True,
+        )
+
 
 class LTI13CallbackHandler(OAuthCallbackHandler):
     """
@@ -291,6 +310,8 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
     https://www.imsglobal.org/spec/security/v1p0/#step-3-authentication-response
     https://www.imsglobal.org/spec/security/v1p0/#step-4-resource-is-displayed
     """
+
+    _nonce_state_cookie = None
 
     async def get(self):
         """Overrides the upstream get handler and always raise HTTPError 405."""
@@ -351,4 +372,40 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         )
         validator.validate_id_token(id_token)
         validator.validate_azp_claim(id_token, self.authenticator.client_id)
+
+        # Check nonce matches the one that has been used in the authorization request.
+        # A nonce is a hash of random state which is stored in a session cookie before
+        # redirecting to make authorization request. This mitigates replay attacks.
+        #
+        # References:
+        # https://openid.net/specs/openid-connect-core-1_0.html#NonceNotes
+        # https://auth0.com/docs/get-started/authentication-and-authorization-flow/mitigate-replay-attacks-when-using-the-implicit-flow
+        self.check_nonce(id_token)
+
         return id_token
+
+    def check_nonce(self, id_token: Dict[str, Any]) -> None:
+        """Check if received nonce corresponds to hash of nonce state cookie"""
+        received_nonce = id_token.get("nonce")
+
+        nonce_state = self._get_nonce_state_cookie()
+        if not nonce_state:
+            raise HTTPError(400, "Missing nonce state cookie")
+
+        nonce = get_nonce(nonce_state)
+
+        if nonce != received_nonce:
+            self.log.warning("OAuth nonce mismatch: %s != %s", nonce, received_nonce)
+            raise HTTPError(400, "OAuth nonce mismatch")
+
+    def _get_nonce_state_cookie(self):
+        """Get OAuth nonce state from cookies
+
+        To be compared with the value in id_token
+        """
+        if self._nonce_state_cookie is None:
+            self._nonce_state_cookie = (
+                self.get_secure_cookie(NONCE_STATE_COOKIE_NAME) or b""
+            ).decode("utf8")
+            self.clear_cookie(NONCE_STATE_COOKIE_NAME)
+        return self._nonce_state_cookie

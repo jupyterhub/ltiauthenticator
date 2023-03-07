@@ -5,7 +5,13 @@ from tornado.httputil import HTTPServerRequest
 from tornado.web import HTTPError
 
 import ltiauthenticator.lti13.handlers
-from ltiauthenticator.lti13.handlers import LTI13CallbackHandler, LTI13LoginInitHandler
+from ltiauthenticator.lti13.handlers import (
+    NONCE_STATE_COOKIE_NAME,
+    LTI13CallbackHandler,
+    LTI13LoginInitHandler,
+    get_nonce,
+    make_nonce_state,
+)
 from ltiauthenticator.lti13.validator import InvalidAudienceError, LTI13LaunchValidator
 from ltiauthenticator.utils import convert_request_to_dict
 
@@ -41,9 +47,6 @@ async def test_lti13_login_init_handler_invocation(method, req_handler):
         authenticator=MockLTI13Authenticator(),
     )
 
-    # mock nonce creation
-    ltiauthenticator.lti13.handlers.get_nonce = lambda x: nonce
-
     with patch.object(
         LTI13LaunchValidator, "validate_login_request"
     ) as mock_validate_login_request, patch.object(
@@ -54,7 +57,9 @@ async def test_lti13_login_init_handler_invocation(method, req_handler):
         handler, "set_state_cookie"
     ) as mock_set_state_cookie, patch.object(
         handler, "get_redirect_uri", return_value=redirect_uri
-    ) as mock_get_redicerect_uri:
+    ) as mock_get_redicerect_uri, patch.object(
+        ltiauthenticator.lti13.handlers, "get_nonce", return_value=nonce
+    ):
         if method == "GET":
             handler.get()
         elif method == "POST":
@@ -202,7 +207,9 @@ async def test_lti13_callback_handler_decode_and_validate_launch_request_invocat
         LTI13LaunchValidator, "validate_id_token"
     ) as mock_validate_id_token, patch.object(
         LTI13LaunchValidator, "validate_azp_claim"
-    ) as mock_validate_azp_claim:
+    ) as mock_validate_azp_claim, patch.object(
+        handler, "check_nonce"
+    ) as mock_check_nonce:
         handler.decode_and_validate_launch_request()
 
         mock_validate_auth_response.assert_called_once()
@@ -218,3 +225,63 @@ async def test_lti13_callback_handler_decode_and_validate_launch_request_invocat
         mock_validate_azp_claim.assert_called_once_with(
             decoded_jwt, authenticator.client_id
         )
+        mock_check_nonce.assert_called_once_with(decoded_jwt)
+
+
+async def test_lti13_callback_handler_check_nonce_validates_correctly(
+    req_handler,
+):
+    """Test invokation of parameter, token and state validation."""
+    nonce_state = make_nonce_state()
+    id_token = {"nonce": get_nonce(nonce_state)}
+
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+
+    with patch.object(
+        handler, "get_secure_cookie", return_value=nonce_state.encode()
+    ) as mock_get_cookie:
+        handler.check_nonce(id_token)
+
+        mock_get_cookie.assert_called_once_with(NONCE_STATE_COOKIE_NAME)
+
+
+async def test_lti13_callback_handler_check_nonce_raises_400_if_cookie_is_missing(
+    req_handler,
+):
+    """Test invokation of parameter, token and state validation."""
+    nonce_state = make_nonce_state()
+    id_token = {"nonce": get_nonce(nonce_state)}
+
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+
+    with patch.object(
+        handler, "_get_nonce_state_cookie", return_value=None
+    ), pytest.raises(HTTPError) as e:
+        handler.check_nonce(id_token)
+    assert str(e.value) == "HTTP 400: Bad Request (Missing nonce state cookie)"
+
+
+async def test_lti13_callback_handler_check_nonce_raises_400_if_nonce_missmatch(
+    req_handler,
+):
+    """Test invokation of parameter, token and state validation."""
+    nonce_state = make_nonce_state()
+    nonce_state2 = make_nonce_state()
+    id_token = {"nonce": get_nonce(nonce_state2)}
+
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+
+    with patch.object(
+        handler, "_get_nonce_state_cookie", return_value=nonce_state
+    ), pytest.raises(HTTPError) as e:
+        handler.check_nonce(id_token)
+    assert str(e.value) == "HTTP 400: Bad Request (OAuth nonce mismatch)"
