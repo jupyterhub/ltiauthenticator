@@ -1,6 +1,8 @@
+import os
 from typing import Any, Dict, Iterable
 
 import jwt
+from traitlets import Int
 from traitlets.config import LoggingConfigurable
 
 from ltiauthenticator.lti13.constants import (
@@ -17,6 +19,16 @@ class LTI13LaunchValidator(LoggingConfigurable):
     Allows JupyterHub to verify LTI 1.3 compatible requests as a tool (known as a tool
     provider with LTI 1.1).
     """
+
+    time_leeway = Int(
+        int(os.getenv("LTI13_TIME_LEEWAY", "0")),
+        config=True,
+        help="""
+        A time margin in seconds for the JWT expiration checks.
+
+        It will be added as a grace period to mitigate clock drift issues.
+        """,
+    )
 
     def validate_login_request(self, args: Dict[str, Any]) -> None:
         """
@@ -94,6 +106,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 audience=audience,
                 issuer=issuer,
                 options=verification_options,
+                leeway=self.time_validation_leeway,
                 **kwargs,
             )
         except jwt.InvalidAudienceError as e:

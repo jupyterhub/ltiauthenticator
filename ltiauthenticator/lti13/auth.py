@@ -8,8 +8,8 @@ from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import OAuthenticator
 from tornado.web import HTTPError
-from traitlets.config import List as TraitletsList
-from traitlets.config import Unicode
+from traitlets import List as TraitletsList
+from traitlets import Unicode
 
 from .handlers import LTI13CallbackHandler, LTI13ConfigHandler, LTI13LoginInitHandler
 

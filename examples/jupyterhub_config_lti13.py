@@ -38,3 +38,5 @@ c.LTI13Authenticator.jwks_endpoint = (
     os.getenv("LTI13_JWKS_ENDPOINT")
     or "https://canvas.instructure.com/api/lti/security/jwks"
 )
+# Validator setting
+c.LTI13LaunchValidator.time_leeway = int(os.getenv("LTI13_TIME_LEEWAY", "0"))
