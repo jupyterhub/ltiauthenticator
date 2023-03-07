@@ -30,7 +30,7 @@ def test_validate_verify_and_decode_jwt(
         result = validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
-            audience="client1",
+            audience=launch_req_jwt_decoded["aud"],
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
@@ -46,7 +46,7 @@ def test_validate_verify_and_decode_jwt_rejects_unsigned_jwt(
         validator.verify_and_decode_jwt(
             encoded_jwt=unsecured_launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
-            audience="client1",
+            audience=launch_req_jwt_decoded["aud"],
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
@@ -62,7 +62,7 @@ def test_validate_verify_and_decode_jwt_accept_unsigned_jwt_with_no_endpoint(
         result = validator.verify_and_decode_jwt(
             encoded_jwt=unsecured_launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
-            audience="client1",
+            audience=launch_req_jwt_decoded["aud"],
             jwks_endpoint="",
             jwks_algorithms=["RS256"],
             options={"verify_signature": False},
@@ -78,11 +78,49 @@ def test_verify_and_decode_jwt_fails_on_incorrect_iss(
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"] + "/something_wrong",
-            audience="client1",
+            audience=launch_req_jwt_decoded["aud"],
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
     assert str(e.value) == "Invalid issuer"
+
+
+def test_verify_and_decode_jwt_fails_on_passed_exp(
+    launch_req_jwt_decoded, encode, jwks_endpoint_response
+):
+    # make request expired, `iat` is close to "now"
+    launch_req_jwt_decoded["exp"] = launch_req_jwt_decoded["iat"] - 300
+    launch_req_jwt = encode(launch_req_jwt_decoded)
+
+    validator = LTI13LaunchValidator()
+    with patched_jwk_client(jwks_endpoint_response), pytest.raises(TokenError) as e:
+        validator.verify_and_decode_jwt(
+            encoded_jwt=launch_req_jwt,
+            issuer=launch_req_jwt_decoded["iss"],
+            audience=launch_req_jwt_decoded["aud"],
+            jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
+            jwks_algorithms=["RS256"],
+        )
+    assert str(e.value) == "Signature has expired"
+
+
+def test_verify_and_decode_jwt_fails_on_iat_in_the_future(
+    launch_req_jwt_decoded, encode, jwks_endpoint_response
+):
+    # make request issued in the future
+    launch_req_jwt_decoded["iat"] = launch_req_jwt_decoded["iat"] + 200
+    launch_req_jwt = encode(launch_req_jwt_decoded)
+
+    validator = LTI13LaunchValidator()
+    with patched_jwk_client(jwks_endpoint_response), pytest.raises(TokenError) as e:
+        validator.verify_and_decode_jwt(
+            encoded_jwt=launch_req_jwt,
+            issuer=launch_req_jwt_decoded["iss"],
+            audience=launch_req_jwt_decoded["aud"],
+            jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
+            jwks_algorithms=["RS256"],
+        )
+    assert str(e.value) == "The token is not yet valid (iat)"
 
 
 def test_verify_and_decode_jwt_fails_on_incorrect_aud(

@@ -50,24 +50,32 @@ def req_handler() -> RequestHandler:
 
 
 @pytest.fixture
-def launch_req_jwt(
-    launch_req_jwt_decoded, jwks_endpoint_private_key, jwks_endpoint_response
-):
+def encode(jwks_endpoint_private_key, jwks_endpoint_response):
+    """Return function to encode JWT payload and sign it."""
+
+    def _encode(payload):
+        encoded = jwt.encode(
+            payload,
+            jwks_endpoint_private_key,
+            algorithm="RS256",
+            headers={
+                "alg": jwks_endpoint_response["keys"][0]["alg"],
+                "kid": jwks_endpoint_response["keys"][0]["kid"],
+            },
+        )
+        return encoded.encode("utf-8")
+
+    return _encode
+
+
+@pytest.fixture
+def launch_req_jwt(launch_req_jwt_decoded, encode):
     """
     Returns an encoded JSON Web Token (JWT) for the authenticate request
     (resource link launch). This decodes into the launch_req_jwt_decoded
     fixture.
     """
-    encoded = jwt.encode(
-        launch_req_jwt_decoded,
-        jwks_endpoint_private_key,
-        algorithm="RS256",
-        headers={
-            "alg": jwks_endpoint_response["keys"][0]["alg"],
-            "kid": jwks_endpoint_response["keys"][0]["kid"],
-        },
-    )
-    return encoded.encode("utf-8")
+    return encode(launch_req_jwt_decoded)
     # return b"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IlVpNVpkcDlNcUVZQ2VyQ3E4ejhRUVQ4MWpna24zeDNKWWMwNk9vckY4TW8ifQ.eyJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9tZXNzYWdlX3R5cGUiOiJMdGlSZXNvdXJjZUxpbmtSZXF1ZXN0IiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vcm9sZXMiOlsiaHR0cDovL3B1cmwuaW1zZ2xvYmFsLm9yZy92b2NhYi9saXMvdjIvbWVtYmVyc2hpcCNMZWFybmVyIiwiaHR0cDovL3B1cmwuaW1zZ2xvYmFsLm9yZy92b2NhYi9saXMvdjIvaW5zdGl0dXRpb24vcGVyc29uI1N0dWRlbnQiLCJodHRwOi8vcHVybC5pbXNnbG9iYWwub3JnL3ZvY2FiL2xpcy92Mi9tZW1iZXJzaGlwI01lbnRvciJdLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9yb2xlX3Njb3BlX21lbnRvciI6WyJhNjJjNTJjMDJiYTI2MjAwM2Y1ZSJdLCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS9jbGFpbS9yZXNvdXJjZV9saW5rIjp7ImlkIjoiNzQyNTYiLCJ0aXRsZSI6ImxpbmsxIiwiZGVzY3JpcHRpb24iOiIifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vY29udGV4dCI6eyJpZCI6IjU0NTM2IiwibGFiZWwiOiJjb3Vyc2UxIiwidGl0bGUiOiJjb3Vyc2UxIiwidHlwZSI6WyIiXX0sImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3Rvb2xfcGxhdGZvcm0iOnsibmFtZSI6Imp1cHl0ZXJodWItbHRpYXV0aGVudGljYXRvci10ZXN0LXBsYXRmb3JtIiwiY29udGFjdF9lbWFpbCI6IiIsImRlc2NyaXB0aW9uIjoiIiwidXJsIjoiIiwicHJvZHVjdF9mYW1pbHlfY29kZSI6IiIsInZlcnNpb24iOiIxLjAiLCJndWlkIjoiMzY5MSJ9LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS1hZ3MvY2xhaW0vZW5kcG9pbnQiOnsic2NvcGUiOlsiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGktYWdzL3Njb3BlL2xpbmVpdGVtIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGktYWdzL3Njb3BlL3Jlc3VsdC5yZWFkb25seSIsImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpLWFncy9zY29wZS9zY29yZSJdLCJsaW5laXRlbXMiOiJodHRwczovL2x0aS1yaS5pbXNnbG9iYWwub3JnL3BsYXRmb3Jtcy8zNjkxL2NvbnRleHRzLzU0NTM2L2xpbmVfaXRlbXMifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGktbnJwcy9jbGFpbS9uYW1lc3JvbGVzZXJ2aWNlIjp7ImNvbnRleHRfbWVtYmVyc2hpcHNfdXJsIjoiaHR0cHM6Ly9sdGktcmkuaW1zZ2xvYmFsLm9yZy9wbGF0Zm9ybXMvMzY5MS9jb250ZXh0cy81NDUzNi9tZW1iZXJzaGlwcyIsInNlcnZpY2VfdmVyc2lvbnMiOlsiMi4wIl19LCJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS1jZXMvY2xhaW0vY2FsaXBlci1lbmRwb2ludC1zZXJ2aWNlIjp7InNjb3BlcyI6WyJodHRwczovL3B1cmwuaW1zZ2xvYmFsLm9yZy9zcGVjL2x0aS1jZXMvdjFwMC9zY29wZS9zZW5kIl0sImNhbGlwZXJfZW5kcG9pbnRfdXJsIjoiaHR0cHM6Ly9sdGktcmkuaW1zZ2xvYmFsLm9yZy9wbGF0Zm9ybXMvMzY5MS9zZW5zb3JzIiwiY2FsaXBlcl9mZWRlcmF0ZWRfc2Vzc2lvbl9pZCI6InVybjp1dWlkOjk0YzNhOTRjYTcwNjQ3ZDA4ZTdjIn0sImlzcyI6Imh0dHBzOi8vZ2l0aHViLmNvbS9qdXB5dGVyaHViL2x0aWF1dGhlbnRpY2F0b3IiLCJhdWQiOiJjbGllbnQxIiwiaWF0IjoxNjY4MjY2NTU1LCJleHAiOjE2NjgyNjY4NTUsInN1YiI6IjFhY2U3NTAxODc3ZTZhNDI5ZmNhIiwibm9uY2UiOiJlYmM5YWI3MDVkMGJhYjNlOWRjNiIsImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvbHRpL2NsYWltL3ZlcnNpb24iOiIxLjMuMCIsImxvY2FsZSI6ImVuLVVTIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vbGF1bmNoX3ByZXNlbnRhdGlvbiI6eyJkb2N1bWVudF90YXJnZXQiOiJpZnJhbWUiLCJoZWlnaHQiOjMyMCwid2lkdGgiOjI0MCwicmV0dXJuX3VybCI6Imh0dHBzOi8vbHRpLXJpLmltc2dsb2JhbC5vcmcvcGxhdGZvcm1zLzM2OTEvcmV0dXJucyJ9LCJodHRwczovL3d3dy5leGFtcGxlLmNvbS9leHRlbnNpb24iOnsiY29sb3IiOiJ2aW9sZXQifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vY3VzdG9tIjp7Im15Q3VzdG9tVmFsdWUiOiIxMjMifSwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vZGVwbG95bWVudF9pZCI6ImRlcGxveW1lbnQxIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9sdGkvY2xhaW0vdGFyZ2V0X2xpbmtfdXJpIjoiaHR0cHM6Ly9sdGktcmkuaW1zZ2xvYmFsLm9yZy9sdGkvdG9vbHMvMzM1Ni9sYXVuY2hlcyJ9.fTmEDNdk3RICex0fdpFVHvActISqURZiYWc-JmV7CTBQ1D9bcB7ovK-Nf2qDz6cfGCCOWv-3QJzJliEvmgBeYclGgnX39IXQQ49TiWrkoQJsPCpnrxqheWlvK0Aceca0zxnncc2yV8IyXe0UiwzZFyExwcbNUhgeLFyPBvIH5zl7LzMwlywhl8qKGcOxW__yTQ9dRID6y5KFOMzkXzHKzuJW4D0RpqkAkpX2QD4KraIGJkEb_qQSwjA5BbtgsCi2fF3wBxBNUDLaKpr2iYoENSXvO4yoQ20US5BC2E8mOf4RpkPlC1AyqXV9gqOWzw07x3NDXQgsfsqFcVTC6G4Z5Q"
 
 
