@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Any, Dict, List
 
 from jupyterhub.app import JupyterHub
@@ -55,7 +54,6 @@ class LTI13Authenticator(OAuthenticator):
     )
 
     issuer = Unicode(
-        os.getenv("LTI13_ISSUER", ""),
         allow_none=False,
         config=True,
         help="""
@@ -66,7 +64,6 @@ class LTI13Authenticator(OAuthenticator):
     )
 
     jwks_endpoint = Unicode(
-        os.getenv("LTI13_JWKS_ENDPOINT", ""),
         allow_none=False,
         config=True,
         help="""

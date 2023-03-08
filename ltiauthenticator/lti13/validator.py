@@ -1,4 +1,3 @@
-import os
 from calendar import timegm
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable
@@ -27,7 +26,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
     """
 
     time_leeway = Int(
-        int(os.getenv("LTI13_TIME_LEEWAY", "0")),
+        0,
         config=True,
         help="""
         A time margin in seconds for the JWT expiration checks.
@@ -37,7 +36,7 @@ class LTI13LaunchValidator(LoggingConfigurable):
     )
 
     max_age = Int(
-        int(os.getenv("LTI13_MAX_AGE", "600")),
+        600,
         config=True,
         help="""
         Maximum age of an id_token to be accepted.
