@@ -21,9 +21,8 @@ class LTI13Authenticator(OAuthenticator):
     JupyterHub LTI 1.3 Authenticator which extends the `OAuthenticator` class. (LTI 1.3
     is basically an extension of OIDC/OAuth2). Messages sent to this authenticator are sent
     from a LTI 1.3 Platform, such as an LMS. JupyterHub, as the authenticator, works as the
-    LTI 1.3 External Tool. The basic login flow uses the authorization code grant type. As such,
-    the client id is only required if the JupyterHub is configured to send information back to the
-    LTI 1.3 Platform, in which case it would require the client credentials grant type.
+    LTI 1.3 External Tool. The basic login flow is authentication using the implicit flow. As such,
+    the client id is always required.
 
     This class utilizes the following required configurables defined in the `OAuthenticator` base class:
 
@@ -33,6 +32,7 @@ class LTI13Authenticator(OAuthenticator):
     Ref:
       - https://github.com/jupyterhub/oauthenticator/blob/master/oauthenticator/oauth2.py
       - http://www.imsglobal.org/spec/lti/v1p3/
+      - https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth
     """
 
     login_service = "LTI 1.3"
