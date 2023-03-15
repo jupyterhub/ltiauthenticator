@@ -207,6 +207,9 @@ def test_launch_with_empty_oauth_signature_method_value(
 def test_launch_with_missing_oauth_callback_key(get_launch_args):
     """
     Does the launch request work with a missing oauth_callback key?
+    It should, see https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-4.
+
+    Note that some LMS do not add `oauth_callback` to the list of parameters.
     """
     oauth_consumer_key = "my_consumer_key"
     oauth_consumer_secret = "my_shared_secret"
@@ -222,8 +225,7 @@ def test_launch_with_missing_oauth_callback_key(get_launch_args):
 
     validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
 
-    with pytest.raises(HTTPError):
-        validator.validate_launch_request(launch_url, headers, args)
+    assert validator.validate_launch_request(launch_url, headers, args)
 
 
 def test_launch_with_empty_oauth_callback_value(
