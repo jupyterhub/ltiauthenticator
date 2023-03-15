@@ -2,6 +2,7 @@ import time
 from collections import OrderedDict
 from typing import Any, Dict
 
+from oauthlib.common import safe_string_equals
 from oauthlib.oauth1.rfc5849 import Client, signature
 from tornado.web import HTTPError
 from traitlets.config import LoggingConfigurable
@@ -28,7 +29,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
 
     # Keep a class-wide, global list of nonces so we can detect & reject
     # replay attacks. This possibly makes this non-threadsafe, however.
-    nonces = OrderedDict()
+    nonces: OrderedDict[int, set] = OrderedDict()
 
     def __init__(self, consumers):
         self.consumers = consumers
@@ -57,6 +58,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
           HTTPError if a required argument is not inclued in the POST request.
         """
         # Ensure that required oauth_* body arguments are included in the request
+        args = self.set_default_oauth_callback(args)
         for param in LTI11_OAUTH_ARGS:
             if param not in args.keys():
                 raise HTTPError(
@@ -123,10 +125,19 @@ class LTI11LaunchValidator(LoggingConfigurable):
                 client_key=args["oauth_consumer_key"], client_secret=consumer_secret
             ),
         )
-        is_valid = signature.safe_string_equals(sign, args["oauth_signature"])
+        is_valid = safe_string_equals(sign, args["oauth_signature"])
         self.log.debug(f"signature in request: {args['oauth_signature']}")
         self.log.debug(f"calculated signature: {sign}")
         if not is_valid:
             raise HTTPError(401, "Invalid oauth_signature")
 
         return True
+
+    @staticmethod
+    def set_default_oauth_callback(args: dict[str, Any]) -> dict[str, Any]:
+        """Set the default value of oauth_callback.
+
+        See https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-4
+        """
+        args.setdefault("oauth_callback", "about:blank")
+        return args
