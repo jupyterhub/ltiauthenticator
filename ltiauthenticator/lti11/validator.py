@@ -1,6 +1,7 @@
 import time
 from collections import OrderedDict
 from typing import Any, Dict
+from typing import OrderedDict as OrderedDictType
 
 from oauthlib.common import safe_string_equals
 from oauthlib.oauth1.rfc5849 import Client, signature
@@ -29,7 +30,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
 
     # Keep a class-wide, global list of nonces so we can detect & reject
     # replay attacks. This possibly makes this non-threadsafe, however.
-    nonces: OrderedDict[int, set] = OrderedDict()
+    nonces: OrderedDictType[int, set] = OrderedDict()
 
     def __init__(self, consumers):
         self.consumers = consumers
@@ -134,7 +135,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
         return True
 
     @staticmethod
-    def set_default_oauth_callback(args: dict[str, Any]) -> dict[str, Any]:
+    def set_default_oauth_callback(args: Dict[str, Any]) -> Dict[str, Any]:
         """Set the default value of oauth_callback.
 
         See https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-4
