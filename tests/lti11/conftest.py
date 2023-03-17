@@ -1,7 +1,7 @@
 import os
 import secrets
 import time
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 from unittest.mock import Mock
 
 import pytest
@@ -58,7 +58,7 @@ def get_launch_args():
         oauth_consumer_key: str = "my_consumer_key",
         oauth_consumer_secret: str = "my_shared_secret",
         oauth_callback: Optional[str] = "about:blank",
-    ) -> Dict[str, str]:
+    ) -> Tuple[str, Dict[str, str], Dict[str, str]]:
         oauth_timestamp = str(int(time.time()))
         oauth_nonce = secrets.token_urlsafe(32)
         args = {
@@ -124,7 +124,7 @@ def get_launch_args():
         args["oauth_signature"] = signature.sign_hmac_sha1_with_client(
             base_string, client
         )
-        return args
+        return launch_url, headers, args
 
     return _get_launch_args
 
