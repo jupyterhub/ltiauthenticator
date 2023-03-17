@@ -59,7 +59,6 @@ class LTI11LaunchValidator(LoggingConfigurable):
           HTTPError if a required argument is not inclued in the POST request.
         """
         # Ensure that required oauth_* body arguments are included in the request
-        args = self.set_default_oauth_callback(args)
         for param in LTI11_OAUTH_ARGS:
             if param not in args.keys():
                 raise HTTPError(
@@ -133,12 +132,3 @@ class LTI11LaunchValidator(LoggingConfigurable):
             raise HTTPError(401, "Invalid oauth_signature")
 
         return True
-
-    @staticmethod
-    def set_default_oauth_callback(args: Dict[str, Any]) -> Dict[str, Any]:
-        """Set the default value of oauth_callback.
-
-        See https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-4
-        """
-        args.setdefault("oauth_callback", "about:blank")
-        return args

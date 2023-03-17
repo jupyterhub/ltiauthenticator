@@ -217,11 +217,8 @@ def test_launch_with_missing_oauth_callback_key(get_launch_args):
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
     args = get_launch_args(
-        oauth_consumer_key,
-        oauth_consumer_secret,
+        oauth_consumer_key, oauth_consumer_secret, oauth_callback=None
     )
-
-    del args["oauth_callback"]
 
     validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
 
@@ -242,13 +239,13 @@ def test_launch_with_empty_oauth_callback_value(
     args = get_launch_args(
         oauth_consumer_key,
         oauth_consumer_secret,
+        oauth_callback="",
     )
 
     validator = LTI11LaunchValidator({oauth_consumer_key: oauth_consumer_secret})
 
-    with pytest.raises(HTTPError):
-        args["oauth_callback"] = ""
-        validator.validate_launch_request(launch_url, headers, args)
+    args["oauth_callback"] = ""
+    validator.validate_launch_request(launch_url, headers, args)
 
 
 def test_launch_with_missing_oauth_version_key(get_launch_args):

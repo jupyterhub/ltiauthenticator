@@ -51,12 +51,20 @@ LTI11_LIS_OPTION = [
 
 # https://www.imsglobal.org/specs/ltiv1p1/implementation-guide
 # Section 4.2
+#
+# Note: Some Tool Consumer do not provide a oauth_callback parameter and it is not required
+# by this authenticator. Since message verification requires the base string to remain unchanged,
+# we do not set the parameter to its default value (as suggested by the LTI 1.1 implementation guide)
+# but rather do not require oauth_callback as manadatory parameter.
+#
+# References:
+# https://github.com/jupyterhub/ltiauthenticator/issues/136
 LTI11_OAUTH_ARGS = [
     "oauth_consumer_key",
     "oauth_signature_method",
     "oauth_timestamp",
     "oauth_nonce",
-    "oauth_callback",
+    # "oauth_callback",
     "oauth_version",
     "oauth_signature",
 ]
