@@ -1,7 +1,9 @@
 import time
 from collections import OrderedDict
 from typing import Any, Dict
+from typing import OrderedDict as OrderedDictType
 
+from oauthlib.common import safe_string_equals
 from oauthlib.oauth1.rfc5849 import Client, signature
 from tornado.web import HTTPError
 from traitlets.config import LoggingConfigurable
@@ -28,7 +30,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
 
     # Keep a class-wide, global list of nonces so we can detect & reject
     # replay attacks. This possibly makes this non-threadsafe, however.
-    nonces = OrderedDict()
+    nonces: OrderedDictType[int, set] = OrderedDict()
 
     def __init__(self, consumers):
         self.consumers = consumers
@@ -123,7 +125,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
                 client_key=args["oauth_consumer_key"], client_secret=consumer_secret
             ),
         )
-        is_valid = signature.safe_string_equals(sign, args["oauth_signature"])
+        is_valid = safe_string_equals(sign, args["oauth_signature"])
         self.log.debug(f"signature in request: {args['oauth_signature']}")
         self.log.debug(f"calculated signature: {sign}")
         if not is_valid:

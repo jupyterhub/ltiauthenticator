@@ -1,7 +1,7 @@
 import os
 import secrets
 import time
-from typing import Dict
+from typing import Dict, Optional, Tuple
 from unittest.mock import Mock
 
 import pytest
@@ -57,11 +57,11 @@ def get_launch_args():
         lms_vendor: str = "canvas",
         oauth_consumer_key: str = "my_consumer_key",
         oauth_consumer_secret: str = "my_shared_secret",
-    ) -> Dict[str, str]:
+        oauth_callback: Optional[str] = "about:blank",
+    ) -> Tuple[str, Dict[str, str], Dict[str, str]]:
         oauth_timestamp = str(int(time.time()))
         oauth_nonce = secrets.token_urlsafe(32)
         args = {
-            "oauth_callback": "about:blank",
             "oauth_consumer_key": oauth_consumer_key,
             "oauth_timestamp": str(int(oauth_timestamp)),
             "oauth_nonce": str(oauth_nonce),
@@ -101,6 +101,8 @@ def get_launch_args():
             "user_id": "185d6c59731a553009ca9b59ca3a885100000",
             "user_image": "https://lms.example.com/avatar-50.png",
         }
+        if oauth_callback is not None:
+            args["oauth_callback"] = oauth_callback
         extra_args = {"my_key": "this_value"}
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         launch_url = "http://jupyterhub/hub/lti/launch"
@@ -122,7 +124,7 @@ def get_launch_args():
         args["oauth_signature"] = signature.sign_hmac_sha1_with_client(
             base_string, client
         )
-        return args
+        return launch_url, headers, args
 
     return _get_launch_args
 
