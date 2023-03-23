@@ -26,8 +26,11 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
+    "escapism>=1.0.1",
     "jupyterhub>=1.2",
-    "oauthlib>=3.1",
+    "oauthenticator>=15.1.0",
+    "oauthlib>=3.2.2",
+    "PyJWT[crypto]>=2.6.0",
 ]
 dynamic = ["version"]
 
