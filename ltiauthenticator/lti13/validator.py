@@ -260,3 +260,9 @@ class InvalidAudienceError(ValidationError):
     """Exception raised for invalid audience."""
 
     pass
+
+
+class LoginError(Exception):
+    """Lookup of username in ID token failed"""
+
+    pass

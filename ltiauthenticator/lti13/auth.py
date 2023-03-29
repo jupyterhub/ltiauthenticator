@@ -6,11 +6,12 @@ from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import OAuthenticator
-from tornado.web import HTTPError
 from traitlets import List as TraitletsList
 from traitlets import Unicode
 
 from .handlers import LTI13CallbackHandler, LTI13ConfigHandler, LTI13LoginInitHandler
+from .constants import LTI13_CUSTOM_CLAIM
+from .validator import LoginError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -145,21 +146,43 @@ class LTI13Authenticator(OAuthenticator):
         Returns:
           Authentication dictionary
         """
-        if data is None:
+        if not data:
             data = {}
-        username = data.get(self.username_key)
-        if not username:
-            username = data.get("sub")
-            if not username:
-                raise HTTPError(
-                    400,
-                    f"Unable to set the username with username_key {self.username_key}",
-                )
+
+        username = self.get_username(data)
 
         return {
             "name": username,
             "auth_state": data,
         }
+
+    def get_username(self, token: Dict[str, Any]) -> str:
+        """
+        Infer the username from the ID token.
+
+        If username_key begins with "custom_", that part will be removed and the key will
+        be looked up inside the custom claim of the ID token.
+        """
+        data = token
+        username_key = self.username_key
+
+        if not username_key:
+            username_key = "sub"
+
+        if username_key.startswith("custom_"):
+            data = token.get(LTI13_CUSTOM_CLAIM, {})
+            # when dropping support for Python 3.8 we can replace the following by `username_key.removeprefix`
+            username_key = username_key[len("custom_") :]
+
+        username = data.get(username_key)
+        if not username:
+            username = token.get("sub")
+        if not username:
+            raise LoginError(
+                f"Unable to set the username with username_key {username_key}"
+            )
+
+        return username
 
 
 class LocalLTI13Authenticator(LocalAuthenticator, OAuthenticator):

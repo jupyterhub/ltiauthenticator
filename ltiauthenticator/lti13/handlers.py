@@ -17,7 +17,12 @@ from tornado.httputil import url_concat
 from tornado.web import HTTPError, RequestHandler
 
 from ..utils import convert_request_to_dict, get_client_protocol
-from .validator import InvalidAudienceError, LTI13LaunchValidator, ValidationError
+from .validator import (
+    InvalidAudienceError,
+    LTI13LaunchValidator,
+    ValidationError,
+    LoginError,
+)
 
 NONCE_STATE_COOKIE_NAME = "lti13authenticator-nonce-state"
 
@@ -337,7 +342,10 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
         except ValidationError as e:
             raise HTTPError(400, str(e))
 
-        user = await self.login_user(id_token)
+        try:
+            user = await self.login_user(id_token)
+        except LoginError as e:
+            raise HTTPError(400, str(e))
         self.log.debug(f"user logged in: {user}")
         if user is None:
             raise HTTPError(403, "User missing or null")
