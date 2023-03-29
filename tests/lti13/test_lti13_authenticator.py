@@ -9,9 +9,10 @@ test_lti13_validator.py.
 from tornado.web import RequestHandler
 
 from ltiauthenticator.lti13.auth import LTI13Authenticator
+from ltiauthenticator.lti13.constants import LTI13_CUSTOM_CLAIM
 
 
-async def test_authenticator_returned_name_with_sub(
+async def test_authenticator_returned_username_with_sub(
     req_handler,
     launch_req_jwt_decoded,
 ):
@@ -30,10 +31,10 @@ async def test_authenticator_returned_name_with_sub(
     launch_req_jwt_decoded.pop("https://purl.imsglobal.org/spec/lti/claim/lis", None)
 
     result = await authenticator.authenticate(request_handler, launch_req_jwt_decoded)
-    assert result["name"] == "1ace7501877e6a429fca"
+    assert result["name"] == launch_req_jwt_decoded["sub"]
 
 
-async def test_authenticator_returned_name_with_sub_and_email(
+async def test_authenticator_returned_username_with_sub_and_email(
     req_handler,
     launch_req_jwt_decoded,
 ):
@@ -50,10 +51,10 @@ async def test_authenticator_returned_name_with_sub_and_email(
     launch_req_jwt_decoded["email"] = "usertest@example.com"
 
     result = await authenticator.authenticate(request_handler, launch_req_jwt_decoded)
-    assert result["name"] == "usertest@example.com"
+    assert result["name"] == launch_req_jwt_decoded["email"]
 
 
-async def test_authenticator_returned_name_with_sub_email_name(
+async def test_authenticator_returned_username_with_sub_email_name(
     req_handler,
     launch_req_jwt_decoded,
 ):
@@ -70,4 +71,22 @@ async def test_authenticator_returned_name_with_sub_email_name(
     launch_req_jwt_decoded["email"] = "usertest@example.com"
 
     result = await authenticator.authenticate(request_handler, launch_req_jwt_decoded)
-    assert result["name"] == "usertest@example.com"
+    assert result["name"] == launch_req_jwt_decoded["email"]
+
+
+async def test_authenticator_returned_username_from_custom_claim(
+    req_handler,
+    launch_req_jwt_decoded,
+):
+    """
+    Is name set correctly in the authenticate method's response, based on being
+    provided sub, name, and email?
+    """
+    authenticator = LTI13Authenticator()
+    authenticator.username_key = "custom_uname"
+    request_handler = req_handler(RequestHandler, authenticator=authenticator)
+
+    launch_req_jwt_decoded[LTI13_CUSTOM_CLAIM] = {"uname": "jovyan.jupyter"}
+
+    result = await authenticator.authenticate(request_handler, launch_req_jwt_decoded)
+    assert result["name"] == launch_req_jwt_decoded[LTI13_CUSTOM_CLAIM]["uname"]

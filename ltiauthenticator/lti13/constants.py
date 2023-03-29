@@ -3,6 +3,8 @@
 # https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login
 from typing import Any, Dict
 
+LTI13_CUSTOM_CLAIM = "https://purl.imsglobal.org/spec/lti/claim/custom"
+
 LTI13_INIT_LOGIN_REQUEST_ARGS = [
     "iss",
     "login_hint",
