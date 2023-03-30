@@ -5,6 +5,7 @@ from tornado.httputil import HTTPServerRequest
 from tornado.web import HTTPError
 
 import ltiauthenticator.lti13.handlers
+from ltiauthenticator.lti13.error import InvalidAudienceError
 from ltiauthenticator.lti13.handlers import (
     NONCE_STATE_COOKIE_NAME,
     LTI13CallbackHandler,
@@ -12,7 +13,7 @@ from ltiauthenticator.lti13.handlers import (
     get_nonce,
     make_nonce_state,
 )
-from ltiauthenticator.lti13.validator import InvalidAudienceError, LTI13LaunchValidator
+from ltiauthenticator.lti13.validator import LTI13LaunchValidator
 from ltiauthenticator.utils import convert_request_to_dict
 
 from .mocking import MockLTI13Authenticator

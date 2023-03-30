@@ -6,10 +6,11 @@ from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import OAuthenticator
-from tornado.web import HTTPError
 from traitlets import List as TraitletsList
 from traitlets import Unicode
 
+from .constants import LTI13_CUSTOM_CLAIM
+from .error import LoginError
 from .handlers import LTI13CallbackHandler, LTI13ConfigHandler, LTI13LoginInitHandler
 
 logger = logging.getLogger(__name__)
@@ -83,14 +84,19 @@ class LTI13Authenticator(OAuthenticator):
           - Given name: given_name
         
         Your LMS (Canvas / Open EdX / Moodle / others) may provide additional keys in the
-        LTI 1.3 login initiatino flow that you can use to set the username. In most cases these
-        are located in the `https://purl.imsglobal.org/spec/lti/claim/custom` claim. You may also
-        have the option of using variable substitutions to fetch values that aren't provided with
-        your vendor's standard LTI 1.3 login initiation flow request. If your platform's LTI 1.3
-        settings are defined with privacy enabled, then by default the `sub` claim is used to set the
-        username.
+        LTI 1.3 login initiation flow that you can use to set the username. In most cases these
+        are located in the `https://purl.imsglobal.org/spec/lti/claim/custom` claim. In this case,
+        `username_key` must be prefixed with "custom_". For example, `username_key` value "custom_uname"
+        will set the username to the value of the parameter `uname` within the
+        `https://purl.imsglobal.org/spec/lti/claim/custom` claim.
+        
+        If your platform's LTI 1.3 settings are defined with privacy enabled, then by default the `sub`
+        claim is used to set the username.
+        
+        You may also have the option of using variable substitutions to fetch values that aren't provided with
+        your vendor's standard LTI 1.3 login initiation flow request.
 
-        Reference the IMS LTI specification on variable substitutions:
+        Reference to the IMS LTI specification on variable substitutions:
         http://www.imsglobal.org/spec/lti/v1p3/#customproperty.
         """,
     )
@@ -145,21 +151,45 @@ class LTI13Authenticator(OAuthenticator):
         Returns:
           Authentication dictionary
         """
-        if data is None:
+        if not data:
             data = {}
-        username = data.get(self.username_key)
-        if not username:
-            username = data.get("sub")
-            if not username:
-                raise HTTPError(
-                    400,
-                    f"Unable to set the username with username_key {self.username_key}",
-                )
+
+        username = self.get_username(data)
 
         return {
             "name": username,
             "auth_state": data,
         }
+
+    def get_username(self, token: Dict[str, Any]) -> str:
+        """
+        Infer the username from the ID token.
+
+        If username_key begins with "custom_", that part will be removed and the key will
+        be looked up inside the custom claim of the ID token.
+        """
+        data = token
+        username_key = self.username_key
+
+        if not username_key:
+            username_key = "sub"
+
+        if username_key.startswith("custom_"):
+            data = token.get(LTI13_CUSTOM_CLAIM, {})
+            # when dropping support for Python 3.8 we can replace the following by `username_key.removeprefix`
+            username_key = username_key[len("custom_") :]
+
+        username = data.get(username_key)
+        if not username:
+            logger.warning(
+                f"Cannot find the key {username_key} in the ID token. `sub` used instread."
+            )
+            username = token.get("sub")
+        if not username:
+            raise LoginError(
+                f"Unable to set the username with username_key {username_key}"
+            )
+        return username
 
 
 class LocalLTI13Authenticator(LocalAuthenticator, OAuthenticator):

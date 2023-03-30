@@ -269,9 +269,11 @@ The Moodle setup is very similar to both the Open edX and Canvas setups describe
 
 #### Common Configuration Settings
 
-Like LTI 1.1, LTI 1.3 is an open standard. Many Learning Management System (LMS) vendors support the LTI 1.3 standard and as such vendors are able to integrate with various LMS's as External Tools.
+Like LTI 1.1, LTI 1.3 is an open standard.
+Many Learning Management System (LMS) vendors support the LTI 1.3 standard and as such vendors are able to integrate with various LMS's as External Tools.
 
-Start by following the steps below to configure your JupyterHub setup with the basic settings. Then, navigate to your LMS vendor's section to complete the installation and configuration steps.
+Start by following the steps below to configure your JupyterHub setup with the basic settings.
+Then, navigate to your LMS vendor's section to complete the installation and configuration steps.
 
 > **Note**: if your LMS is not listed feel free to send us a PR with instructions for this new LMS.
 
@@ -285,24 +287,34 @@ The table below describes the configuration options available with the LTI v1.1 
 | consumers                               | Yes      | The key/value pair that represents the client key and shared secret      | `{}`                               |
 | username_key                            | No       | The LTI 1.1 launch parameter that contains the JupyterHub username value | `canvas_custom_user_id`            |
 
-#### The Username Key Setting (LTI11Authenticator.username_key)
+#### The Username Key Setting (LTI13Authenticator.username_key)
 
-Regardless of the LMS vendor you are using (Canvas, Moodle, Open edX, etc), the user's name will default to use the `custom_canvas_user_id`. (This is due to legacy behavior and will default to a more generic LTI 1.1 parameter in a future release). Change the `username_key` setting if you would like to use another value from the LTI 1.1 launch request.
+The username is inferred from the ID token sent by the platform (LMS) during the login flow based on the setting of the `username_key` traitlet.
+The default is `email`, but all other top-level claims of the ID token may be chosen.
+The list of available values depends on the LMS vendor you are using and how your LMS is configured, but you take a look at [this example](http://www.imsglobal.org/spec/lti/v1p3/#examplelinkrequest) to get an idea of the available values.
+If you are in doubt about the content of the ID token sent by the LMS, you may use [an external test tool](https://saltire.lti.app/tool) with your LMS to capture the ID token.
 
-The example below illustrates how to fetch the user's email to set the JupyterHub username by specifying the `lis_person_contact_email_primary` LTI 1.1 launch request parameter:
+Your LMS may provide additional keys in the LTI 1.3 login initiation flow that you can use to set the username.
+In most cases these are located in the `https://purl.imsglobal.org/spec/lti/claim/custom` claim.
+In this case, `username_key` must be prefixed with "custom_".
+For example, `username_key` value "custom_uname" will set the username to the value of the parameter `uname` within the `https://purl.imsglobal.org/spec/lti/claim/custom` claim.
+
+If your platform's LTI 1.3 settings are defined with privacy enabled or if the given `username_key` is not found within the ID token, then by default the `sub` claim is used to set the username.
+
+You may also have the option of using [variable substitutions](http://www.imsglobal.org/spec/lti/v1p3/#customproperty) to fetch values that aren't provided with your vendor's standard LTI 1.3 login initiation flow request.
+
+The example below illustrates how to fetch the user's given name to set the JupyterHub username:
 
 ```python
 # Set the user's email as their user id
-c.LTIAuthenticator.username_key = 'lis_person_contact_email_primary'
+c.LTI13Authenticator.username_key = "given_name"
 ```
-
-A [partial list of keys in an LTI request](https://www.edu-apps.org/code.html#params) is available as a reference if you would like to use another value to set the JupyterHub username. As a general rule of thumb, Personally Identifiable Information (PII) values are represented with the `lis_person_*` arguments in the launch request. Your LMS provider might also implement custom keys you can use, such as with the use of [custom parameter substitution](https://www.imsglobal.org/specs/ltiv1p1p1/implementation-guide).
 
 #### LTI 1.3 Configuration JSON Settings
 
-The LTI 1.3 configuration XML settings are available at `/lti11/config` endpoint. Some LMS vendors accept XML and/or URLs that render the configuration XML to simplify the LTI 1.1 External Tool installation process.
+The LTI 1.3 configuration JSON settings are available at `/lti13/config` endpoint. Some LMS vendors accept URLs that render the configuration JSON to simplify the LTI 1.3 tool installation process.
 
-You may customize these settings with the `config_*` configuration options described in the [common configuration settings](#common-configuration-settings) section.
+You may customize these settings with the `tool_name` and `tool_description` configuration options.
 
 #### Custom Configuration with JupyterHub's Helm Chart
 
