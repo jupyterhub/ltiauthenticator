@@ -209,9 +209,9 @@ The application can be created at the account level or the course level. If the 
    like. You can repeat step 7 in all the units that should have a link to the
    Hub for the user.
 
-#### Moodle
+##### Moodle
 
-##### General Requirements
+###### General Requirements
 
 The Moodle setup is very similar to both the Open edX and Canvas setups described above. In addition to completing the steps from the [common configuration settings section](#common-configuration-settings) ensure that:
 
@@ -221,7 +221,7 @@ The Moodle setup is very similar to both the Open edX and Canvas setups describe
 
 1. If your Moodle environment is using https, you should also use https for your JupyterHub.
 
-##### Configuration Steps
+###### Configuration Steps
 
 1. Navigate to the course where you would like to add JupyterHub as an external tool
 1. Turn on editing and add an instance of the `External Tool Activity Module` (https://docs.moodle.org/37/en/External_tool_settings)

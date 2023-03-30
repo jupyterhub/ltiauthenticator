@@ -62,6 +62,7 @@ source_suffix = [".md", ".rst"]
 # Rediraffe redirects to ensure proper redirection
 rediraffe_redirects = {}
 
+myst_heading_anchors = 3
 
 # -- Options for linkcheck builder -------------------------------------------
 # ref: http://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-the-linkcheck-builder
