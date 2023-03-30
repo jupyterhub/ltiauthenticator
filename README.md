@@ -296,7 +296,7 @@ If you are in doubt about the content of the ID token sent by the LMS, you may u
 
 Your LMS may provide additional keys in the LTI 1.3 login initiation flow that you can use to set the username.
 In most cases these are located in the `https://purl.imsglobal.org/spec/lti/claim/custom` claim.
-In this case, `username_key` must be prefixed with "custom_".
+In this case, `username_key` must be prefixed with "custom\_".
 For example, `username_key` value "custom_uname" will set the username to the value of the parameter `uname` within the `https://purl.imsglobal.org/spec/lti/claim/custom` claim.
 
 If your platform's LTI 1.3 settings are defined with privacy enabled or if the given `username_key` is not found within the ID token, then by default the `sub` claim is used to set the username.
