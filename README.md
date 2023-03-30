@@ -26,6 +26,8 @@ pip install jupyterhub-ltiauthenticator
 
 ### LTI 1.1
 
+> **Note**: With release `1.1.0`, the import path of the authenticator class changed from `ltiauthenticator.LTIAuthenticator` to `ltiauthenticator.lti11.auth.LTI11Authenticator`. While the old path is still available to maintain backward compatibility, its use is deprecated and it will be removed in the next major release.
+
 #### Common Configuration Settings
 
 Due to the fact that LTI 1.1 is an open standard, Learning Management System (LMS) vendors that adhere to the LTI 1.1 standard utilize the same configuration settings when integrating with an external tool. Some of these settings are included in a configuration endpoint to facilitate the JupyterHub's as an external tool with your LMS.
@@ -103,8 +105,8 @@ hub:
     # Additional documentation related to authentication and authorization available at
     # https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/authentication.html
     JupyterHub:
-      authenticator_class: ltiauthenticator.LTIAuthenticator # LTI 1.1
-    LTIAuthenticator:
+      authenticator_class: ltiauthenticator.lti11.auth.LTI11Authenticator # LTI 1.1
+    LTI11Authenticator:
       consumers: { "client-key": "client-secret" }
       username_key: "lis_person_contact_email_primary"
       config_icon: "https://my.static.assets/img/icon.jpg"
