@@ -6,12 +6,18 @@ import jwt
 from traitlets import Int
 from traitlets.config import LoggingConfigurable
 
-from ltiauthenticator.lti13.constants import (
+from .constants import (
     LTI13_AUTH_RESPONSE_ARGS,
     LTI13_DEEP_LINKING_REQUIRED_CLAIMS,
     LTI13_GENERAL_REQUIRED_CLAIMS,
     LTI13_INIT_LOGIN_REQUEST_ARGS,
     LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS,
+)
+from .error import (
+    IncorrectValueError,
+    InvalidAudienceError,
+    MissingRequiredArgumentError,
+    TokenError,
 )
 
 
@@ -232,37 +238,3 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 id_token, LTI13_RESOURCE_LINK_REQUEST_REQUIRED_CLAIMS.keys()
             )
             self._check_resource_link_id(id_token)
-
-
-class ValidationError(Exception):
-    """Base class for validation exceptions."""
-
-
-class MissingRequiredArgumentError(ValidationError):
-    """Exception raised for missing required request arguments."""
-
-    pass
-
-
-class IncorrectValueError(ValidationError):
-    """Exception raised for incorrect values."""
-
-    pass
-
-
-class TokenError(ValidationError):
-    """Exception raised for failed JWT decoding or verification."""
-
-    pass
-
-
-class InvalidAudienceError(ValidationError):
-    """Exception raised for invalid audience."""
-
-    pass
-
-
-class LoginError(Exception):
-    """Lookup of username in ID token failed"""
-
-    pass

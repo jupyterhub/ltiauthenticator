@@ -17,12 +17,8 @@ from tornado.httputil import url_concat
 from tornado.web import HTTPError, RequestHandler
 
 from ..utils import convert_request_to_dict, get_client_protocol
-from .validator import (
-    InvalidAudienceError,
-    LTI13LaunchValidator,
-    ValidationError,
-    LoginError,
-)
+from .error import InvalidAudienceError, LoginError, ValidationError
+from .validator import LTI13LaunchValidator
 
 NONCE_STATE_COOKIE_NAME = "lti13authenticator-nonce-state"
 

@@ -8,8 +8,9 @@ test_lti13_validator.py.
 import pytest
 from tornado.web import RequestHandler
 
-from ltiauthenticator.lti13.auth import LTI13Authenticator, LoginError
+from ltiauthenticator.lti13.auth import LTI13Authenticator
 from ltiauthenticator.lti13.constants import LTI13_CUSTOM_CLAIM
+from ltiauthenticator.lti13.error import LoginError
 
 
 async def test_authenticator_returned_username_with_sub(

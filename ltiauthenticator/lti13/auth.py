@@ -9,9 +9,9 @@ from oauthenticator.oauth2 import OAuthenticator
 from traitlets import List as TraitletsList
 from traitlets import Unicode
 
-from .handlers import LTI13CallbackHandler, LTI13ConfigHandler, LTI13LoginInitHandler
 from .constants import LTI13_CUSTOM_CLAIM
-from .validator import LoginError
+from .error import LoginError
+from .handlers import LTI13CallbackHandler, LTI13ConfigHandler, LTI13LoginInitHandler
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

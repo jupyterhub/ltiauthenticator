@@ -1,12 +1,12 @@
 import pytest
 
-from ltiauthenticator.lti13.validator import (
+from ltiauthenticator.lti13.error import (
     IncorrectValueError,
     InvalidAudienceError,
-    LTI13LaunchValidator,
     MissingRequiredArgumentError,
     TokenError,
 )
+from ltiauthenticator.lti13.validator import LTI13LaunchValidator
 
 from .mocking import patched_jwk_client
 
