@@ -277,15 +277,26 @@ Then, navigate to your LMS vendor's section to complete the installation and con
 
 > **Note**: if your LMS is not listed feel free to send us a PR with instructions for this new LMS.
 
-The table below describes the configuration options available with the LTI v1.1 authenticator:
+The table below describes the configuration options available with the LTI v1.3 authenticator:
 
-| LTI Authenticator Configuration Setting | Required | Description                                                              | Default                            |
-| --------------------------------------- | -------- | ------------------------------------------------------------------------ | ---------------------------------- |
-| config_description                      | No       | The LTI 1.1 external tool description                                    | `JupyterHub LTI 1.1 external tool` |
-| config_icon                             | No       | The http/s URL with the LTI 1.1 icon                                     | `nil`                              |
-| config_title                            | No       | The LTI 1.1 external tool Title                                          | `JupyterHub`                       |
-| consumers                               | Yes      | The key/value pair that represents the client key and shared secret      | `{}`                               |
-| username_key                            | No       | The LTI 1.1 launch parameter that contains the JupyterHub username value | `canvas_custom_user_id`            |
+| LTI Authenticator Configuration Setting                                  | Required | Description                                                                                               | Default                                                |
+| ------------------------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| tool_name                                                                | No       | Name of the tool within the [config json](#lti-13-configuration-json-settings)                            | "JupyterHub"                                           |
+| tool_description                                                         | No       | Description of the tool within the [config json](#lti-13-configuration-json-settings)                     | "Launch interactive Jupyter Notebooks with JupyterHub" |
+| [username_key](#the-username-key-setting-lti13authenticatorusername_key) | No       | The LTI 1.3 launch parameter that contains the JupyterHub username value                                  | "email"                                                |
+| issuer                                                                   | Yes      | The platform's issuer identifier. A case-sensitive URL provided by the platform                           |                                                        |
+| client_id                                                                | Yes      | ID identifying the JuyterHub within the LMS platform. Must match the client ID configured on the platform |                                                        |
+| authorize_url                                                            | Yes      | Authorization end-point of the platform's identity provider. Provided by the platform.                    |                                                        |
+| jwks_endpoint                                                            | Yes      | Platform's jwks endpoint. Provided by the platform                                                        |                                                        |
+| jwks_algorithms                                                          | No       | List of supported signature methods                                                                       | ["RS256"]                                              |
+
+Additionally, the corresponding validation class `LTI13LaunchValidator` allows the following configure
+| Setting | Required | Description | Default |
+| ----------- | -------- | ---------------------------------------------------------------------------------------------- | ------- |
+| time_leeway | No | A time margin in seconds to deal with time synchronization issues when checking JWT expiration | 0 |
+| max_age | No | Maximum period in seconds in which an issued ID token is accepted | 600 |
+
+An [example configuration](examples/jupyterhub_config_lti13.py) is provided as reference.
 
 #### The Username Key Setting (LTI13Authenticator.username_key)
 
@@ -318,7 +329,7 @@ You may customize these settings with the `tool_name` and `tool_description` con
 
 #### Custom Configuration with JupyterHub's Helm Chart
 
-If you are running **JupyterHub within a Kubernetes Cluster**, deployed using helm, you need to supply the LTI 1.3 (OIDC/OAuth2) endpoints. The example below also demonstrates how customize the `lti13.username_key` to set the user's give name:
+If you are running **JupyterHub within a Kubernetes Cluster**, deployed using helm, you need to supply the LTI 1.3 (OIDC/OAuth2) endpoints and required out-of-band registration settings. The example below also demonstrates how customize the `username_key` to set the user's give name:
 
 ```yaml
 # Custom config for JupyterHub's helm chart
@@ -337,12 +348,10 @@ hub:
       # The LTI 1.3 authorization url
       authorize_url: "https://canvas.instructure.com/api/lti/authorize_redirect"
       # The external tool's client id as represented within the platform (LMS)
-      # Note: the client id is not required by some LMS's for authentication.
+      # Typically created by the platform when registering the tool.
       client_id: "125900000000000329"
-      # The LTI 1.3 endpoint url, also known as the OAuth2 callback url
-      endpoint: "http://localhost:8000/hub/oauth_callback"
-      # The LTI 1.3 token url used to validate JWT signatures
-      token_url: "https://canvas.instructure.com/login/oauth2/token"
+      # The platform's JWKS endpoint url providing public key sets used to verify the ID token
+      jwks_endpoint: "https://canvas.instructure.com/api/lti/security/jwks"
 ```
 
 #### Configuration of LTI 1.3 with the Learning Management System
