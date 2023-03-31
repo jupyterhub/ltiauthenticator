@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.5]
+
+### [1.5.0] - 2023-03-31
+
+This release introduces support of [LTI 1.3](https://www.imsglobal.org/spec/lti/v1p3) and moves large parts of the usage information to [ltiauthenticator.readthedocs.io](https://ltiauthenticator.readthedocs.io/).
+
+#### New features added
+
+- feat(lti13): Reintroduce lti13 support [#134](https://github.com/jupyterhub/ltiauthenticator/pull/134) ([@martinclaus](https://github.com/martinclaus))
+- feat(lti13): Allow username key from custom claim [#142](https://github.com/jupyterhub/ltiauthenticator/pull/142) ([@martinclaus](https://github.com/martinclaus))
+
+#### Bugs fixed
+
+- fix(lti11) Make oauth_callback parameter optional [#139](https://github.com/jupyterhub/ltiauthenticator/pull/139) ([@martinclaus](https://github.com/martinclaus))
+
+#### Documentation improvements
+
+- docs: Move usage documentation to readthedocs [#144](https://github.com/jupyterhub/ltiauthenticator/pull/144) ([@martinclaus](https://github.com/martinclaus))
+- docs(lti13): Rewrite lti13 documentation [#143](https://github.com/jupyterhub/ltiauthenticator/pull/143) ([@martinclaus](https://github.com/martinclaus))
+- docs(lti11): Use consistent module path for LTI11Authenticator [#112](https://github.com/jupyterhub/ltiauthenticator/pull/112) ([@BenGig](https://github.com/BenGig))
+
+#### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/ltiauthenticator/graphs/contributors?from=2023-03-01&to=2023-03-31&type=c))
+
+[@BenGig](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3ABenGig+updated%3A2023-03-01..2023-03-31&type=Issues) | [@consideRatio](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AconsideRatio+updated%3A2023-03-01..2023-03-31&type=Issues) | [@dennis531](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Adennis531+updated%3A2023-03-01..2023-03-31&type=Issues) | [@martinclaus](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amartinclaus+updated%3A2023-03-01..2023-03-31&type=Issues) | [@minrk](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aminrk+updated%3A2023-03-01..2023-03-31&type=Issues)
+
 ## [1.4]
 
 ### [1.4.0] - 2023-03-01
