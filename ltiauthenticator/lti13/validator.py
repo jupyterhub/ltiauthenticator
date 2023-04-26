@@ -1,6 +1,6 @@
 from calendar import timegm
 from datetime import datetime, timezone
-from typing import Any, Dict, Iterable, Set
+from typing import Any, Dict, Iterable
 
 import jwt
 from traitlets import Int
@@ -183,7 +183,9 @@ class LTI13LaunchValidator(LoggingConfigurable):
                 "resource_link claim's id can't be empty"
             )
 
-    def validate_azp_claim(self, id_token: Dict[str, Any], client_id: Set[str]) -> None:
+    def validate_azp_claim(
+        self, id_token: Dict[str, Any], client_id: Iterable[str]
+    ) -> None:
         """Check if azp claim is present and matches client_id."""
         aud = id_token["aud"]
         need_azp = isinstance(id_token["aud"], list) and len(aud) > 1

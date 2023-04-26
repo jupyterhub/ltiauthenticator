@@ -31,7 +31,7 @@ def test_validate_verify_and_decode_jwt(
         result = validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
-            audience={launch_req_jwt_decoded["aud"], "something_else"},
+            audience=[launch_req_jwt_decoded["aud"], "something_else"],
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
@@ -47,7 +47,7 @@ def test_validate_verify_and_decode_jwt_rejects_unsigned_jwt(
         validator.verify_and_decode_jwt(
             encoded_jwt=unsecured_launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
-            audience={launch_req_jwt_decoded["aud"]},
+            audience=[launch_req_jwt_decoded["aud"]],
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
@@ -63,7 +63,7 @@ def test_validate_verify_and_decode_jwt_accept_unsigned_jwt_with_no_endpoint(
         result = validator.verify_and_decode_jwt(
             encoded_jwt=unsecured_launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
-            audience={launch_req_jwt_decoded["aud"]},
+            audience=[launch_req_jwt_decoded["aud"]],
             jwks_endpoint="",
             jwks_algorithms=["RS256"],
             options={"verify_signature": False},
@@ -79,7 +79,7 @@ def test_verify_and_decode_jwt_fails_on_incorrect_iss(
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"] + "/something_wrong",
-            audience={launch_req_jwt_decoded["aud"]},
+            audience=[launch_req_jwt_decoded["aud"]],
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
@@ -98,7 +98,7 @@ def test_verify_and_decode_jwt_fails_on_passed_exp(
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
-            audience={launch_req_jwt_decoded["aud"]},
+            audience=[launch_req_jwt_decoded["aud"]],
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
@@ -117,7 +117,7 @@ def test_verify_and_decode_jwt_fails_on_iat_in_the_future(
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
-            audience={launch_req_jwt_decoded["aud"]},
+            audience=[launch_req_jwt_decoded["aud"]],
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
@@ -134,7 +134,7 @@ def test_verify_and_decode_jwt_fails_on_incorrect_aud(
         validator.verify_and_decode_jwt(
             encoded_jwt=launch_req_jwt,
             issuer=launch_req_jwt_decoded["iss"],
-            audience={"client1" + "_something_wrong", "something_else"},
+            audience=["client1" + "_something_wrong", "something_else"],
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
@@ -236,7 +236,7 @@ def test_validate_launch_request_with_priv(
 
 def test_validate_azp_claim_passes_for_single_aud(minimal_launch_req_jwt_decoded):
     id_token = minimal_launch_req_jwt_decoded
-    client_id = {id_token["aud"], "some other_id"}
+    client_id = [id_token["aud"], "some other_id"]
     id_token["aud"] = [id_token["aud"]]
     validator = LTI13LaunchValidator()
     validator.validate_azp_claim(id_token, client_id)
@@ -244,7 +244,7 @@ def test_validate_azp_claim_passes_for_single_aud(minimal_launch_req_jwt_decoded
 
 def test_validate_azp_claim_passes_for_multiple_aud(minimal_launch_req_jwt_decoded):
     id_token = minimal_launch_req_jwt_decoded
-    client_id = {id_token["aud"], "some other_id"}
+    client_id = [id_token["aud"], "some other_id"]
     id_token["azp"] = id_token["aud"]
     id_token["aud"] = [id_token["aud"], "some_other_audience"]
     validator = LTI13LaunchValidator()
@@ -255,7 +255,7 @@ def test_validate_azp_claim_requires_azp_for_multiple_aud(
     minimal_launch_req_jwt_decoded,
 ):
     id_token = minimal_launch_req_jwt_decoded
-    client_id = {id_token["aud"], "some other_id"}
+    client_id = [id_token["aud"], "some other_id"]
     id_token["aud"] = [id_token["aud"], "some_other_audience"]
     validator = LTI13LaunchValidator()
     with pytest.raises(MissingRequiredArgumentError) as e:
@@ -270,7 +270,7 @@ def test_validate_azp_claim_raises_invalid_audience_error_if_not_matching_client
     minimal_launch_req_jwt_decoded,
 ):
     id_token = minimal_launch_req_jwt_decoded
-    client_id = {id_token["aud"], "some other_id"}
+    client_id = [id_token["aud"], "some other_id"]
     id_token["aud"] = [id_token["aud"], "some_other_audience"]
     id_token["azp"] = "some_other_audience"
     validator = LTI13LaunchValidator()
