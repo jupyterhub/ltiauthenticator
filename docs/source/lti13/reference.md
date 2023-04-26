@@ -22,16 +22,16 @@ hub:
 
 ## LTI13Authenticator
 
-| Property         | Required | Description                                                                                               | Default                                                  |
-| ---------------- | -------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| tool_name        | No       | Name of the tool within the config JSON                                                                   | `"JupyterHub"`                                           |
-| tool_description | No       | Description of the tool within the config JSON                                                            | `"Launch interactive Jupyter Notebooks with JupyterHub"` |
-| username_key     | No       | The LTI 1.3 launch parameter that contains the JupyterHub username value                                  | `"email"`                                                |
-| issuer           | Yes      | The platform's issuer identifier. A case-sensitive URL provided by the platform                           |                                                          |
-| client_id        | Yes      | ID identifying the JuyterHub within the LMS platform. Must match the client ID configured on the platform |                                                          |
-| authorize_url    | Yes      | Authorization end-point of the platform's identity provider. Provided by the platform.                    |                                                          |
-| jwks_endpoint    | Yes      | Platform's jwks endpoint. Provided by the platform                                                        |                                                          |
-| jwks_algorithms  | No       | List of supported signature methods                                                                       | `["RS256"]`                                              |
+| Property         | Required | Description                                                                                                                                                                                                                   | Default                                                  |
+| ---------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| tool_name        | No       | Name of the tool within the config JSON                                                                                                                                                                                       | `"JupyterHub"`                                           |
+| tool_description | No       | Description of the tool within the config JSON                                                                                                                                                                                | `"Launch interactive Jupyter Notebooks with JupyterHub"` |
+| username_key     | No       | The LTI 1.3 launch parameter that contains the JupyterHub username value                                                                                                                                                      | `"email"`                                                |
+| issuer           | Yes      | The platform's issuer identifier. A case-sensitive URL provided by the platform                                                                                                                                               |                                                          |
+| client_id        | Yes      | The client ID or a list of client IDs identifying the JuyterHub within the LMS platform. Must contain the client IDs created when registering the tool on the LMS platform. Possible values are of type `str` or `list[str]`. |                                                          |
+| authorize_url    | Yes      | Authorization end-point of the platform's identity provider. Provided by the platform.                                                                                                                                        |                                                          |
+| jwks_endpoint    | Yes      | Platform's jwks endpoint. Provided by the platform                                                                                                                                                                            |                                                          |
+| jwks_algorithms  | No       | List of supported signature methods                                                                                                                                                                                           | `["RS256"]`                                              |
 
 ## LTI13LaunchValidator
 

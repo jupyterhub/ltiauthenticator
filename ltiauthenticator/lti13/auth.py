@@ -48,7 +48,7 @@ class LTI13Authenticator(OAuthenticator):
         The client ID or a list of client IDs identifying the JuyterHub within the LMS platform.
         Must contain the client IDs created when registering the tool on the LMS platform.
 
-        Possible values are of type str or iterables thereof.
+        Possible values are of type str or list[str].
         """,
     )
 
