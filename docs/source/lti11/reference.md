@@ -1,7 +1,7 @@
 # Configuration reference
 
 This section describes the available configuration options for the various classes of the plugin.
-Configuration is defined via `traitlets` of the classes and values are specified either in the [`jupyterhub_config.py`](https://jupyterhub.readthedocs.io/en/stable/getting-started/config-basics.html#configuration-basics) or by some other means depending on the JupyterHub deployment (e.g. the [JupyterHub helm chart](https://z2jh.jupyter.org/en/stable/administrator/authentication.html)).
+Configuration is defined via `traitlets` of the classes and values are specified either in the [`jupyterhub_config.py`](https://jupyterhub.readthedocs.io/en/stable/getting-started/config-basics.html) or by some other means depending on the JupyterHub deployment (e.g. the [JupyterHub helm chart](https://z2jh.jupyter.org/en/stable/administrator/authentication.html)).
 For example, to set the `config_title` property of the `LTI11Authenticator` class, your `jupyterhub_config.py` file would contain the lines
 
 ```python
