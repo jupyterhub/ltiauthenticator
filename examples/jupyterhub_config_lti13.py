@@ -33,7 +33,7 @@ c.LTI13Authenticator.authorize_url = (
     os.getenv("LTI13_AUTHORIZE_URL")
     or "https://canvas.instructure.com/api/lti/authorize_redirect"
 )
-c.LTI13Authenticator.client_id = os.getenv("LTI13_OAUTH_CLIENT_ID") or [""]
+c.LTI13Authenticator.client_id = os.getenv("LTI13_OAUTH_CLIENT_ID") or {""}
 c.LTI13Authenticator.jwks_endpoint = (
     os.getenv("LTI13_JWKS_ENDPOINT")
     or "https://canvas.instructure.com/api/lti/security/jwks"

@@ -7,6 +7,7 @@ from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import OAuthenticator
 from traitlets import List as TraitletsList
+from traitlets import Set as TraitletsSet
 from traitlets import Unicode
 
 from .constants import LTI13_CUSTOM_CLAIM
@@ -41,14 +42,14 @@ class LTI13Authenticator(OAuthenticator):
     login_handler = LTI13LoginInitHandler
     callback_handler = LTI13CallbackHandler
 
-    client_id = TraitletsList(
+    client_id = TraitletsSet(
         trait=Unicode(),
         config=True,
         help="""
         The client ID or a list of client IDs identifying the JuyterHub within the LMS platform.
         Must contain the client IDs created when registering the tool on the LMS platform.
 
-        Possible values are of type str or list[str].
+        Possible values are of type str or iterables thereof.
         """,
     )
 
