@@ -49,6 +49,12 @@ c.LTI13Authenticator.client_id = "125900000000000329"
 
 The username is inferred from the ID token sent by the platform (LMS) during the login flow based on the setting of the `username_key` traitlet.
 The default is `email` but all other top-level claims of the ID token may be chosen.
+
+```{danger}
+Make sure to use a claim that has a unique value for each user.
+If that is not the case, two distinct platform user may share the same user on Jupyterhub.
+```
+
 The list of available values depends on the LMS vendor you are using and how your LMS is configured, but you may take a look at [this example](http://www.imsglobal.org/spec/lti/v1p3/#examplelinkrequest) to get an idea of the available values.
 If you are in doubt about the content of the ID token sent by your LMS, you may use [an external test tool](https://saltire.lti.app/tool) with your LMS to capture the ID token.
 
@@ -66,7 +72,7 @@ The example below illustrates how to fetch the user's given name to set the Jupy
 
 ```python
 # Set the user's email as their user id
-c.LTI13Authenticator.username_key = "given_name"
+c.LTI13Authenticator.username_key = "email"
 ```
 
 ## Configuration JSON Settings
