@@ -65,6 +65,11 @@ Regardless of the LMS vendor you are using (Canvas, Moodle, Open edX, etc.), the
 This is due to legacy behaviour and will default to a more generic LTI 1.1 parameter in a future release.
 Change the `username_key` setting if you would like to use another value from the LTI 1.1 launch request.
 
+```{danger}
+Make sure to use a parameter that has a unique value for each user.
+If that is not the case, two distinct external users may share the same user on Jupyterhub.
+```
+
 The example below illustrates how to fetch the user's email to set the JupyterHub username by specifying the `lis_person_contact_email_primary` LTI 1.1 launch request parameter:
 
 ```python
