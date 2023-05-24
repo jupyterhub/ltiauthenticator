@@ -156,6 +156,7 @@ def test_verify_and_decode_jwt_fails_on_missing_aud(
         )
     assert str(e.value) == "Invalid audience"
 
+
 # Tests of validate_launch_request()
 # -------------------------------------------------------------------------------
 def test_validate_minimal_launch_request(minimal_launch_req_jwt_decoded):
