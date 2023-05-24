@@ -131,6 +131,13 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
     LTI 1.3 standard.
     """
 
+    def check_xsrf_cookie(self):
+        """
+        Do not attempt to check for xsrf parameter in POST requests. LTI requests are
+        meant to be cross-site, so it must not be verified.
+        """
+        return
+
     def authorize_redirect(
         self,
         redirect_uri: str,
@@ -322,6 +329,13 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
     """
 
     _nonce_state_cookie = None
+
+    def check_xsrf_cookie(self):
+        """
+        Do not attempt to check for xsrf parameter in POST requests. LTI requests are
+        meant to be cross-site, so it must not be verified.
+        """
+        return
 
     async def get(self):
         """Overrides the upstream get handler and always raise HTTPError 405."""

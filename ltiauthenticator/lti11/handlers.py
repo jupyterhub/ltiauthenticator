@@ -20,6 +20,13 @@ class LTI11AuthenticateHandler(BaseHandler):
         # Make sure that hub cookie is always set, even if the user was already logged in
         self.set_hub_cookie(user)
 
+    def check_xsrf_cookie(self):
+        """
+        Do not attempt to check for xsrf parameter in POST requests. LTI requests are
+        meant to be cross-site, so it must not be verified.
+        """
+        return
+
     @gen.coroutine
     def post(self):
         """
