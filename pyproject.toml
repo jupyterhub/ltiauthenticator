@@ -30,7 +30,7 @@ dependencies = [
     "jupyterhub>=1.2",
     "oauthenticator>=15.1.0",
     "oauthlib>=3.2.2",
-    "PyJWT[crypto]>=2.6.0",
+    "PyJWT[crypto]>=2.7.0",
 ]
 dynamic = ["version"]
 

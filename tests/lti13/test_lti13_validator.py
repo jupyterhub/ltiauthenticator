@@ -137,8 +137,24 @@ def test_verify_and_decode_jwt_fails_on_incorrect_aud(
             jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
             jwks_algorithms=["RS256"],
         )
-    assert str(e.value) == "Invalid audience"
+    assert str(e.value) == "Audience doesn't match"
 
+
+def test_verify_and_decode_jwt_fails_on_missing_aud(
+    launch_req_jwt, launch_req_jwt_decoded, jwks_endpoint_response
+):
+    validator = LTI13LaunchValidator()
+    with patched_jwk_client(jwks_endpoint_response), pytest.raises(
+        InvalidAudienceError
+    ) as e:
+        validator.verify_and_decode_jwt(
+            encoded_jwt=launch_req_jwt,
+            issuer=launch_req_jwt_decoded["iss"],
+            audience=None,
+            jwks_endpoint="https://lti-ri.imsglobal.org/platforms/3691/platform_keys/3396.json",
+            jwks_algorithms=["RS256"],
+        )
+    assert str(e.value) == "Invalid audience"
 
 # Tests of validate_launch_request()
 # -------------------------------------------------------------------------------
