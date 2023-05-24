@@ -23,7 +23,7 @@ class LTI11AuthenticateHandler(BaseHandler):
     def check_xsrf_cookie(self):
         """
         Do not attempt to check for xsrf parameter in POST requests. LTI requests are
-        meant to be cross-site, so there is no need to perform this verification.
+        meant to be cross-site, so it must not be verified.
         """
         return
 
