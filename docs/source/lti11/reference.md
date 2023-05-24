@@ -15,7 +15,7 @@ or your helm chart `config.yml` would contain
 hub:
   config:
     JupyterHub:
-      authenticator_class: ltiauthenticator.lti11.auth.LTI13Authenticator
+      authenticator_class: ltiauthenticator.lti11.auth.LTI11Authenticator
     LTI11Authenticator:
       config_title: "Some Title"
 ```
