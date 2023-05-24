@@ -1,6 +1,30 @@
 # Changelog
 
-## [1.5]
+## 1.5
+
+# 1.5.1 - 2023-05-24
+
+1.5.1 adds compatibility with XSRF changes in JupyterHub 4.
+
+([full changelog](https://github.com/jupyterhub/ltiauthenticator/compare/1.5.0...1.5.1))
+
+## Bugs fixed
+
+- fix: compatibility with XSRF check introduced in Jupyterhub 4.0.0 [#158](https://github.com/jupyterhub/ltiauthenticator/pull/158) ([@regisb](https://github.com/regisb), [@minrk](https://github.com/minrk), [@martinclaus](https://github.com/martinclaus))
+
+## Documentation improvements
+
+- docs(lti11): Fix typo in reference [#159](https://github.com/jupyterhub/ltiauthenticator/pull/159) ([@sean-morris](https://github.com/sean-morris), [@martinclaus](https://github.com/martinclaus))
+- docs: Document danger of user name collisions [#156](https://github.com/jupyterhub/ltiauthenticator/pull/156) ([@martinclaus](https://github.com/martinclaus))
+
+## Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/ltiauthenticator/graphs/contributors?from=2023-03-31&to=2023-05-24&type=c))
+
+@consideRatio ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AconsideRatio+updated%3A2023-03-31..2023-05-24&type=Issues)) | @dependabot ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Adependabot+updated%3A2023-03-31..2023-05-24&type=Issues)) | @martinclaus ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amartinclaus+updated%3A2023-03-31..2023-05-24&type=Issues)) | @minrk ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aminrk+updated%3A2023-03-31..2023-05-24&type=Issues)) | @pre-commit-ci ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Apre-commit-ci+updated%3A2023-03-31..2023-05-24&type=Issues)) | @regisb ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aregisb+updated%3A2023-03-31..2023-05-24&type=Issues)) | @sean-morris ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Asean-morris+updated%3A2023-03-31..2023-05-24&type=Issues))
 
 ### [1.5.0] - 2023-03-31
 
