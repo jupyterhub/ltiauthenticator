@@ -151,6 +151,8 @@ class LTI13LoginInitHandler(BaseHandler):
     LTI 1.3 standard.
     """
 
+    _state = None
+
     def check_xsrf_cookie(self):
         """
         Do not attempt to check for xsrf parameter in POST requests. LTI requests are
