@@ -1,5 +1,5 @@
 import pytest
-from jupyterhub.app import JupyterHub
+from jupyterhub.app import JupyterHub  # type: ignore
 from traitlets.config import Config
 
 

@@ -1,9 +1,9 @@
 from textwrap import dedent
 
-from jupyterhub.app import JupyterHub
-from jupyterhub.auth import Authenticator
-from jupyterhub.handlers import BaseHandler
-from jupyterhub.utils import url_path_join
+from jupyterhub.app import JupyterHub  # type: ignore
+from jupyterhub.auth import Authenticator  # type: ignore
+from jupyterhub.handlers import BaseHandler  # type: ignore
+from jupyterhub.utils import url_path_join  # type: ignore
 from tornado.web import HTTPError
 from traitlets.config import Dict, Unicode
 

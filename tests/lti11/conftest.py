@@ -5,7 +5,7 @@ from typing import Dict, Optional, Tuple
 from unittest.mock import Mock
 
 import pytest
-from oauthlib.oauth1.rfc5849 import Client, signature
+from oauthlib.oauth1.rfc5849 import Client, signature  # type: ignore
 from tornado.httputil import HTTPServerRequest
 from tornado.web import Application, RequestHandler
 
@@ -30,7 +30,7 @@ def req_handler() -> RequestHandler:
             ),
             cookie_secret=os.urandom(32),
             db=Mock(rollback=Mock(return_value=None)),
-            **settings,
+            **settings,  # type: ignore
         )
         request = HTTPServerRequest(
             method=method,
@@ -44,7 +44,7 @@ def req_handler() -> RequestHandler:
         handler._transforms = []
         return handler
 
-    return _req_handler
+    return _req_handler  # type: ignore
 
 
 @pytest.fixture

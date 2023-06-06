@@ -1,4 +1,4 @@
-from jupyterhub.handlers import BaseHandler
+from jupyterhub.handlers import BaseHandler  # type: ignore
 from tornado import gen
 
 from ..utils import get_client_protocol

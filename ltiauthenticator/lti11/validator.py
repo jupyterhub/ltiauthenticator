@@ -3,8 +3,8 @@ from collections import OrderedDict
 from typing import Any, Dict
 from typing import OrderedDict as OrderedDictType
 
-from oauthlib.common import safe_string_equals
-from oauthlib.oauth1.rfc5849 import Client, signature
+from oauthlib.common import safe_string_equals  # type: ignore
+from oauthlib.oauth1.rfc5849 import Client, signature  # type: ignore
 from tornado.web import HTTPError
 from traitlets.config import LoggingConfigurable
 
