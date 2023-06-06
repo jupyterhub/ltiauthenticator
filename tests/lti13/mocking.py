@@ -10,7 +10,7 @@ class MockLTI13Authenticator(LTI13Authenticator):
     """Mocks the LTI13Authenticator for testing.
 
     Args:
-        LTI13Authenticator (OAuthenticator): The LTI13Authenticator used for mocking.
+        LTI13Authenticator(Authenticator): The LTI13Authenticator used for mocking.
     """
 
     auto_login = True

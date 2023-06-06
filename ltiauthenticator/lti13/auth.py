@@ -152,12 +152,11 @@ class LTI13Authenticator(Authenticator):
         self, handler: LTI13LoginInitHandler, data: Dict[str, str] = None
     ) -> Dict[str, Any]:
         """
-        Overrides authenticate from the OAuthenticator base class to handle LTI
-        1.3 launch requests based on a passed JWT.
+        Handles LTI 1.3 launch requests based on a passed JWT.
 
         Args:
           handler: handler object
-          data: authentication dictionary. The decoded, verified and validated id_token send by tehe platform
+          data: authentication dictionary. The decoded, verified and validated id_token send by the platform
 
         Returns:
           Authentication dictionary
