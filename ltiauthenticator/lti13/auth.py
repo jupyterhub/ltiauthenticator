@@ -2,7 +2,6 @@ import logging
 from typing import Any, Dict, List
 
 from jupyterhub.app import JupyterHub
-from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import OAuthenticator
@@ -201,9 +200,3 @@ class LTI13Authenticator(OAuthenticator):
                 f"Unable to set the username with username_key {username_key}"
             )
         return username
-
-
-class LocalLTI13Authenticator(LocalAuthenticator, OAuthenticator):
-    """A version that mixes in local system user creation"""
-
-    pass
