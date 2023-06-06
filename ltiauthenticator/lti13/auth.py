@@ -1,10 +1,10 @@
 import logging
 from typing import Any, Dict, List
 
-from jupyterhub.app import JupyterHub
-from jupyterhub.handlers import BaseHandler
-from jupyterhub.utils import url_path_join
-from oauthenticator.oauth2 import OAuthenticator
+from jupyterhub.app import JupyterHub  # type: ignore
+from jupyterhub.auth import Authenticator  # type: ignore
+from jupyterhub.handlers import BaseHandler  # type: ignore
+from jupyterhub.utils import url_path_join  # type: ignore
 from traitlets import List as TraitletsList
 from traitlets import Set as TraitletsSet
 from traitlets import Unicode
@@ -17,20 +17,15 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-class LTI13Authenticator(OAuthenticator):
+class LTI13Authenticator(Authenticator):
     """
-    JupyterHub LTI 1.3 Authenticator which extends the `OAuthenticator` class. (LTI 1.3
-    is basically an extension of OIDC/OAuth2). Messages sent to this authenticator are sent
-    from a LTI 1.3 Platform, such as an LMS. JupyterHub, as the authenticator, works as the
-    LTI 1.3 External Tool. The basic login flow is authentication using the implicit flow. As such,
-    the client id is always required.
-
-    This class utilizes the following required configurables defined in the `OAuthenticator` base class:
-
-        - authorize_url
+    JupyterHub LTI 1.3 Authenticator. LTI 1.3 is basically an extension of OIDC/OAuth2.
+    Messages sent to this authenticator are sent from a LTI 1.3 Platform, such as an LMS.
+    JupyterHub, as the authenticator, works as the LTI 1.3 External Tool.
+    The basic login flow is authentication using the implicit flow.
+    As such, at least one client id is required.
 
     Ref:
-      - https://github.com/jupyterhub/oauthenticator/blob/master/oauthenticator/oauth2.py
       - http://www.imsglobal.org/spec/lti/v1p3/
       - https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth
     """
@@ -40,6 +35,11 @@ class LTI13Authenticator(OAuthenticator):
     # handlers used for login, callback, and jwks endpoints
     login_handler = LTI13LoginInitHandler
     callback_handler = LTI13CallbackHandler
+
+    authorize_url = Unicode(
+        config=True,
+        help="""Authorization end-point of the platforms identity provider.""",
+    )
 
     client_id = TraitletsSet(
         trait=Unicode(),
