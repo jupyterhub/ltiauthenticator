@@ -6,9 +6,9 @@ import uuid
 from typing import Any, Dict, Optional, cast
 from urllib.parse import quote, unquote, urlparse
 
-from jupyterhub.handlers import BaseHandler
-from jupyterhub.utils import url_path_join
-from oauthlib.common import generate_token
+from jupyterhub.handlers import BaseHandler  # type: ignore
+from jupyterhub.utils import url_path_join  # type: ignore
+from oauthlib.common import generate_token  # type: ignore
 from tornado.httputil import url_concat
 from tornado.log import app_log
 from tornado.web import HTTPError, MissingArgumentError, RequestHandler
