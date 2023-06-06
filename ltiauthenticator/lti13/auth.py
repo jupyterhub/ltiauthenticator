@@ -32,9 +32,10 @@ class LTI13Authenticator(Authenticator):
 
     login_service = "LTI 1.3"
 
-    # handlers used for login, callback, and jwks endpoints
+    # handlers used for login, callback, and json config endpoints
     login_handler = LTI13LoginInitHandler
     callback_handler = LTI13CallbackHandler
+    config_handler = LTI13ConfigHandler
 
     authorize_url = Unicode(
         config=True,
@@ -144,7 +145,7 @@ class LTI13Authenticator(Authenticator):
         return [
             (self.login_url(""), self.login_handler),
             (self.callback_url(""), self.callback_handler),
-            (self.config_json_url(""), LTI13ConfigHandler),
+            (self.config_json_url(""), self.config_handler),
         ]
 
     async def authenticate(
