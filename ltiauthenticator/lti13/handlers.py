@@ -292,7 +292,7 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
     def get_redirect_uri(self) -> str:
         """Create uri to redirect user agent to after successful authorization by the LMS platform."""
         return "{proto}://{host}{path}".format(
-            proto=self.request.protocol,
+            proto=get_client_protocol(self),
             host=self.request.host,
             path=self.authenticator.callback_url(self.hub.server.base_url),
         )
