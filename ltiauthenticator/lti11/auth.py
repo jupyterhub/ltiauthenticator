@@ -7,7 +7,7 @@ from jupyterhub.utils import url_path_join
 from tornado.web import HTTPError
 from traitlets.config import Dict, Unicode
 
-from ..utils import convert_request_to_dict, get_client_protocol
+from ..utils import convert_request_to_dict, get_browser_protocol
 from .handlers import LTI11AuthenticateHandler, LTI11ConfigHandler
 from .validator import LTI11LaunchValidator
 
@@ -132,7 +132,7 @@ class LTI11Authenticator(Authenticator):
         self.log.debug(f"Decoded args from request: {args}")
 
         # get the origin protocol
-        protocol = get_client_protocol(handler)
+        protocol = get_browser_protocol(handler.request)
         self.log.debug(f"Origin protocol is: {protocol}")
 
         # build the full launch url value required for oauth1 signatures
