@@ -5,7 +5,7 @@ from jupyterhub.auth import Authenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from tornado.web import HTTPError
-from traitlets.config import Dict, Unicode
+from traitlets import CaselessStrEnum, Dict, Unicode
 
 from ..utils import convert_request_to_dict, get_browser_protocol
 from .handlers import LTI11AuthenticateHandler, LTI11ConfigHandler
@@ -84,6 +84,21 @@ class LTI11Authenticator(Authenticator):
         request, it is used as the username. If not, user_id is used. In the future,
         the default will be just user_id - if you want to use custom_canvas_user_id,
         you must explicitly set username_key to custom_canvas_user_id.
+        """,
+    )
+
+    uri_scheme = CaselessStrEnum(
+        ("auto", "https", "http"),
+        default_value="auto",
+        config=True,
+        help="""
+        Scheme to use for endpoint URLs offered by this authenticator.
+
+        Possible values are "auto", "https" and "http", where "auto" is the default.
+        When "auto" is chosen, the scheme is inferred from the incomming request's header.
+        Since this may lead to unreliable results in some deployment scenarios (in particular
+        when several different versions of forwarding headers are mixed), manually specifying it
+        here is kept as an escape hatch.
         """,
     )
 

@@ -13,6 +13,17 @@ from ltiauthenticator.lti13.constants import LTI13_CUSTOM_CLAIM
 from ltiauthenticator.lti13.error import LoginError
 
 
+async def test_authenticator_uri_scheme_defaults_to_auto():
+    authenticator = LTI13Authenticator()
+    assert authenticator.uri_scheme == "auto"
+
+
+async def test_authenticator_uri_scheme_setter_is_case_insenstive():
+    authenticator = LTI13Authenticator()
+    authenticator.uri_scheme = "Https"
+    assert authenticator.uri_scheme == "https"
+
+
 async def test_authenticator_returned_username_with_sub(
     req_handler,
     launch_req_jwt_decoded,

@@ -6,6 +6,7 @@ from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import OAuthenticator
+from traitlets import CaselessStrEnum
 from traitlets import List as TraitletsList
 from traitlets import Set as TraitletsSet
 from traitlets import Unicode
@@ -109,6 +110,21 @@ class LTI13Authenticator(OAuthenticator):
 
         Reference to the IMS LTI specification on variable substitutions:
         http://www.imsglobal.org/spec/lti/v1p3/#customproperty.
+        """,
+    )
+
+    uri_scheme = CaselessStrEnum(
+        ("auto", "https", "http"),
+        default_value="auto",
+        config=True,
+        help="""
+        Scheme to use for endpoint URLs offered by this authenticator.
+
+        Possible values are "auto", "https" and "http", where "auto" is the default.
+        When "auto" is chosen, the scheme is inferred from the incomming request's header.
+        Since this may lead to unreliable results in some deployment scenarios (in particular
+        when several different versions of forwarding headers are mixed), manually specifying it
+        here is kept as an escape hatch.
         """,
     )
 

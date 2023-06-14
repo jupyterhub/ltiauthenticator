@@ -134,3 +134,15 @@ c.LTI13LaunchValidator.time_leeway = 10
 The class being configured is `LTI13LaunhValidator`.
 For a complete list of its configuration options, see the [configuration reference](reference.md#lti13launchvalidator).
 ```
+
+## Deal with Incorrect URI Scheme detection when running behind a reverse proxy
+
+By default, the scheme ("https" or "http") used for creating the URLs of the authenticators endpoints via string interpolation is inferred from the incoming request's header.
+However, there is no universal standard if and how proxies add or append such information to the header of proxied requests.
+There are the `Forwarded`, `X-Scheme` and `X-Forwarded-*` header, to name the most commonly used.
+When your JupyterHub runs behind multiple reverse proxies where somewhere TLS termination is happening, the inferred scheme might be incorrectly detected if those proxies use a mixture of the above-mentioned header or a custom one.
+In such situations, it is possible to manually specify the scheme to either `"https"` or `"http"`, e.g.
+
+```python
+c.LTI13Authenticator.uri_scheme = "https"
+```
