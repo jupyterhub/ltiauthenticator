@@ -5,12 +5,43 @@ LTI13LaunchValidator's methods, which are called by authenticate.
 We have dedicated tests of LTI13LaunchValidator's methods in
 test_lti13_validator.py.
 """
+from unittest.mock import patch
+
 import pytest
 from tornado.web import RequestHandler
 
+import ltiauthenticator.lti13.auth
 from ltiauthenticator.lti13.auth import LTI13Authenticator
 from ltiauthenticator.lti13.constants import LTI13_CUSTOM_CLAIM
 from ltiauthenticator.lti13.error import LoginError
+
+
+async def test_authenticator_uri_scheme_defaults_to_auto():
+    authenticator = LTI13Authenticator()
+    assert authenticator.uri_scheme == "auto"
+
+
+async def test_authenticator_uri_scheme_setter_is_case_insenstive():
+    authenticator = LTI13Authenticator()
+    authenticator.uri_scheme = "Https"
+    assert authenticator.uri_scheme == "https"
+
+
+async def test_authenticator_infers_uri_scheme_if_set_to_auto():
+    with patch.object(
+        ltiauthenticator.lti13.auth, "get_browser_protocol", return_value=None
+    ) as mocked_func:
+        authenticator = LTI13Authenticator()
+        authenticator.uri_scheme = "auto"
+        authenticator.get_uri_scheme("")
+        mocked_func.assert_called_once_with("")
+
+
+@pytest.mark.parametrize("scheme", ("https", "http"))
+async def test_authenticator_returns_manually_specified_uri_scheme(scheme):
+    authenticator = LTI13Authenticator()
+    authenticator.uri_scheme = scheme
+    assert authenticator.get_uri_scheme("") == scheme
 
 
 async def test_authenticator_returned_username_with_sub(

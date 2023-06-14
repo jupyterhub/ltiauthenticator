@@ -1,7 +1,6 @@
 from jupyterhub.handlers import BaseHandler
 from tornado import gen
 
-from ..utils import get_client_protocol
 from .templates import LTI11_CONFIG_TEMPLATE
 
 
@@ -77,7 +76,7 @@ class LTI11ConfigHandler(BaseHandler):
         self.set_header("Content-Type", "application/xml")
 
         # get the launch url from the client request
-        protocol = get_client_protocol(self)
+        protocol = self.authenticator.get_uri_scheme(self.request)
         launch_url = f"{protocol}://{self.request.host}{self.application.settings['base_url']}hub/lti/launch"
         self.log.debug(f"Calculated launch URL is: {launch_url}")
 

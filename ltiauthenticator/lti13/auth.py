@@ -6,10 +6,12 @@ from jupyterhub.auth import LocalAuthenticator
 from jupyterhub.handlers import BaseHandler
 from jupyterhub.utils import url_path_join
 from oauthenticator.oauth2 import OAuthenticator
+from traitlets import CaselessStrEnum
 from traitlets import List as TraitletsList
 from traitlets import Set as TraitletsSet
 from traitlets import Unicode
 
+from ..utils import get_browser_protocol
 from .constants import LTI13_CUSTOM_CLAIM
 from .error import LoginError
 from .handlers import LTI13CallbackHandler, LTI13ConfigHandler, LTI13LoginInitHandler
@@ -112,6 +114,21 @@ class LTI13Authenticator(OAuthenticator):
         """,
     )
 
+    uri_scheme = CaselessStrEnum(
+        ("auto", "https", "http"),
+        default_value="auto",
+        config=True,
+        help="""
+        Scheme to use for endpoint URLs offered by this authenticator.
+
+        Possible values are "auto", "https" and "http", where "auto" is the default.
+        When "auto" is chosen, the scheme is inferred from the incomming request's header.
+        Since this may lead to unreliable results in some deployment scenarios (in particular
+        when several different versions of forwarding headers are mixed), manually specifying it
+        here is kept as an escape hatch.
+        """,
+    )
+
     tool_name = Unicode(
         "JupyterHub",
         config=True,
@@ -201,6 +218,13 @@ class LTI13Authenticator(OAuthenticator):
                 f"Unable to set the username with username_key {username_key}"
             )
         return username
+
+    def get_uri_scheme(self, request) -> str:
+        """Return scheme to use for endpoint URLs of this authenticator."""
+        if self.uri_scheme == "auto":
+            return get_browser_protocol(request)
+        # manually specified https or http
+        return self.uri_scheme
 
 
 class LocalLTI13Authenticator(LocalAuthenticator, OAuthenticator):
