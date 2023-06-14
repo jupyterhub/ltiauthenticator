@@ -147,7 +147,7 @@ class LTI11Authenticator(Authenticator):
         self.log.debug(f"Decoded args from request: {args}")
 
         # get the origin protocol
-        protocol = get_browser_protocol(handler.request)
+        protocol = self.get_uri_scheme(handler.request)
         self.log.debug(f"Origin protocol is: {protocol}")
 
         # build the full launch url value required for oauth1 signatures
@@ -181,3 +181,10 @@ class LTI11Authenticator(Authenticator):
                     k: v for k, v in args.items() if not k.startswith("oauth_")
                 },
             }
+
+    def get_uri_scheme(self, request) -> str:
+        """Return scheme to use for endpoint URLs of this authenticator."""
+        if self.uri_scheme == "auto":
+            return get_browser_protocol(request)
+        # manually specified https or http
+        return self.uri_scheme

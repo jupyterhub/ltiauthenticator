@@ -16,7 +16,7 @@ from oauthlib.common import generate_token
 from tornado.httputil import url_concat
 from tornado.web import HTTPError, RequestHandler
 
-from ..utils import convert_request_to_dict, get_browser_protocol
+from ..utils import convert_request_to_dict
 from .error import InvalidAudienceError, LoginError, ValidationError
 from .validator import LTI13LaunchValidator
 
@@ -63,7 +63,7 @@ class LTI13ConfigHandler(BaseHandler):
         self.set_header("Content-Type", "application/json")
 
         # get the origin protocol
-        protocol = get_browser_protocol(self.request)
+        protocol = self.authenticator.get_uri_scheme(self.request)
         self.log.debug(f"Origin protocol is: {protocol}")
         # build the full target link url value required for the jwks endpoint
         target_link_url = f"{protocol}://{self.request.host}"
@@ -292,7 +292,7 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
     def get_redirect_uri(self) -> str:
         """Create uri to redirect user agent to after successful authorization by the LMS platform."""
         return "{proto}://{host}{path}".format(
-            proto=get_browser_protocol(self.request),
+            proto=self.authenticator.get_uri_scheme(self.request),
             host=self.request.host,
             path=self.authenticator.callback_url(self.hub.server.base_url),
         )

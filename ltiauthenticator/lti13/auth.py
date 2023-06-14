@@ -11,6 +11,7 @@ from traitlets import List as TraitletsList
 from traitlets import Set as TraitletsSet
 from traitlets import Unicode
 
+from ..utils import get_browser_protocol
 from .constants import LTI13_CUSTOM_CLAIM
 from .error import LoginError
 from .handlers import LTI13CallbackHandler, LTI13ConfigHandler, LTI13LoginInitHandler
@@ -217,6 +218,13 @@ class LTI13Authenticator(OAuthenticator):
                 f"Unable to set the username with username_key {username_key}"
             )
         return username
+
+    def get_uri_scheme(self, request) -> str:
+        """Return scheme to use for endpoint URLs of this authenticator."""
+        if self.uri_scheme == "auto":
+            return get_browser_protocol(request)
+        # manually specified https or http
+        return self.uri_scheme
 
 
 class LocalLTI13Authenticator(LocalAuthenticator, OAuthenticator):
