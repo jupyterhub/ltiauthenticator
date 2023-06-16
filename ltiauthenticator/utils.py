@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Any, Dict, List
 
-from tornado.web import RequestHandler
+from tornado.httputil import HTTPServerRequest
 
 from .lti13.constants import (
     DEFAULT_ROLE_NAMES_FOR_INSTRUCTOR,
@@ -13,29 +13,34 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def get_client_protocol(handler: RequestHandler) -> str:
-    """
-    This is a copy of the jupyterhub-ltiauthenticator logic to get the first
-    protocol value from the x-forwarded-proto list, assuming there is more than
-    one value. Otherwise, this returns the value as-is.
+try:
+    from jupyterhub.utils import get_browser_protocol  # type: ignore
 
-    Extracted as a method to facilitate testing.
+# if we are on jupyterhub < 2.0.2
+except ImportError:
 
-    Args:
-        handler: a tornado.web.RequestHandler object
+    def get_browser_protocol(request: HTTPServerRequest) -> str:
+        """
+        This is a copy of the jupyterhub-ltiauthenticator logic to get the first
+        protocol value from the X-Scheme or X-Forwarded-Proto list, assuming there is more than
+        one value. Otherwise, this returns the value as-is.
 
-    Returns:
-        A decoded dict with keys/values extracted from the request's arguments
-    """
-    if "x-forwarded-proto" in handler.request.headers:
-        hops = [
-            h.strip() for h in handler.request.headers["x-forwarded-proto"].split(",")
-        ]
-        protocol = hops[0]
-    else:
-        protocol = handler.request.protocol
+        Extracted as a method to facilitate testing.
 
-    return protocol
+        Args:
+            handler: a tornado.web.RequestHandler object
+
+        Returns:
+            str of protocol seen by browser
+        """
+        proto_header = request.headers.get(
+            "X-Scheme", request.headers.get("X-Forwarded-Proto", None)
+        )
+        if proto_header:
+            hops = [h.strip() for h in proto_header.split(",")]
+            return hops[0]
+
+        return request.protocol
 
 
 def convert_request_to_dict(arguments: Dict[str, List[bytes]]) -> Dict[str, Any]:

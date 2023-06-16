@@ -1,23 +1,18 @@
 from unittest.mock import Mock
 
-from tornado.web import RequestHandler
-
-from ltiauthenticator.utils import convert_request_to_dict, get_client_protocol
+from ltiauthenticator.utils import convert_request_to_dict, get_browser_protocol
 
 
 def test_get_protocol_with_more_than_one_value():
     """
     Assert that the first (left-most) protocol value is correctly fetched from the x-forwarded-header.
     """
-    handler = Mock(
-        spec=RequestHandler,
-        request=Mock(
-            headers={"x-forwarded-proto": "https,http,http"},
-            protocol="http",
-        ),
+    request = Mock(
+        headers={"X-Forwarded-Proto": "https,http,http"},
+        protocol="http",
     )
     expected = "https"
-    protocol = get_client_protocol(handler)
+    protocol = get_browser_protocol(request)
 
     assert expected == protocol
 

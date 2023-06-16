@@ -5,9 +5,9 @@ from jupyterhub.auth import Authenticator  # type: ignore
 from jupyterhub.handlers import BaseHandler  # type: ignore
 from jupyterhub.utils import url_path_join  # type: ignore
 from tornado.web import HTTPError
-from traitlets.config import Dict, Unicode
+from traitlets import CaselessStrEnum, Dict, Unicode
 
-from ..utils import convert_request_to_dict, get_client_protocol
+from ..utils import convert_request_to_dict, get_browser_protocol
 from .handlers import LTI11AuthenticateHandler, LTI11ConfigHandler
 from .validator import LTI11LaunchValidator
 
@@ -87,6 +87,21 @@ class LTI11Authenticator(Authenticator):
         """,
     )
 
+    uri_scheme = CaselessStrEnum(
+        ("auto", "https", "http"),
+        default_value="auto",
+        config=True,
+        help="""
+        Scheme to use for endpoint URLs offered by this authenticator.
+
+        Possible values are "auto", "https" and "http", where "auto" is the default.
+        When "auto" is chosen, the scheme is inferred from the incomming request's header.
+        Since this may lead to unreliable results in some deployment scenarios (in particular
+        when several different versions of forwarding headers are mixed), manually specifying it
+        here is kept as an escape hatch.
+        """,
+    )
+
     def login_url(self, base_url: str) -> str:
         return url_path_join(base_url, "/lti/launch")
 
@@ -132,7 +147,7 @@ class LTI11Authenticator(Authenticator):
         self.log.debug(f"Decoded args from request: {args}")
 
         # get the origin protocol
-        protocol = get_client_protocol(handler)
+        protocol = self.get_uri_scheme(handler.request)
         self.log.debug(f"Origin protocol is: {protocol}")
 
         # build the full launch url value required for oauth1 signatures
@@ -166,3 +181,10 @@ class LTI11Authenticator(Authenticator):
                     k: v for k, v in args.items() if not k.startswith("oauth_")
                 },
             }
+
+    def get_uri_scheme(self, request) -> str:
+        """Return scheme to use for endpoint URLs of this authenticator."""
+        if self.uri_scheme == "auto":
+            return get_browser_protocol(request)
+        # manually specified https or http
+        return self.uri_scheme

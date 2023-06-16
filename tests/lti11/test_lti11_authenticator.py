@@ -5,10 +5,39 @@ import pytest
 from tornado.httputil import HTTPServerRequest
 from tornado.web import HTTPError, RequestHandler
 
+import ltiauthenticator.lti11.auth
 from ltiauthenticator.lti11.auth import LTI11Authenticator
 from ltiauthenticator.lti11.validator import LTI11LaunchValidator
 
 from .mocking import MockLTI11Authenticator
+
+
+async def test_authenticator_uri_scheme_defaults_to_auto():
+    authenticator = LTI11Authenticator()
+    assert authenticator.uri_scheme == "auto"
+
+
+async def test_authenticator_uri_scheme_setter_is_case_insenstive():
+    authenticator = LTI11Authenticator()
+    authenticator.uri_scheme = "Https"
+    assert authenticator.uri_scheme == "https"
+
+
+async def test_authenticator_infers_uri_scheme_if_set_to_auto():
+    with patch.object(
+        ltiauthenticator.lti11.auth, "get_browser_protocol", return_value=None
+    ) as mocked_func:
+        authenticator = LTI11Authenticator()
+        authenticator.uri_scheme = "auto"
+        authenticator.get_uri_scheme("")
+        mocked_func.assert_called_once_with("")
+
+
+@pytest.mark.parametrize("scheme", ("https", "http"))
+async def test_authenticator_returns_manually_specified_uri_scheme(scheme):
+    authenticator = LTI11Authenticator()
+    authenticator.uri_scheme = scheme
+    assert authenticator.get_uri_scheme("") == scheme
 
 
 async def test_authenticator_uses_lti11validator(
