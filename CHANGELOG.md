@@ -1,5 +1,42 @@
 # Changelog
 
+## 1.6
+
+## 1.6.1 - 2023-06-16
+
+1.6.1 Adds missing changelogs for release 1.6.0.
+
+([full changelog](https://github.com/jupyterhub/ltiauthenticator/compare/1.6.0...1.6.1))
+
+### 1.6.0 - 2023-06-16
+
+1.6.0 adds the ability to specify multiple client IDs for a single issuer and to manually specify the http scheme when building URLs, which may be necessary for some deployments where autodetection of the scheme based on the request header produces wrong results.
+
+([full changelog](https://github.com/jupyterhub/ltiauthenticator/compare/1.5.1...1.6.0))
+
+#### Enhancements made
+
+- feat: Allow to manually specify URL scheme [#166](https://github.com/jupyterhub/ltiauthenticator/pull/166) ([@martinclaus](https://github.com/martinclaus))
+- feat(lti13): Allow multiple LTI 1.3 client ids [#152](https://github.com/jupyterhub/ltiauthenticator/pull/152) ([@martinclaus](https://github.com/martinclaus))
+
+#### Bugs fixed
+
+- fix(lti13): Fix protocol for redirect_uri if behind a reverse proxy with TLS termination [#165](https://github.com/jupyterhub/ltiauthenticator/pull/165) ([@jeflem](https://github.com/jeflem))
+
+#### Maintenance and upkeep improvements
+
+- maint: Ditch dependency to OAuthenticator [#164](https://github.com/jupyterhub/ltiauthenticator/pull/164) ([@martinclaus](https://github.com/martinclaus))
+
+#### Documentation improvements
+
+- docs: fix details in changelog - missing date, heading level, links [#161](https://github.com/jupyterhub/ltiauthenticator/pull/161) ([@consideRatio](https://github.com/consideRatio))
+
+#### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/ltiauthenticator/graphs/contributors?from=2023-05-24&to=2023-06-16&type=c))
+
+[@consideRatio](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AconsideRatio+updated%3A2023-05-24..2023-06-16&type=Issues) | [@jeflem](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ajeflem+updated%3A2023-05-24..2023-06-16&type=Issues) | [@martinclaus](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amartinclaus+updated%3A2023-05-24..2023-06-16&type=Issues) | [@minrk](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aminrk+updated%3A2023-05-24..2023-06-16&type=Issues)
+
 ## 1.5
 
 ### 1.5.1 - 2023-05-24
