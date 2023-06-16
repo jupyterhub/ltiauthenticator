@@ -59,7 +59,7 @@ def convert_request_to_dict(arguments: Dict[str, List[bytes]]) -> Dict[str, Any]
     return args
 
 
-def user_is_a_student(user_role: str) -> str:
+def user_is_a_student(user_role: str) -> bool:
     """Determins if the user has a Student/Learner role.
 
     Args:
@@ -73,7 +73,7 @@ def user_is_a_student(user_role: str) -> str:
     return user_role.lower() in DEFAULT_ROLE_NAMES_FOR_STUDENT
 
 
-def user_is_an_instructor(user_role: str) -> str:
+def user_is_an_instructor(user_role: str) -> bool:
     """Determins if the user has a Instructor/Teacher role.
 
     Args:
@@ -85,7 +85,7 @@ def user_is_an_instructor(user_role: str) -> str:
     if not user_role:
         raise ValueError("user_role must have a value")
     # find the extra role names to recognize an instructor (to be added in the grader group)
-    extra_roles = os.environ.get("EXTRA_ROLE_NAMES_FOR_INSTRUCTOR") or []
+    extra_roles: str = os.environ.get("EXTRA_ROLE_NAMES_FOR_INSTRUCTOR") or ""
     if extra_roles:
         extra_roles = extra_roles.lower().split(",")
         DEFAULT_ROLE_NAMES_FOR_INSTRUCTOR.extend(extra_roles)

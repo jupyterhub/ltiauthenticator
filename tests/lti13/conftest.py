@@ -36,7 +36,7 @@ def req_handler() -> RequestHandler:
             ),
             cookie_secret=os.urandom(32),
             db=Mock(rollback=Mock(return_value=None)),
-            **settings,
+            **settings,  # type: ignore
         )
         request = HTTPServerRequest(method=method, uri=uri, connection=Mock())
         handler = Handler(
@@ -46,7 +46,7 @@ def req_handler() -> RequestHandler:
         handler._transforms = []
         return handler
 
-    return _req_handler
+    return _req_handler  # type: ignore
 
 
 @pytest.fixture

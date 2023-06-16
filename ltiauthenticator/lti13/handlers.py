@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import json
 import re
@@ -5,21 +6,18 @@ import uuid
 from typing import Any, Dict, Optional, cast
 from urllib.parse import quote, unquote, urlparse
 
-from jupyterhub.handlers import BaseHandler
-from jupyterhub.utils import url_path_join
-from oauthenticator.oauth2 import (
-    OAuthCallbackHandler,
-    OAuthLoginHandler,
-    _serialize_state,
-)
-from oauthlib.common import generate_token
+from jupyterhub.handlers import BaseHandler  # type: ignore
+from jupyterhub.utils import url_path_join  # type: ignore
+from oauthlib.common import generate_token  # type: ignore
 from tornado.httputil import url_concat
-from tornado.web import HTTPError, RequestHandler
+from tornado.log import app_log
+from tornado.web import HTTPError, MissingArgumentError, RequestHandler
 
 from ..utils import convert_request_to_dict
 from .error import InvalidAudienceError, LoginError, ValidationError
 from .validator import LTI13LaunchValidator
 
+STATE_COOKIE_NAME = "lti13authenticator-state"
 NONCE_STATE_COOKIE_NAME = "lti13authenticator-nonce-state"
 
 
@@ -39,6 +37,28 @@ def get_nonce(nonce_state: str) -> str:
     hash = hashlib.sha256(nonce_state.encode())
     nonce = hash.hexdigest()
     return nonce
+
+
+def _serialize_state(state):
+    """Serialize OAuth state to a base64 string after passing through JSON"""
+    json_state = json.dumps(state)
+    return base64.urlsafe_b64encode(json_state.encode("utf8")).decode("ascii")
+
+
+def _deserialize_state(b64_state):
+    """Deserialize OAuth state as serialized in _serialize_state"""
+    if isinstance(b64_state, str):
+        b64_state = b64_state.encode("ascii")
+    try:
+        json_state = base64.urlsafe_b64decode(b64_state).decode("utf8")
+    except ValueError:
+        app_log.error(f"Failed to b64-decode state: {b64_state}")
+        return {}
+    try:
+        return json.loads(json_state)
+    except ValueError:
+        app_log.error(f"Failed to json-decode state: {json_state}")
+        return {}
 
 
 class LTI13ConfigHandler(BaseHandler):
@@ -125,11 +145,13 @@ class LTI13ConfigHandler(BaseHandler):
         self.write(json.dumps(keys))
 
 
-class LTI13LoginInitHandler(OAuthLoginHandler):
+class LTI13LoginInitHandler(BaseHandler):
     """
     Handles JupyterHub authentication requests according to the
     LTI 1.3 standard.
     """
+
+    _state = None
 
     def check_xsrf_cookie(self):
         """
@@ -257,8 +279,7 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
         self.log.debug(f"redirect_uri is: {redirect_uri}")
 
         # to prevent CSRF
-        state = self.get_state()
-        self.set_state_cookie(state)
+        state = self.generate_state()
 
         # to prevent replay attacks
         nonce = self.generate_nonce()
@@ -273,10 +294,16 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
             state=state,
         )
 
-    # GET requests are also allowed by the OpenID Conect launch flow:
+    # GET requests are also allowed by the OpenID Connect launch flow:
     # https://www.imsglobal.org/spec/security/v1p0/#fig_oidcflow
     #
     get = post
+
+    def generate_state(self):
+        """Produce a state including the url of the original request."""
+        state = self.get_state()
+        self.set_state_cookie(state)
+        return state
 
     def generate_nonce(self):
         """Produce a nonce.
@@ -285,7 +312,7 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
         field of the id_token.
         """
         nonce_state = make_nonce_state()
-        self.set_nonce_cookie(nonce_state)
+        self.set_nonce_state_cookie(nonce_state)
         nonce = get_nonce(nonce_state)
         return nonce
 
@@ -308,17 +335,23 @@ class LTI13LoginInitHandler(OAuthLoginHandler):
             self.log.debug(f"{arg} not present in login initiation request")
         return value
 
-    def set_nonce_cookie(self, nonce_state):
+    def set_nonce_state_cookie(self, nonce_state):
+        self._set_oauth_cookie(NONCE_STATE_COOKIE_NAME, nonce_state)
+
+    def set_state_cookie(self, state):
+        self._set_oauth_cookie(STATE_COOKIE_NAME, state)
+
+    def _set_oauth_cookie(self, key: str, value):
         self._set_cookie(
-            NONCE_STATE_COOKIE_NAME,
-            nonce_state,
+            key,
+            value,
             expires_days=1,
             httponly=True,
             encrypted=True,
         )
 
 
-class LTI13CallbackHandler(OAuthCallbackHandler):
+class LTI13CallbackHandler(BaseHandler):
     """
     Handles JupyterHub authentication requests responses according to the
     LTI 1.3 standard.
@@ -328,6 +361,7 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
     https://www.imsglobal.org/spec/security/v1p0/#step-4-resource-is-displayed
     """
 
+    _state_cookie = None
     _nonce_state_cookie = None
 
     def check_xsrf_cookie(self):
@@ -408,6 +442,19 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
 
         return id_token
 
+    def check_state(self):
+        """Verify OAuth state
+
+        compare value in cookie with redirect url param
+        """
+        cookie_state = self._get_state_cookie()
+        if not cookie_state:
+            raise HTTPError(400, "OAuth state missing from cookies")
+        url_state = self._get_state_from_url()
+        if cookie_state != url_state:
+            self.log.warning(f"OAuth state mismatch: {cookie_state} != {url_state}")
+            raise HTTPError(400, "OAuth state mismatch")
+
     def check_nonce(self, id_token: Dict[str, Any]) -> None:
         """Check if received nonce corresponds to hash of nonce state cookie"""
         received_nonce = id_token.get("nonce")
@@ -422,14 +469,45 @@ class LTI13CallbackHandler(OAuthCallbackHandler):
             self.log.warning("OAuth nonce mismatch: %s != %s", nonce, received_nonce)
             raise HTTPError(400, "OAuth nonce mismatch")
 
+    def get_next_url(self, user=None):
+        """Get the redirect target from the state field"""
+        state = self._get_state_from_url()
+        next_url = _deserialize_state(state).get("next_url")
+        if next_url:
+            return next_url
+        # JupyterHub 0.8 adds default .get_next_url for a fallback
+        return super().get_next_url(user)
+
+    def _get_state_from_url(self):
+        """Get OAuth state from URL parameters
+
+        Raises HTTPError(400) if `state` argument is missing from request.
+        """
+        try:
+            return self.get_argument("state")
+        except MissingArgumentError:
+            raise HTTPError(400, "OAuth state missing from URL")
+
     def _get_nonce_state_cookie(self):
         """Get OAuth nonce state from cookies
 
         To be compared with the value in id_token
         """
         if self._nonce_state_cookie is None:
-            self._nonce_state_cookie = (
-                self.get_secure_cookie(NONCE_STATE_COOKIE_NAME) or b""
-            ).decode("utf8")
-            self.clear_cookie(NONCE_STATE_COOKIE_NAME)
+            self._nonce_state_cookie = self._get_oauth_cookie(NONCE_STATE_COOKIE_NAME)
         return self._nonce_state_cookie
+
+    def _get_state_cookie(self):
+        """Get OAuth state from cookies
+
+        To be compared with the value in redirect URL
+        """
+        if self._state_cookie is None:
+            self._state_cookie = self._get_oauth_cookie(STATE_COOKIE_NAME)
+        return self._state_cookie
+
+    def _get_oauth_cookie(self, name: str):
+        """Get OAuth state cookie."""
+        cookie = (self.get_secure_cookie(name) or b"").decode("utf8", "replace")
+        self.clear_cookie(name)
+        return cookie

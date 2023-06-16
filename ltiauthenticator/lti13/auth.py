@@ -1,11 +1,10 @@
 import logging
 from typing import Any, Dict, List
 
-from jupyterhub.app import JupyterHub
-from jupyterhub.auth import LocalAuthenticator
-from jupyterhub.handlers import BaseHandler
-from jupyterhub.utils import url_path_join
-from oauthenticator.oauth2 import OAuthenticator
+from jupyterhub.app import JupyterHub  # type: ignore
+from jupyterhub.auth import Authenticator  # type: ignore
+from jupyterhub.handlers import BaseHandler  # type: ignore
+from jupyterhub.utils import url_path_join  # type: ignore
 from traitlets import CaselessStrEnum
 from traitlets import List as TraitletsList
 from traitlets import Set as TraitletsSet
@@ -20,29 +19,30 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-class LTI13Authenticator(OAuthenticator):
+class LTI13Authenticator(Authenticator):
     """
-    JupyterHub LTI 1.3 Authenticator which extends the `OAuthenticator` class. (LTI 1.3
-    is basically an extension of OIDC/OAuth2). Messages sent to this authenticator are sent
-    from a LTI 1.3 Platform, such as an LMS. JupyterHub, as the authenticator, works as the
-    LTI 1.3 External Tool. The basic login flow is authentication using the implicit flow. As such,
-    the client id is always required.
-
-    This class utilizes the following required configurables defined in the `OAuthenticator` base class:
-
-        - authorize_url
+    JupyterHub LTI 1.3 Authenticator. LTI 1.3 is basically an extension of OIDC/OAuth2.
+    Messages sent to this authenticator are sent from a LTI 1.3 Platform, such as an LMS.
+    JupyterHub, as the authenticator, works as the LTI 1.3 External Tool.
+    The basic login flow is authentication using the implicit flow.
+    As such, at least one client id is required.
 
     Ref:
-      - https://github.com/jupyterhub/oauthenticator/blob/master/oauthenticator/oauth2.py
       - http://www.imsglobal.org/spec/lti/v1p3/
       - https://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth
     """
 
     login_service = "LTI 1.3"
 
-    # handlers used for login, callback, and jwks endpoints
+    # handlers used for login, callback, and json config endpoints
     login_handler = LTI13LoginInitHandler
     callback_handler = LTI13CallbackHandler
+    config_handler = LTI13ConfigHandler
+
+    authorize_url = Unicode(
+        config=True,
+        help="""Authorization end-point of the platforms identity provider.""",
+    )
 
     client_id = TraitletsSet(
         trait=Unicode(),
@@ -162,19 +162,18 @@ class LTI13Authenticator(OAuthenticator):
         return [
             (self.login_url(""), self.login_handler),
             (self.callback_url(""), self.callback_handler),
-            (self.config_json_url(""), LTI13ConfigHandler),
+            (self.config_json_url(""), self.config_handler),
         ]
 
     async def authenticate(
         self, handler: LTI13LoginInitHandler, data: Dict[str, str] = None
     ) -> Dict[str, Any]:
         """
-        Overrides authenticate from the OAuthenticator base class to handle LTI
-        1.3 launch requests based on a passed JWT.
+        Handles LTI 1.3 launch requests based on a passed JWT.
 
         Args:
           handler: handler object
-          data: authentication dictionary. The decoded, verified and validated id_token send by tehe platform
+          data: authentication dictionary. The decoded, verified and validated id_token send by the platform
 
         Returns:
           Authentication dictionary
@@ -225,9 +224,3 @@ class LTI13Authenticator(OAuthenticator):
             return get_browser_protocol(request)
         # manually specified https or http
         return self.uri_scheme
-
-
-class LocalLTI13Authenticator(LocalAuthenticator, OAuthenticator):
-    """A version that mixes in local system user creation"""
-
-    pass

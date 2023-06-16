@@ -2,7 +2,7 @@
 These fixtures are not used but kept as they may be relevant to use in the
 future.
 """
-from typing import Dict
+from typing import Any, Callable, Dict
 
 import jwt
 import pytest
@@ -31,7 +31,7 @@ def login_req_decoded():
 
 
 @pytest.fixture
-def id_token(json_lti13_launch_request: Dict[str, str]) -> jwt:
+def id_token(json_lti13_launch_request: Dict[str, str]) -> str:
     """
     Thin wrapper for the jwt.encode() method. Use the `launch_req_jwt_decoded`
     or `launch_req_jwt_decoded_priv` fixture to create the json and
@@ -48,7 +48,7 @@ def id_token(json_lti13_launch_request: Dict[str, str]) -> jwt:
 
 
 @pytest.fixture
-def get_id_token() -> str:
+def get_id_token() -> Callable[[Dict[str, str]], Any]:
     def _get_id_token(json_lti13_launch_request: Dict[str, str]):
         """
         Returns a valid jwt lti13 id token from a json

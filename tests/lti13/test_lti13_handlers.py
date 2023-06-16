@@ -8,8 +8,11 @@ import ltiauthenticator.lti13.handlers
 from ltiauthenticator.lti13.error import InvalidAudienceError
 from ltiauthenticator.lti13.handlers import (
     NONCE_STATE_COOKIE_NAME,
+    STATE_COOKIE_NAME,
     LTI13CallbackHandler,
     LTI13LoginInitHandler,
+    _deserialize_state,
+    _serialize_state,
     get_nonce,
     make_nonce_state,
 )
@@ -17,6 +20,14 @@ from ltiauthenticator.lti13.validator import LTI13LaunchValidator
 from ltiauthenticator.utils import convert_request_to_dict
 
 from .mocking import MockLTI13Authenticator
+
+
+async def test_lti_13_serialization_roundtrip():
+    """Test if state serialization/deserialization preserves object."""
+    obj = dict(key1="something", key2=42)
+    obj_serialized = _serialize_state(obj)
+    obj_roundtrip = _deserialize_state(obj_serialized)
+    assert obj == obj_roundtrip
 
 
 async def test_lti_13_handler_paths(app):
@@ -286,3 +297,122 @@ async def test_lti13_callback_handler_check_nonce_raises_400_if_nonce_missmatch(
     ), pytest.raises(HTTPError) as e:
         handler.check_nonce(id_token)
     assert str(e.value) == "HTTP 400: Bad Request (OAuth nonce mismatch)"
+
+
+async def test_lti13_callback_handler_check_state_validates_correctly(
+    req_handler,
+):
+    """Test invokation of parameter, token and state validation."""
+    state = _serialize_state(dict(next_url="some url"))
+
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+
+    with patch.object(
+        handler, "get_secure_cookie", return_value=state.encode()
+    ) as mock_get_cookie, patch.object(
+        handler, "_get_state_from_url", return_value=state
+    ) as mock_get_from_url:
+        result = handler.check_state()
+        mock_get_cookie.assert_called_once_with(STATE_COOKIE_NAME)
+        mock_get_from_url.assert_called_once()
+        assert result is None
+
+
+async def test_lti13_callback_handler_check_state_raises_400_if_cookie_missing(
+    req_handler,
+):
+    """Test invokation of parameter, token and state validation."""
+    state = _serialize_state(dict(next_url="some url"))
+
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+
+    with patch.object(handler, "get_secure_cookie", return_value=None), patch.object(
+        handler, "_get_state_from_url", return_value=state
+    ), pytest.raises(HTTPError) as e:
+        handler.check_state()
+    assert "OAuth state missing from cookies" in str(e.value)
+
+
+async def test_lti13_callback_handler_check_state_raises_400_if_state_in_url_is_missing(
+    req_handler,
+):
+    """Test invokation of parameter, token and state validation."""
+    state = _serialize_state(dict(next_url="some url"))
+
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+
+    with patch.object(
+        handler, "get_secure_cookie", return_value=state.encode()
+    ), pytest.raises(HTTPError) as e:
+        handler.check_state()
+    assert "OAuth state missing from URL" in str(e.value)
+
+
+async def test_lti13_callback_handler_check_state_raises_400_if_state_missmatch(
+    req_handler,
+):
+    """Test invokation of parameter, token and state validation."""
+    state_data = dict(next_url="some url")
+    cookie_state = _serialize_state(state_data)
+    state_data["something"] = "else"
+    url_state = _serialize_state(state_data)
+
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+
+    with patch.object(
+        handler, "get_secure_cookie", return_value=cookie_state.encode()
+    ), patch.object(
+        handler, "_get_state_from_url", return_value=url_state
+    ), pytest.raises(
+        HTTPError
+    ) as e:
+        handler.check_state()
+    assert "OAuth state mismatch" in str(e.value)
+
+
+async def test_lti13_callback_handler_get_next_url_returns_value_from_state(
+    req_handler,
+):
+    """Test invokation of parameter, token and state validation."""
+    state = _serialize_state(dict(next_url="some url"))
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+
+    with patch.object(handler, "_get_state_from_url", return_value=state):
+        next_url = handler.get_next_url()
+    assert next_url == "some url"
+
+
+async def test_lti13_callback_handler_get_next_url_returns_user_default_url(
+    req_handler,
+):
+    """Test invokation of parameter, token and state validation."""
+    state = _serialize_state(dict(other_stuff="some url"))
+    handler = req_handler(
+        LTI13CallbackHandler,
+        authenticator=MockLTI13Authenticator(),
+    )
+
+    class SuperMock:
+        def get_next_url(self, user=None):
+            return user
+
+    with patch.object(handler, "_get_state_from_url", return_value=state), patch(
+        "builtins.super", return_value=SuperMock()
+    ):
+        next_url = handler.get_next_url("some user")
+    assert next_url == "some user"

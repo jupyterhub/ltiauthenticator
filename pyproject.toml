@@ -29,7 +29,6 @@ dependencies = [
     "traitlets>=5.1.0",
     "escapism>=1.0.1",
     "jupyterhub>=1.2",
-    "oauthenticator>=15.1.0",
     "oauthlib>=3.2.2",
     "PyJWT[crypto]>=2.7.0",
 ]
