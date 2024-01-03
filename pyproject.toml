@@ -15,11 +15,11 @@ name = "jupyterhub-ltiauthenticator"
 description = "JupyterHub authenticator implementing LTI v1.1 and LTI v1.3"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 keywords = ["jupyterhub", "authenticator"]
 authors = [
-    {name = "Yuvi Panda", email = "yuvipanda@gmail.com"},
-    {name = "Jupyter Contributors", email = "jupyter@googlegroups.com"},
+    { name = "Yuvi Panda", email = "yuvipanda@gmail.com" },
+    { name = "Jupyter Contributors", email = "jupyter@googlegroups.com" },
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -35,14 +35,8 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-dev = [
-    "pre-commit",
-]
-test = [
-    "pytest",
-    "pytest-asyncio",
-    "pytest-cov",
-]
+dev = ["pre-commit"]
+test = ["pytest", "pytest-asyncio", "pytest-cov"]
 
 [project.urls]
 Documentation = "https://ltiauthenticator.readthedocs.io"
@@ -57,18 +51,16 @@ Issues = "https://github.com/jupyterhub/ltiauthenticator/issues"
 [tool.black]
 # target-version should be all supported versions, see
 # https://github.com/psf/black/issues/751#issuecomment-473066811
-target_version = [
-    "py38",
-    "py39",
-    "py310",
-    "py311",
-]
+target_version = ["py38", "py39", "py310", "py311"]
 
 
 # hatch ref: https://hatch.pypa.io/latest/
 #
 [tool.hatch.version]
 path = "ltiauthenticator/_version.py"
+
+[tool.hatch.build]
+include = ["ltiauthenticator"]
 
 [tool.hatch.build.targets.sdist]
 exclude = [
