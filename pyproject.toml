@@ -117,7 +117,7 @@ asyncio_mode = "auto"
 github_url = "https://github.com/jupyterhub/ltiauthenticator"
 
 [tool.tbump.version]
-current = "1.6.2.dev0"
+current = "1.6.2"
 regex = '''
     (?P<major>\d+)
     \.
