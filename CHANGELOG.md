@@ -2,6 +2,24 @@
 
 ## 1.6
 
+### 1.6.2 - 2023-01-04
+
+([full changelog](https://github.com/jupyterhub/ltiauthenticator/compare/1.6.1...1.6.2))
+
+#### Bugs fixed
+
+- Fix build with hatchling backend [#185](https://github.com/jupyterhub/ltiauthenticator/pull/185) ([@martinclaus](https://github.com/martinclaus), [@consideRatio](https://github.com/consideRatio))
+
+#### Documentation improvements
+
+- docs: Confine type of client_id to list[str] or set[str] [#189](https://github.com/jupyterhub/ltiauthenticator/pull/189) ([@martinclaus](https://github.com/martinclaus), [@consideRatio](https://github.com/consideRatio))
+- docs: fix uri_scheme default value [#168](https://github.com/jupyterhub/ltiauthenticator/pull/168) ([@martinclaus](https://github.com/martinclaus))
+
+#### Continuous integration improvements
+
+- ci: pin robust github action to major version only [#187](https://github.com/jupyterhub/ltiauthenticator/pull/187) ([@consideRatio](https://github.com/consideRatio))
+- ci: test against python 3.12 [#186](https://github.com/jupyterhub/ltiauthenticator/pull/186) ([@consideRatio](https://github.com/consideRatio))
+
 ## 1.6.1 - 2023-06-16
 
 1.6.1 Adds missing changelogs for release 1.6.0.
