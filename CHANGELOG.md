@@ -2,7 +2,7 @@
 
 ## 1.6
 
-### 1.6.2 - 2023-01-04
+### 1.6.2 - 2024-01-04
 
 ([full changelog](https://github.com/jupyterhub/ltiauthenticator/compare/1.6.1...1.6.2))
 
