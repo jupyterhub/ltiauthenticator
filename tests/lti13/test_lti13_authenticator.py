@@ -5,6 +5,7 @@ LTI13LaunchValidator's methods, which are called by authenticate.
 We have dedicated tests of LTI13LaunchValidator's methods in
 test_lti13_validator.py.
 """
+
 from unittest.mock import patch
 
 import pytest
