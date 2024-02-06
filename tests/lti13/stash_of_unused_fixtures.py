@@ -2,6 +2,7 @@
 These fixtures are not used but kept as they may be relevant to use in the
 future.
 """
+
 from typing import Any, Callable, Dict
 
 import jwt

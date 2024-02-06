@@ -1,4 +1,5 @@
 """ Example JupyterHub configuration file with LTI 1.1 settings. """
+
 import os
 
 # Set port and IP

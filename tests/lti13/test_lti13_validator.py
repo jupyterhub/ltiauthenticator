@@ -181,9 +181,9 @@ def test_validate_launch_request_empty_roles(launch_req_jwt_decoded):
 
 def test_validate_launch_request_invalid_message_type(launch_req_jwt_decoded):
     validator = LTI13LaunchValidator()
-    launch_req_jwt_decoded[
-        "https://purl.imsglobal.org/spec/lti/claim/message_type"
-    ] = "???"
+    launch_req_jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/message_type"] = (
+        "???"
+    )
 
     with pytest.raises(IncorrectValueError):
         validator.validate_id_token(launch_req_jwt_decoded)
@@ -191,9 +191,9 @@ def test_validate_launch_request_invalid_message_type(launch_req_jwt_decoded):
 
 def test_validate_launch_request_invalid_version(launch_req_jwt_decoded):
     validator = LTI13LaunchValidator()
-    launch_req_jwt_decoded[
-        "https://purl.imsglobal.org/spec/lti/claim/version"
-    ] = "1.0.0"
+    launch_req_jwt_decoded["https://purl.imsglobal.org/spec/lti/claim/version"] = (
+        "1.0.0"
+    )
 
     with pytest.raises(IncorrectValueError):
         validator.validate_id_token(launch_req_jwt_decoded)
