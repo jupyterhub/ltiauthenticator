@@ -124,7 +124,7 @@ c.LTI13LaunchValidator.time_leeway = 10
 ```
 
 ```{note}
-The class being configured is `LTI13LaunhValidator`.
+The class being configured is `LTI13LaunchValidator`.
 For a complete list of its configuration options, see the [configuration reference](reference.md#lti13launchvalidator).
 ```
 
