@@ -1,4 +1,4 @@
-""" Example JupyterHub configuration file with LTI 1.1 settings. """
+"""Example JupyterHub configuration file with LTI 1.1 settings."""
 
 import os
 
