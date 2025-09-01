@@ -16,7 +16,6 @@
 1. In a Unit where you want there to be a link to the hub, [add an LTI Component](http://edx.readthedocs.io/projects/edx-partner-course-staff/en/latest/exercises_tools/lti_component.html#adding-an-lti-component-to-a-course-unit).
 
    You should enter the following information into the appropriate component settings:
-
    - **LTI ID**: The value you entered for `your-hub-name` above.
 
    - **LTI URL**: Should be set to `your-hub-url/hub/lti/launch`. So if your hub is accessible at `http://datahub.berkeley.edu`, **LTI URL** should be `http://datahub.berkeley.edu/hub/lti/launch`
@@ -117,10 +116,8 @@ The Moodle setup is very similar to both the Open edX and Canvas setups describe
 
 1. Navigate to the course where you would like to add JupyterHub as an external tool
 1. Turn on editing and add an instance of the `External Tool Activity Module` (https://docs.moodle.org/37/en/External_tool_settings)
-
    1. Activity Name: This will be the name that appears in the course for students to click on to initiate the connection to your hub.
    1. Click 'Show more...' to add additional configuration settings:
-
    - **Tool name**: the external tool name, such as `JupyterHub`.
    - **Tool URL**: Should be set to `your-hub-url/hub/lti/launch`. So if your hub is accessible at `https://datahub.berkeley.edu`, _Tool URL_ should be
      `https://datahub.berkeley.edu/hub/lti/launch`.
