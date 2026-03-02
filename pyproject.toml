@@ -31,6 +31,7 @@ dependencies = [
     "jupyterhub>=1.2",
     "oauthlib>=3.2.2",
     "PyJWT[crypto]>=2.7.0",
+    "cachetools"
 ]
 dynamic = ["version"]
 

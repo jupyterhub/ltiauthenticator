@@ -1,8 +1,7 @@
 import time
-from collections import OrderedDict
 from typing import Any, Dict
-from typing import OrderedDict as OrderedDictType
 
+from cachetools import TTLCache
 from oauthlib.common import safe_string_equals  # type: ignore
 from oauthlib.oauth1.rfc5849 import Client, signature  # type: ignore
 from tornado.web import HTTPError
@@ -30,7 +29,10 @@ class LTI11LaunchValidator(LoggingConfigurable):
 
     # Keep a class-wide, global list of nonces so we can detect & reject
     # replay attacks. This possibly makes this non-threadsafe, however.
-    nonces: OrderedDictType[int, set] = OrderedDict()
+    # The key is an integer timestamp, and value is set of nonces issued at that
+    # timestamp. Since we only accept keys for the last 30s, we set maxsize to 35
+    # and the TTL cache to expire after 35s (to give us some grace time).
+    nonces = TTLCache[int, set](35, 35.0)
 
     def __init__(self, consumers):
         self.consumers = consumers
