@@ -236,8 +236,7 @@ def jwks_endpoint_public_key():
     The jwks_endpoint_response fixture provides a single key (public), and this
     is the same public key.
     """
-    return textwrap.dedent(
-        """
+    return textwrap.dedent("""
         -----BEGIN PUBLIC KEY-----
         MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnVhjh6rQNuXmbe5t+bac
         Rizy0aE4pdL/MchSvA/m0Wmnp6D7rSGrzwqAOUBN0gcXfj+2ILgZffESJcPugVzE
@@ -247,8 +246,7 @@ def jwks_endpoint_public_key():
         gDDx4B7OA8Or90hb+gU3qoAcRcou/aUGZ96EWuuYGlxf6mb3z3KQRsJeM7gdMPMg
         YQIDAQAB
         -----END PUBLIC KEY-----
-        """
-    ).strip()
+        """).strip()
 
 
 @pytest.fixture
@@ -258,8 +256,7 @@ def jwks_endpoint_private_key():
     is the private key behind it. This fixture could be used to sign a JWT if
     needed for our tests.
     """
-    return textwrap.dedent(
-        """
+    return textwrap.dedent("""
         -----BEGIN RSA PRIVATE KEY-----
         MIIEpAIBAAKCAQEAnVhjh6rQNuXmbe5t+bacRizy0aE4pdL/MchSvA/m0Wmnp6D7
         rSGrzwqAOUBN0gcXfj+2ILgZffESJcPugVzEoDPuXgMkywLLcnTt9MVWB8jWrSEC
@@ -287,5 +284,4 @@ def jwks_endpoint_private_key():
         IrcmoDaFnFXWbWr5iVcyWnj+RI1h5NqDqKgW0TXOOManSBKlTuJdaeOiBFNK47kz
         RgKGvGteNRDxt0GjIrzdx5xaf4/ve0UjPU0z+fRrRBuij8V0/pscSA==
         -----END RSA PRIVATE KEY-----
-        """
-    ).strip()
+        """).strip()
