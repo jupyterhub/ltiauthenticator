@@ -11,11 +11,11 @@ def app() -> JupyterHub:
         MockHub: a mocked JupyterHub instance.
     """
 
-    def _app(cfg: Config) -> JupyterHub:
+    def _app(cfg: Config = None) -> JupyterHub:
         hub = JupyterHub(config=cfg)
         hub.tornado_settings = {"foo": "bar"}
         hub.init_hub()
         hub.base_url = "/mytenant"
         return hub
 
-    return _app
+    return _app()

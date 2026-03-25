@@ -17,7 +17,7 @@ def now() -> int:
 
 
 @pytest.fixture
-def req_handler() -> RequestHandler:
+def req_handler(app) -> RequestHandler:
     """
     Sourced from https://github.com/jupyterhub/oauthenticator/blob/master/oauthenticator/tests/mocks.py
     """
@@ -36,6 +36,7 @@ def req_handler() -> RequestHandler:
             ),
             cookie_secret=os.urandom(32),
             db=Mock(rollback=Mock(return_value=None)),
+            app=app,
             **settings,  # type: ignore
         )
         request = HTTPServerRequest(method=method, uri=uri, connection=Mock())

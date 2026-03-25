@@ -254,7 +254,7 @@ class LTI13LoginInitHandler(BaseHandler):
         Validates required login arguments sent from platform and then uses the authorize_redirect() method
         to redirect users to the authorization url.
         """
-        validator = LTI13LaunchValidator()
+        validator = LTI13LaunchValidator(parent=self.app)
         args = convert_request_to_dict(self.request.arguments)
         self.log.debug(f"Initial login request args are {args}")
 
@@ -410,7 +410,7 @@ class LTI13CallbackHandler(BaseHandler):
         https://openid.net/specs/openid-connect-core-1_0.html#IDToken
         https://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDTValidation
         """
-        validator = LTI13LaunchValidator()
+        validator = LTI13LaunchValidator(parent=self.app)
 
         args = convert_request_to_dict(self.request.arguments)
         self.log.debug(f"Initial launch request args are {args}")
