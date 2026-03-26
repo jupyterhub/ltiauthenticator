@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import time
-from typing import Any, Dict
+from typing import Any
 
 from cachetools import TTLCache
 from oauthlib.common import safe_string_equals  # type: ignore
@@ -32,7 +34,7 @@ class LTI11LaunchValidator(LoggingConfigurable):
     # The key is an integer timestamp, and value is set of nonces issued at that
     # timestamp. Since we only accept keys for the last 30s, we set maxsize to 35
     # and the TTL cache to expire after 35s (to give us some grace time).
-    nonces = TTLCache[int, set](35, 35.0)
+    nonces: TTLCache[int, set] = TTLCache(35, 35.0)
 
     def __init__(self, consumers):
         self.consumers = consumers
@@ -40,8 +42,8 @@ class LTI11LaunchValidator(LoggingConfigurable):
     def validate_launch_request(
         self,
         launch_url: str,
-        headers: Dict[str, Any],
-        args: Dict[str, Any],
+        headers: dict[str, Any],
+        args: dict[str, Any],
     ) -> bool:
         """
         Validate a given LTI 1.1 launch request. The arguments' k/v's are either
