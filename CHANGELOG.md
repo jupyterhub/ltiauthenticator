@@ -2,6 +2,33 @@
 
 ## 1.6
 
+### 1.6.3 - 2026-03-26
+
+([full changelog](https://github.com/jupyterhub/ltiauthenticator/compare/1.6.2...1.6.3))
+
+#### Bugs fixed
+
+- Allow configuring LTI13LaunchValidator [#212](https://github.com/jupyterhub/ltiauthenticator/pull/212) ([@yuvipanda](https://github.com/yuvipanda), [@manics](https://github.com/manics), [@minrk](https://github.com/minrk))
+
+#### Maintenance and upkeep improvements
+
+- run black [#216](https://github.com/jupyterhub/ltiauthenticator/pull/216) ([@minrk](https://github.com/minrk))
+- enable trusted publishing [#215](https://github.com/jupyterhub/ltiauthenticator/pull/215) ([@minrk](https://github.com/minrk))
+
+#### Documentation improvements
+
+- Fix typo [#194](https://github.com/jupyterhub/ltiauthenticator/pull/194) ([@yuvipanda](https://github.com/yuvipanda), [@jgwerner](https://github.com/jgwerner))
+- docs: fix date typo in changelog [#190](https://github.com/jupyterhub/ltiauthenticator/pull/190) ([@consideRatio](https://github.com/consideRatio))
+
+#### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/use/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/ltiauthenticator/graphs/contributors?from=2024-01-04&to=2026-03-25&type=c))
+
+@consideRatio ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AconsideRatio+updated%3A2024-01-04..2026-03-25&type=Issues)) | @jgwerner ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ajgwerner+updated%3A2024-01-04..2026-03-25&type=Issues)) | @manics ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amanics+updated%3A2024-01-04..2026-03-25&type=Issues)) | @martinclaus ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amartinclaus+updated%3A2024-01-04..2026-03-25&type=Issues)) | @mboisson ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amboisson+updated%3A2024-01-04..2026-03-25&type=Issues)) | @minrk ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aminrk+updated%3A2024-01-04..2026-03-25&type=Issues)) | @yuvipanda ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ayuvipanda+updated%3A2024-01-04..2026-03-25&type=Issues))
+
 ### 1.6.2 - 2024-01-04
 
 ([full changelog](https://github.com/jupyterhub/ltiauthenticator/compare/1.6.1...1.6.2))
