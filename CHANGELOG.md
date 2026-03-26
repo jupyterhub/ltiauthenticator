@@ -4,6 +4,12 @@
 
 ### 1.6.3 - 2026-03-26
 
+1.6.3 is a security release, fixing a possible denial-of-Service vulnerability ([CVE-2026-34052]).
+
+The advisory will be published 7 days after the release (2026-04-02).
+
+[CVE-2026-34052]: https://github.com/jupyterhub/ltiauthenticator/security/advisories/GHSA-8mxq-7xr7-2fxj
+
 ([full changelog](https://github.com/jupyterhub/ltiauthenticator/compare/1.6.2...1.6.3))
 
 #### Bugs fixed
@@ -27,7 +33,7 @@ See [our definition of contributors](https://github-activity.readthedocs.io/en/l
 
 ([GitHub contributors page for this release](https://github.com/jupyterhub/ltiauthenticator/graphs/contributors?from=2024-01-04&to=2026-03-25&type=c))
 
-@consideRatio ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AconsideRatio+updated%3A2024-01-04..2026-03-25&type=Issues)) | @jgwerner ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ajgwerner+updated%3A2024-01-04..2026-03-25&type=Issues)) | @manics ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amanics+updated%3A2024-01-04..2026-03-25&type=Issues)) | @martinclaus ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amartinclaus+updated%3A2024-01-04..2026-03-25&type=Issues)) | @mboisson ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amboisson+updated%3A2024-01-04..2026-03-25&type=Issues)) | @minrk ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aminrk+updated%3A2024-01-04..2026-03-25&type=Issues)) | @yuvipanda ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ayuvipanda+updated%3A2024-01-04..2026-03-25&type=Issues))
+@consideRatio ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AconsideRatio+updated%3A2024-01-04..2026-03-25&type=Issues)) | @jgwerner ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ajgwerner+updated%3A2024-01-04..2026-03-25&type=Issues)) | @manics ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amanics+updated%3A2024-01-04..2026-03-25&type=Issues)) | @martinclaus ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amartinclaus+updated%3A2024-01-04..2026-03-25&type=Issues)) | @mboisson ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Amboisson+updated%3A2024-01-04..2026-03-25&type=Issues)) | @minrk ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Aminrk+updated%3A2024-01-04..2026-03-25&type=Issues)) | @yueyueL ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3AyueyueL+updated%3A2024-01-04..2026-03-25&type=Issues)) | @yuvipanda ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fltiauthenticator+involves%3Ayuvipanda+updated%3A2024-01-04..2026-03-25&type=Issues))
 
 ### 1.6.2 - 2024-01-04
 
