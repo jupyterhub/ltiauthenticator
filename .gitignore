@@ -1,5 +1,4 @@
 # IDEs
-.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -72,3 +71,5 @@ jupyterhub.sqlite
 
 # Proxy process id files
 *.pid
+config.bat
+node_modules
