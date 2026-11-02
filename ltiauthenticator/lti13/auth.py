@@ -5,10 +5,9 @@ from jupyterhub.app import JupyterHub  # type: ignore
 from jupyterhub.auth import Authenticator  # type: ignore
 from jupyterhub.handlers import BaseHandler  # type: ignore
 from jupyterhub.utils import url_path_join  # type: ignore
-from traitlets import CaselessStrEnum
+from traitlets import CaselessStrEnum, Unicode
 from traitlets import List as TraitletsList
 from traitlets import Set as TraitletsSet
-from traitlets import Unicode
 
 from ..utils import get_browser_protocol
 from .constants import LTI13_CUSTOM_CLAIM
